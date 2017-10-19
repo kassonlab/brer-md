@@ -10,13 +10,15 @@
 namespace plugin
 {
 
-class Harmonic : public gmx::RestraintPotential
+class Harmonic : public gmx::IRestraintPotential
 {
     public:
         ~Harmonic() override;
 
-        gmx::vec3<real> calculateForce(gmx::vec3<real> r1,
-                                       gmx::vec3<real> r2) override;
+        gmx::PotentialPointData
+        evaluate(gmx::vec3<real> r1,
+                 gmx::vec3<real> r2,
+                 double t) override;
 };
 
 }

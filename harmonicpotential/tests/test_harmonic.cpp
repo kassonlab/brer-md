@@ -32,26 +32,27 @@ TEST(HarmonicPotentialPlugin, ForceCalc)
     plugin::Harmonic puller;
 
     // When input vectors are equal, output vector is meaningless and magnitude is set to zero.
-    ASSERT_EQ(real(0.0), norm(puller.calculateForce(e1, e1)));
+    auto calculateForce = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.evaluate(a,b,0).force; };
+    ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1)));
 
     // Default equilibrium distance is 1.0, so force should be zero when norm(r12) == 1.0.
-    force = puller.calculateForce(zerovec, e1);
+    force = calculateForce(zerovec, e1);
     ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
 
-    force = puller.calculateForce(e1, zerovec);
+    force = calculateForce(e1, zerovec);
     ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
 
-    force = puller.calculateForce(e1, 2*e1);
+    force = calculateForce(e1, 2*e1);
     ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
 
     // -kx should give vector (1, 0, 0) when vector r1 == r2 - (2, 0, 0)
-    force = puller.calculateForce(-2*e1, zerovec);
+    force = calculateForce(-2*e1, zerovec);
     ASSERT_EQ(real(1), force.x);
-    force = puller.calculateForce(-2*e1, zerovec);
+    force = calculateForce(-2*e1, zerovec);
     ASSERT_EQ(e1, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
 
     // -kx should give vector (-2, 0, 0) when vector r1 == r2 + (2, 0, 0)
-    force = puller.calculateForce(2*e1, -e1);
+    force = calculateForce(2*e1, -e1);
     ASSERT_EQ(-2*e1, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
 }
 

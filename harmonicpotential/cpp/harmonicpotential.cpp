@@ -31,8 +31,9 @@ Harmonic::~Harmonic() = default;
  * assert(-1 * force, calculateForce(r_j, r_i));
  * \endcode
  */
-gmx::vec3<real> Harmonic::calculateForce(gmx::vec3<real> v,
-                                         gmx::vec3<real> v0)
+gmx::PotentialPointData Harmonic::evaluate(gmx::vec3<real> v,
+                                   gmx::vec3<real> v0,
+                                   gmx_unused double t)
 {
     // set equilibrium separation distance
     // TODO: be clearer about units
@@ -45,16 +46,20 @@ gmx::vec3<real> Harmonic::calculateForce(gmx::vec3<real> v,
 
     auto R = sqrt(dot(r1, r1));
 
+    gmx::PotentialPointData output;
+    // Potential energy is 0.5 * k * (norm(r1) - R0)**2
+    // Force in direction of r1 is -k * (norm(r1) - R0) * r1/norm(r1)
+    const auto r1squared = dot(r1, r1);
+    const auto magnitude = sqrt(r1squared);
+    // output.energy = real(0.5) * k * (norm(r1) - R0) * (norm(r1) - R0);
+    output.energy = real(0.5) * k * (r1squared + (-2*magnitude*R0) + R0*R0);
     // Direction of force is ill-defined when v == v0
-    //real magnitude = 0;
-    gmx::vec3<real> force{};
     if (R != 0)
     {
-        // Force in direction of r1 is -k * (norm(r1) - R0) * r1/norm(r1)
         // F = -k * (1.0 - R0/norm(r1)) * r1
-        force = k * (double(R0)/norm(r1) - 1.0) * r1;
+        output.force = k * (double(R0)/magnitude - 1.0)*r1;
     }
 
-    return force;
+    return output;
 }
 } // end namespace plugin
