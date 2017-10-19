@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.4.3)
 project(harmonicRestraint)
 
+# This project requires GROMACS to build. It should be sufficient to source the GMXRC, but you can also set the
+# GROMACS_DIR environment variable to help CMake find the GROMACS installation.
+
 set(CMAKE_CXX_STANDARD 11)
 
 # CMake modules are in a subdirectory to keep this file cleaner
