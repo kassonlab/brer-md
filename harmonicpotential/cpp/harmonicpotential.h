@@ -21,7 +21,9 @@ class Harmonic : public gmx::IRestraintPotential
                  double t) override;
 };
 
-class HarmonicAlt : public gmx::RestraintPotential<HarmonicAlt>
+//class HarmonicAlt : public gmx::RestraintPotential<HarmonicAlt>
+// We will "mix-in from below" when we instantiate a template to register this class's functionality, so no inheritance here.
+class HarmonicAlt
 {
     public:
 
@@ -53,7 +55,7 @@ class HarmonicAlt : public gmx::RestraintPotential<HarmonicAlt>
             gmx::PotentialPointData returnValue;
 
             returnValue.energy = energy;
-            returnValue.force = force;
+//            returnValue.force = force;
 
 //            returnValue.setForce(force);
 //            returnValue.setEnergy(energy);

@@ -4,7 +4,7 @@
 
 #include <gtest/gtest.h>
 #include "harmonicpotential.h"
-#include "gromacs/pulling/vectortype.h"
+#include "gromacs/restraint/vectortype.h"
 
 namespace {
 

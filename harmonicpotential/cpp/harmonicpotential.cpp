@@ -31,8 +31,8 @@ Harmonic::~Harmonic() = default;
  * assert(-1 * force, calculateForce(r_j, r_i));
  * \endcode
  */
-gmx::PotentialPointData Harmonic::evaluate(gmx::vec3<real> v,
-                                   gmx::vec3<real> v0,
+gmx::PotentialPointData Harmonic::evaluate(gmx::Vector v,
+                                   gmx::Vector v0,
                                    gmx_unused double t)
 {
     // set equilibrium separation distance
@@ -63,10 +63,10 @@ gmx::PotentialPointData Harmonic::evaluate(gmx::vec3<real> v,
     return output;
 }
 
-void HarmonicAlt::calculate(gmx_unused gmx::vec3<real> r1,
-                            gmx_unused gmx::vec3<real> r2,
-                            gmx_unused double t)
-{
-    data_ = gmx::PotentialPointData();
-}
+//void HarmonicAlt::calculate(gmx_unused gmx::Vector r1,
+//                            gmx_unused gmx::Vector r2,
+//                            gmx_unused double t)
+//{
+////    data_ = gmx::PotentialPointData();
+//}
 } // end namespace plugin
