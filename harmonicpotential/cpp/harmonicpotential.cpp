@@ -62,4 +62,11 @@ gmx::PotentialPointData Harmonic::evaluate(gmx::vec3<real> v,
 
     return output;
 }
+
+void HarmonicAlt::calculate(gmx_unused gmx::vec3<real> r1,
+                            gmx_unused gmx::vec3<real> r2,
+                            gmx_unused double t)
+{
+    data_ = gmx::PotentialPointData();
+}
 } // end namespace plugin
