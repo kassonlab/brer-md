@@ -8,8 +8,6 @@
 namespace plugin
 {
 
-Harmonic::~Harmonic() = default;
-
 /*!
  * \brief Calculate harmonic force on particle at position v in reference to position v0.
  *
@@ -31,7 +29,7 @@ Harmonic::~Harmonic() = default;
  * assert(-1 * force, calculateForce(r_j, r_i));
  * \endcode
  */
-gmx::PotentialPointData Harmonic::evaluate(gmx::Vector v,
+gmx::PotentialPointData Harmonic::calculate(gmx::Vector v,
                                    gmx::Vector v0,
                                    gmx_unused double t)
 {
@@ -63,10 +61,4 @@ gmx::PotentialPointData Harmonic::evaluate(gmx::Vector v,
     return output;
 }
 
-//void HarmonicAlt::calculate(gmx_unused gmx::Vector r1,
-//                            gmx_unused gmx::Vector r2,
-//                            gmx_unused double t)
-//{
-////    data_ = gmx::PotentialPointData();
-//}
 } // end namespace plugin

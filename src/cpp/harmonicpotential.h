@@ -6,20 +6,30 @@
 #define GROMACS_HARMONICPOTENTIAL_H
 
 #include "gromacs/restraint/restraintpotential.h"
+#include "gromacs/utility/real.h"
+#include "gmxapi/gromacsfwd.h"
 
 namespace plugin
 {
 
-class Harmonic : public gmx::IRestraintPotential
+class Harmonic
 {
     public:
-        ~Harmonic() override;
 
-        gmx::PotentialPointData
-        evaluate(gmx::Vector r1,
-                 gmx::Vector r2,
-                 double t) override;
+        // Allow easier automatic generation of bindings.
+        struct input_param_type {
+            float whateverIwant;
+        };
+
+        struct output_type
+        {};
+
+        gmx::PotentialPointData calculate(gmx::Vector v,
+                                          gmx::Vector v0,
+                                          gmx_unused double t);
+
 };
+
 
 //class HarmonicAlt : public gmx::RestraintPotential<HarmonicAlt>
 // We will "mix-in from below" when we instantiate a template to register this class's functionality, so no inheritance here.
@@ -46,8 +56,8 @@ class HarmonicAlt
         // Need to return this.
         gmx::PotentialPointData calculate(real distance)
         {
-            real force;
-            real energy;
+            real force{};
+            real energy{};
 
             // Probably most intuitive
             // Setters force the user to explicitly _choose_ if they think they don't need energy.
@@ -69,20 +79,7 @@ class HarmonicAlt
 
 };
 
-//gmx::PotentialPointData
-//evaluate(gmx::vec3<real> r1,
-//         gmx::vec3<real> r2,
-//         double t)
-//{
-//    auto diff = norm(r2 - r1) - R0;
-//
-//    auto unitvec = (r2 - r1)/norm(r2 - r1);
-//
-//    auto force = myscalar * unitvec;
-//
-//}
 
-
-}
+} // end namespace plugin
 
 #endif //GROMACS_HARMONICPOTENTIAL_H

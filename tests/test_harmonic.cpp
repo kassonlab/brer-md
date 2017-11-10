@@ -32,7 +32,7 @@ TEST(HarmonicPotentialPlugin, ForceCalc)
     plugin::Harmonic puller;
 
     // When input vectors are equal, output vector is meaningless and magnitude is set to zero.
-    auto calculateForce = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.evaluate(a,b,0).force; };
+    auto calculateForce = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.calculate(a,b,0).force; };
     ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1)));
 
     // Default equilibrium distance is 1.0, so force should be zero when norm(r12) == 1.0.
