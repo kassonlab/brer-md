@@ -33,12 +33,7 @@ gmx::PotentialPointData Harmonic::calculate(gmx::Vector v,
                                    gmx::Vector v0,
                                    gmx_unused double t)
 {
-    // set equilibrium separation distance
-    // TODO: be clearer about units
-    real R0{1.0};
-    // set spring constant
-    // TODO: be clearer about units
-    real k{1.0};
+
     auto r1 = v - v0;
     // TODO: find appropriate math header and namespace
 
@@ -58,7 +53,15 @@ gmx::PotentialPointData Harmonic::calculate(gmx::Vector v,
         output.force = k * (double(R0)/magnitude - 1.0)*r1;
     }
 
+    history.emplace_back(magnitude - R0);
     return output;
+}
+
+gmx::PotentialPointData HarmonicRestraint::evaluate(gmx::Vector r1,
+                                                 gmx::Vector r2,
+                                                 double t)
+{
+    return Harmonic::calculate(r1, r2, t);
 }
 
 } // end namespace plugin

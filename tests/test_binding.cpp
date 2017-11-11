@@ -24,7 +24,7 @@ namespace
 
 const auto filename = plugin::testing::sample_tprfilename;
 
-class SimpleRestraint : public gmx::IRestraintPotential
+class NullRestraint : public gmx::IRestraintPotential
 {
     public:
         gmx::PotentialPointData evaluate(gmx::Vector r1,
@@ -40,15 +40,16 @@ class SimpleApiModule : public gmxapi::MDModule
     public:
         const char *name() override
         {
-            return "SimpleApiModule";
+            return "NullApiModule";
         }
 
         std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
         {
-            auto restraint = std::make_shared<SimpleRestraint>();
+            auto restraint = std::make_shared<NullRestraint>();
             return restraint;
         }
 };
+
 
 TEST(ApiRestraint, MdAndPlugin)
 {

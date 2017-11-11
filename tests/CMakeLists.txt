@@ -34,7 +34,7 @@ configure_file(data/topol.tpr topol.tpr COPYONLY)
 configure_file(testingconfiguration.in.h testingconfiguration.h)
 
 
-add_executable(library-test test_binding.cpp test_binding.cpp)
+add_executable(library-test test_binding.cpp)
 add_test(BasicPlugin library-test)
 
 target_include_directories(library-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
@@ -49,6 +49,7 @@ set_tests_properties(BasicPlugin PROPERTIES
 add_executable(harmonic-test test_harmonic.cpp)
 add_test(HarmonicPotentialPlugin harmonic-test)
 
+target_include_directories(harmonic-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(harmonic-test harmonicpotential libgromacs Gromacs::gmxapi
                       gtest_main)
 

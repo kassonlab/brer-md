@@ -2,13 +2,68 @@
 // Created by Eric Irrgang on 10/13/17.
 //
 
-#include <gtest/gtest.h>
+#include "testingconfiguration.h"
+
+#include <iostream>
+#include <memory>
+
 #include "harmonicpotential.h"
+
+#include "gmxapi/context.h"
+#include "gmxapi/runner.h"
+#include "gmxapi/md/mdmodule.h"
+#include "gmxapi/md/runnerstate.h"
+#include "gmxapi/md.h"
+
+#include "gromacs/math/vectypes.h"
+#include "gromacs/restraint/restraintpotential.h"
 #include "gromacs/restraint/vectortype.h"
+#include "gromacs/utility/classhelpers.h"
+#include "gromacs/utility/arrayref.h"
+
+#include <gtest/gtest.h>
 
 namespace {
 
 using gmx::detail::vec3;
+
+std::ostream& operator<<(std::ostream& stream, const gmx::Vector& vec)
+{
+    stream << "(" << vec.x << "," << vec.y << "," << vec.z << ")";
+    return stream;
+}
+
+const auto filename = plugin::testing::sample_tprfilename;
+
+
+template<class T>
+class SimpleRestraint : public ::gmx::IRestraintPotential, private T
+{
+    public:
+        gmx::PotentialPointData evaluate(gmx::Vector r1,
+                                         gmx::Vector r2,
+                                         double t) override
+        {
+            std::cout << "time: " << t << ": |r2 - r1| = |" << r2 << " -  " << r1 << "| = |" << r2 - r1 << "| = " << norm(r2 - r1) << "\n";
+            return T::calculate(r1, r2, t);
+        }
+};
+
+class SimpleApiModule : public gmxapi::MDModule
+{
+    public:
+        const char *name() override
+        {
+            return "NullApiModule";
+        }
+
+        std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
+        {
+            auto restraint = std::make_shared<SimpleRestraint<::plugin::Harmonic>>();
+            return restraint;
+        }
+};
+
 
 TEST(HarmonicPotentialPlugin, Build)
 {
@@ -26,10 +81,13 @@ TEST(HarmonicPotentialPlugin, ForceCalc)
     const vec3<real> e2{real(0), real(1), real(0)};
     const vec3<real> e3{real(0), real(0), real(1)};
 
+    const real R0{1.0};
+    const real k{1.0};
+
     // store temporary values long enough for inspection
     vec3<real> force{};
 
-    plugin::Harmonic puller;
+    plugin::Harmonic puller{R0, k};
 
     // When input vectors are equal, output vector is meaningless and magnitude is set to zero.
     auto calculateForce = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.calculate(a,b,0).force; };
@@ -58,6 +116,30 @@ TEST(HarmonicPotentialPlugin, ForceCalc)
 
 TEST(HarmonicPotentialPlugin, Bind)
 {
+
+    {
+        auto system = gmxapi::fromTprFile(filename);
+        std::shared_ptr<gmxapi::Context> context = gmxapi::defaultContext();
+        auto runner = system->runner();
+
+        auto session = runner->initialize(context);
+
+        auto module = std::make_shared<plugin::HarmonicModule>();
+        session->setRestraint(module);
+
+//        typedef struct{} dummystruct;
+//        auto module = std::make_shared<::gmx::RestraintMDModule<dummystruct>>();
+//        session->addModule(module);
+
+//        auto puller = std::make_shared<gmx::RestraintPotential>();
+//        session->setRestraint(puller);
+
+        gmxapi::Status status;
+        ASSERT_NO_THROW(status = session->run());
+//        ASSERT_TRUE(module->force_called() > 0);
+//        ASSERT_NO_THROW(session->run(1000));
+        ASSERT_TRUE(status.success());
+    }
 
 }
 
