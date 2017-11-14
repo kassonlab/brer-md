@@ -127,13 +127,6 @@ TEST(HarmonicPotentialPlugin, Bind)
         auto module = std::make_shared<plugin::HarmonicModule>();
         session->setRestraint(module);
 
-//        typedef struct{} dummystruct;
-//        auto module = std::make_shared<::gmx::RestraintMDModule<dummystruct>>();
-//        session->addModule(module);
-
-//        auto puller = std::make_shared<gmx::RestraintPotential>();
-//        session->setRestraint(puller);
-
         gmxapi::Status status;
         ASSERT_NO_THROW(status = session->run());
 //        ASSERT_TRUE(module->force_called() > 0);

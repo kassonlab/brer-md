@@ -8,7 +8,7 @@ def test_dependencies():
     assert gmx
     import gmx.core
     # gmx.core.MDModule()
-    gmx.core.printName(gmx.core.GmxapiMDModule());
+    gmx.core.printName(gmx.core.MDModule());
 
 def test_imports():
     import myplugin
@@ -25,3 +25,4 @@ def test_add_potential():
 
     potential = myplugin.Potential()
     system.md.add_potential(potential)
+    system.run()
