@@ -14,6 +14,9 @@
 #include "gmxapi/md/mdmodule.h"
 #include "gmxapi/md/runnerstate.h"
 #include "gmxapi/md.h"
+#include "gmxapi/gmxapi.h"
+#include "gmxapi/status.h"
+#include "gmxapi/system.h"
 
 #include "gromacs/math/vectypes.h"
 #include "gromacs/restraint/restraintpotential.h"

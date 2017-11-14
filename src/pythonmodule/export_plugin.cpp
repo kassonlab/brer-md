@@ -4,6 +4,10 @@
 
 #include "export_plugin.h"
 
+#include "gmxapi/md.h"
+#include "gmxapi/md/mdmodule.h"
+#include "gmxapi/gmxapi.h"
+
 #include <pybind11/pybind11.h>
 
 // Make a convenient alias to save some typing...
@@ -26,7 +30,14 @@ class MyRestraint
 {
     public:
         static const char* docstring;
+
+        void bind(gmxapi::MDHolder md);
 };
+
+void MyRestraint::bind(gmxapi::MDHolder mdholder)
+{
+    auto md = mdholder.getMDEngine();
+}
 
 // Raw string will have line breaks and indentation as written between the delimiters.
 const char* MyRestraint::docstring =
@@ -34,12 +45,19 @@ R"rawdelimiter(Some sort of custom potential.
 )rawdelimiter";
 
 
+
+void export_gmxapi(py::module& mymodule)
+{
+    py::class_<gmxapi::MDHolder> md_holder(mymodule, "MD", "Wrapper for gmxapi object", py::module_local());
+};
+
 // The first argument is the name of the module when importing to Python. This should be the same as the name specified
 // as the OUTPUT_NAME for the shared object library in the CMakeLists.txt file. The second argument, 'm', can be anything
 // but it might as well be short since we use it to refer to aspects of the module we are defining.
 PYBIND11_MODULE(myplugin, m) {
     m.doc() = "sample plugin"; // This will be the text of the module's docstring.
 
+    export_gmxapi(m);
     // New plan: Instead of inheriting from gmx.core.MDModule, we can use a local import of
     // gmxapi::MDModule in both gmxpy and in extension modules. When md.add_potential() is
     // called, instead of relying on a binary interface to the MDModule, it will pass itself
@@ -60,10 +78,10 @@ PYBIND11_MODULE(myplugin, m) {
     // We can provide a header or document in gmxapi or gmxpy specifically with the the set of containers
     // necessary to interact with gmxpy in a bindings-agnostic way, and in gmxpy and/or this repo, we can provide an export
     // function that provides pybind11 bindings.
-    py::class_<::gmxapi::MDContainer> md_container(m, "MD", py::module_local());
+    py::class_<::gmxapi::MDHolder> md_holder(m, "MD", py::module_local());
 
     py::class_<MyRestraint> md_module(m, "MyRestraint");
-    md_module.def(py::init<>());
+    md_module.def(py::init<>(), "");
     md_module.def("bind", &MyRestraint::bind);
 // where &MyRestraint::bind is a function like bind(::gmxapi::MDContainer& container){ return container->md->add_potential(this->getRestraint();)});
 
