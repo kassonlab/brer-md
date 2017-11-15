@@ -8,13 +8,14 @@ def test_dependencies():
     assert gmx
     import gmx.core
     # gmx.core.MDModule()
-    gmx.core.printName(gmx.core.MDModule());
+    # gmx.core.printName(gmx.core.MDModule());
 
 def test_imports():
     import myplugin
     assert myplugin
     import gmx.core
-    gmx.core.printName(myplugin.Derived())
+    dir(myplugin)
+    # gmx.core.printName(myplugin.Derived())
 
 def test_add_potential():
     import gmx
@@ -23,6 +24,9 @@ def test_add_potential():
     from gmx.data import tpr_filename
     system = gmx.System._from_file(tpr_filename)
 
-    potential = myplugin.Potential()
+    with gmx.context.DefaultContext(system.runner) as session:
+        potential = myplugin.MyRestraint()
+        session.add_force(potential)
+        session.run()
     # system.md.add_potential(potential)
     # system.run()

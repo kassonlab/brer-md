@@ -31,12 +31,22 @@ class MyRestraint
     public:
         static const char* docstring;
 
-        void bind(gmxapi::MDHolder md);
+        void bind(gmxapi::MDHolder wrapper);
+
+        std::shared_ptr<gmxapi::MDModule> getModule();
 };
+
+std::shared_ptr<gmxapi::MDModule> MyRestraint::getModule()
+{
+    auto module = std::make_shared<gmxapi::MDModule>();
+    return module;
+}
 
 void MyRestraint::bind(gmxapi::MDHolder mdholder)
 {
-    auto md = mdholder.getMDEngine();
+    auto workSpec = mdholder.getSpec();
+    auto module = getModule();
+    workSpec->addModule(module);
 }
 
 // Raw string will have line breaks and indentation as written between the delimiters.
@@ -48,7 +58,9 @@ R"rawdelimiter(Some sort of custom potential.
 
 void export_gmxapi(py::module& mymodule)
 {
-    py::class_<gmxapi::MDHolder> md_holder(mymodule, "MD", "Wrapper for gmxapi object", py::module_local());
+    py::class_<gmxapi::MDHolder> md_holder(mymodule, "MDholder", "Wrapper for gmxapi object", py::module_local());
+//    py::class_< ::gmxapi::MDModule, std::shared_ptr<::gmxapi::MDModule> >
+//        gmxapi_mdmodule(mymodule, "MDModule", py::module_local());
 };
 
 // The first argument is the name of the module when importing to Python. This should be the same as the name specified
@@ -78,7 +90,6 @@ PYBIND11_MODULE(myplugin, m) {
     // We can provide a header or document in gmxapi or gmxpy specifically with the the set of containers
     // necessary to interact with gmxpy in a bindings-agnostic way, and in gmxpy and/or this repo, we can provide an export
     // function that provides pybind11 bindings.
-    py::class_<::gmxapi::MDHolder> md_holder(m, "MD", py::module_local());
 
     py::class_<MyRestraint> md_module(m, "MyRestraint");
     md_module.def(py::init<>(), "");
