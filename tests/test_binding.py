@@ -7,25 +7,28 @@ def test_dependencies():
     import gmx
     assert gmx
     import gmx.core
-    # gmx.core.MDModule()
-    # gmx.core.printName(gmx.core.MDModule());
+    # holder = gmx.core.get_holder()
+    # gmx.core.get_name();
 
 def test_imports():
     import myplugin
     assert myplugin
     import gmx.core
-    dir(myplugin)
-    # gmx.core.printName(myplugin.Derived())
 
 def test_add_potential():
     import gmx
     import myplugin
+    import pytest
     # gmx.data provides a sample minimal tpr file
     from gmx.data import tpr_filename
     system = gmx.System._from_file(tpr_filename)
+    potential = myplugin.MyRestraint()
+    generic_object = object()
+    with pytest.raises(Exception) as exc_info:
+        potential.bind(generic_object)
+    assert str(exc_info).endswith("MyRestraint bind method requires a python capsule as input")
 
     with gmx.context.DefaultContext(system.runner) as session:
-        potential = myplugin.MyRestraint()
         session.add_force(potential)
         session.run()
     # system.md.add_potential(potential)

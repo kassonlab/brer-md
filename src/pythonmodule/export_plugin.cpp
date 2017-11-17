@@ -9,6 +9,7 @@
 #include "gmxapi/gmxapi.h"
 
 #include <pybind11/pybind11.h>
+#include <iostream>
 
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
@@ -31,7 +32,9 @@ class MyRestraint
     public:
         static const char* docstring;
 
-        void bind(gmxapi::MDHolder wrapper);
+        void bind(py::object capsule);
+
+        std::string name() { return "MyRestraint"; };
 
         std::shared_ptr<gmxapi::MDModule> getModule();
 };
@@ -42,11 +45,27 @@ std::shared_ptr<gmxapi::MDModule> MyRestraint::getModule()
     return module;
 }
 
-void MyRestraint::bind(gmxapi::MDHolder mdholder)
+void MyRestraint::bind(py::object object)
 {
-    auto workSpec = mdholder.getSpec();
-    auto module = getModule();
-    workSpec->addModule(module);
+//    auto capsule = py::cast<py::capsule>(object);
+    PyObject* capsule = object.ptr();
+    if (PyCapsule_IsValid(capsule, gmxapi::MDHolder::api_name))
+//    if (capsule.name() == std::string(gmxapi::MDHolder::api_name))
+    {
+        auto holder = static_cast<gmxapi::MDHolder*>(PyCapsule_GetPointer(capsule, gmxapi::MDHolder::api_name));
+        auto workSpec = holder->getSpec();
+        std::cout << this->name() << " received " << holder->name();
+        std::cout << " containing spec of size ";
+        std::cout << workSpec->getModules().size();
+        std::cout << std::endl;
+
+        auto module = getModule();
+        workSpec->addModule(module);
+    }
+    else
+    {
+        throw gmxapi::ProtocolError("MyRestraint bind method requires a python capsule as input");
+    }
 }
 
 // Raw string will have line breaks and indentation as written between the delimiters.
@@ -58,9 +77,15 @@ R"rawdelimiter(Some sort of custom potential.
 
 void export_gmxapi(py::module& mymodule)
 {
-    py::class_<gmxapi::MDHolder> md_holder(mymodule, "MDholder", "Wrapper for gmxapi object", py::module_local());
-//    py::class_< ::gmxapi::MDModule, std::shared_ptr<::gmxapi::MDModule> >
-//        gmxapi_mdmodule(mymodule, "MDModule", py::module_local());
+//    py::class_<gmxapi::MDHolder> holder(mymodule, "pHolder");
+//    holder.def("encapsulate", [](const gmxapi::MDHolder& h){ return py::capsule(&h);});
+//
+//    mymodule.def("get_holder", [](){ return new gmxapi::MDHolder("Dog"); });
+//
+//    mymodule.def("get_name", [](py::capsule cap){
+//        auto holder = (gmxapi::MDHolder *) cap;
+//        return holder->name();
+//    });
 };
 
 // The first argument is the name of the module when importing to Python. This should be the same as the name specified
@@ -92,7 +117,7 @@ PYBIND11_MODULE(myplugin, m) {
     // function that provides pybind11 bindings.
 
     py::class_<MyRestraint> md_module(m, "MyRestraint");
-    md_module.def(py::init<>(), "");
+    md_module.def(py::init<>(), "Create default MyRestraint");
     md_module.def("bind", &MyRestraint::bind);
 // where &MyRestraint::bind is a function like bind(::gmxapi::MDContainer& container){ return container->md->add_potential(this->getRestraint();)});
 
@@ -103,11 +128,6 @@ PYBIND11_MODULE(myplugin, m) {
 
 //    py::class_< GmxapiDerived >(m, "Derived", plugin_base);
 
-    // Moving forward, we can look into breaking this dependency with a portable
-    // C struct that contains a pointer to a gmxapi_md_module or a function pointer
-    // or something. It is probably informative to look at how ndarrays are generally
-    // interoperable.
-    // hmmm... linking dependency...
 
     // The template parameters specify the C++ class to export and the handle type.
     // The function parameters specify the containing module and the Python name for the class.
