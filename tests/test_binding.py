@@ -26,10 +26,20 @@ def test_add_potential():
     generic_object = object()
     with pytest.raises(Exception) as exc_info:
         potential.bind(generic_object)
-    assert str(exc_info).endswith("MyRestraint bind method requires a python capsule as input")
+    assert str(exc_info).endswith("bind method requires a python capsule as input")
 
     with gmx.context.DefaultContext(system.runner) as session:
         session.add_force(potential)
         session.run()
     # system.md.add_potential(potential)
     # system.run()
+
+def test_plugin_potential():
+    import gmx
+    import myplugin
+    from gmx.data import tpr_filename
+    system = gmx.System._from_file(tpr_filename)
+    potential = myplugin.HarmonicRestraint()
+    with gmx.context.DefaultContext(system.runner) as session:
+        session.add_force(potential)
+        session.run()

@@ -10,6 +10,7 @@
 
 #include <pybind11/pybind11.h>
 #include <iostream>
+#include <harmonicpotential.h>
 
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
@@ -27,30 +28,22 @@ namespace py = pybind11;
 //
 //};
 
-class MyRestraint
+template<class T>
+class Restraint : public T
 {
     public:
-        static const char* docstring;
+        void bind(py::object object);
 
-        void bind(py::object capsule);
-
-        std::string name() { return "MyRestraint"; };
+        using T::name;
 
         std::shared_ptr<gmxapi::MDModule> getModule();
 };
 
-std::shared_ptr<gmxapi::MDModule> MyRestraint::getModule()
+template<class T>
+void Restraint<T>::bind(py::object object)
 {
-    auto module = std::make_shared<gmxapi::MDModule>();
-    return module;
-}
-
-void MyRestraint::bind(py::object object)
-{
-//    auto capsule = py::cast<py::capsule>(object);
     PyObject* capsule = object.ptr();
     if (PyCapsule_IsValid(capsule, gmxapi::MDHolder::api_name))
-//    if (capsule.name() == std::string(gmxapi::MDHolder::api_name))
     {
         auto holder = static_cast<gmxapi::MDHolder*>(PyCapsule_GetPointer(capsule, gmxapi::MDHolder::api_name));
         auto workSpec = holder->getSpec();
@@ -64,9 +57,34 @@ void MyRestraint::bind(py::object object)
     }
     else
     {
-        throw gmxapi::ProtocolError("MyRestraint bind method requires a python capsule as input");
+        throw gmxapi::ProtocolError("bind method requires a python capsule as input");
     }
 }
+
+template<class T>
+std::shared_ptr<gmxapi::MDModule> Restraint<T>::getModule()
+{
+    auto module = std::make_shared<typename std::enable_if<std::is_base_of<gmxapi::MDModule, T>::value, T>::type>();
+    return module;
+}
+
+class MyRestraint
+{
+    public:
+        static const char* docstring;
+
+        static std::string name() { return "MyRestraint"; };
+//
+//        std::shared_ptr<gmxapi::MDModule> getModule();
+};
+
+template<>
+std::shared_ptr<gmxapi::MDModule> Restraint<MyRestraint>::getModule()
+{
+    auto module = std::make_shared<gmxapi::MDModule>();
+    return module;
+}
+
 
 // Raw string will have line breaks and indentation as written between the delimiters.
 const char* MyRestraint::docstring =
@@ -116,9 +134,9 @@ PYBIND11_MODULE(myplugin, m) {
     // necessary to interact with gmxpy in a bindings-agnostic way, and in gmxpy and/or this repo, we can provide an export
     // function that provides pybind11 bindings.
 
-    py::class_<MyRestraint> md_module(m, "MyRestraint");
+    py::class_<Restraint<MyRestraint>> md_module(m, "MyRestraint");
     md_module.def(py::init<>(), "Create default MyRestraint");
-    md_module.def("bind", &MyRestraint::bind);
+    md_module.def("bind", &Restraint<MyRestraint>::bind);
 // where &MyRestraint::bind is a function like bind(::gmxapi::MDContainer& container){ return container->md->add_potential(this->getRestraint();)});
 
 
@@ -135,4 +153,8 @@ PYBIND11_MODULE(myplugin, m) {
 //    potential.def(py::init());
 //    // Set the Python docstring.
 //    potential.doc() = MyRestraint::docstring;
+
+    py::class_<Restraint<plugin::HarmonicModule>> harmonic(m, "HarmonicRestraint");
+    harmonic.def(py::init<>(), "Construct HarmonicRestraint");
+    harmonic.def("bind", &Restraint<plugin::HarmonicModule>::bind);
 }
