@@ -61,7 +61,7 @@ gmx::PotentialPointData HarmonicRestraint::evaluate(gmx::Vector r1,
                                                  gmx::Vector r2,
                                                  double t)
 {
-    return Harmonic::calculate(r1, r2, t);
+    return calculate(r1, r2, t);
 }
 
 } // end namespace plugin

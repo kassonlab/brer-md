@@ -19,7 +19,6 @@ namespace plugin
 class Harmonic
 {
     public:
-
         Harmonic(real equilibrium, real springconstant) :
             R0{equilibrium},
             k{springconstant}
@@ -43,7 +42,8 @@ class Harmonic
 
         std::vector<float> history{};
 
-        ~Harmonic() {
+        // The class will either be inherited as a mix-in or inherit a CRTP base class. Either way, it probably needs proper virtual destructor management.
+        virtual ~Harmonic() {
             for (auto&& distance: history)
             {
                 std::cout << distance << "\n";
@@ -82,55 +82,6 @@ class HarmonicModule : public gmxapi::MDModule
             return restraint;
         }
 };
-
-//class HarmonicAlt : public gmx::RestraintPotential<HarmonicAlt>
-// We will "mix-in from below" when we instantiate a template to register this class's functionality, so no inheritance here.
-class HarmonicAlt
-{
-    public:
-
-        // Allow easier automatic generation of bindings.
-        struct input_param_type {
-            float whateverIwant;
-        };
-
-        struct output_type
-        {};
-
-        // Can/should we inherit an output type from the CRTP base class?
-        // Can/should we use static_assert in default templates to try to provide more user-friendly debugging help?
-
-//        PotentialWithScalarForce calculate();
-
-//        PotentialWithVectorForce calculate();
-
-//        PotentialData<HarmonicAlt> calculate(real distance);
-        // Need to return this.
-        gmx::PotentialPointData calculate(real distance)
-        {
-            real force{};
-            real energy{};
-
-            // Probably most intuitive
-            // Setters force the user to explicitly _choose_ if they think they don't need energy.
-            // Otherwise, directly accessing fields could be fine.
-            gmx::PotentialPointData returnValue;
-
-            returnValue.energy = energy;
-//            returnValue.force = force;
-
-//            returnValue.setForce(force);
-//            returnValue.setEnergy(energy);
-
-//            Force calculateForce = force;
-//            Energy calculatedEnergy = energy;
-
-//            gmx::PotentialPointData returnValue(force, energy);
-            return returnValue;
-        };
-
-};
-
 
 } // end namespace plugin
 

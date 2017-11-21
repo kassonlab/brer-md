@@ -74,8 +74,6 @@ class MyRestraint
         static const char* docstring;
 
         static std::string name() { return "MyRestraint"; };
-//
-//        std::shared_ptr<gmxapi::MDModule> getModule();
 };
 
 template<>
@@ -91,19 +89,8 @@ const char* MyRestraint::docstring =
 R"rawdelimiter(Some sort of custom potential.
 )rawdelimiter";
 
-
-
 void export_gmxapi(py::module& mymodule)
 {
-//    py::class_<gmxapi::MDHolder> holder(mymodule, "pHolder");
-//    holder.def("encapsulate", [](const gmxapi::MDHolder& h){ return py::capsule(&h);});
-//
-//    mymodule.def("get_holder", [](){ return new gmxapi::MDHolder("Dog"); });
-//
-//    mymodule.def("get_name", [](py::capsule cap){
-//        auto holder = (gmxapi::MDHolder *) cap;
-//        return holder->name();
-//    });
 };
 
 // The first argument is the name of the module when importing to Python. This should be the same as the name specified
@@ -134,18 +121,10 @@ PYBIND11_MODULE(myplugin, m) {
     // necessary to interact with gmxpy in a bindings-agnostic way, and in gmxpy and/or this repo, we can provide an export
     // function that provides pybind11 bindings.
 
+    // Make a null restraint for testing.
     py::class_<Restraint<MyRestraint>> md_module(m, "MyRestraint");
     md_module.def(py::init<>(), "Create default MyRestraint");
     md_module.def("bind", &Restraint<MyRestraint>::bind);
-// where &MyRestraint::bind is a function like bind(::gmxapi::MDContainer& container){ return container->md->add_potential(this->getRestraint();)});
-
-
-    // Our plugin subclasses gmxpy.core.MDModule, so we need to import that class.
-//    auto gmx_core = py::module::import("gmx.core");
-//    py::object plugin_base = (py::object) gmx_core.attr("GmxapiMDModule");
-
-//    py::class_< GmxapiDerived >(m, "Derived", plugin_base);
-
 
     // The template parameters specify the C++ class to export and the handle type.
     // The function parameters specify the containing module and the Python name for the class.
@@ -154,7 +133,7 @@ PYBIND11_MODULE(myplugin, m) {
 //    // Set the Python docstring.
 //    potential.doc() = MyRestraint::docstring;
 
-    py::class_<Restraint<plugin::HarmonicModule>> harmonic(m, "HarmonicRestraint");
+    py::class_<Restraint<plugin::HarmonicModule>, std::shared_ptr<Restraint<plugin::HarmonicModule>>> harmonic(m, "HarmonicRestraint");
     harmonic.def(py::init<>(), "Construct HarmonicRestraint");
     harmonic.def("bind", &Restraint<plugin::HarmonicModule>::bind);
 }

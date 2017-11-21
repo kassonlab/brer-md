@@ -31,8 +31,6 @@ def test_add_potential():
     with gmx.context.DefaultContext(system.runner) as session:
         session.add_force(potential)
         session.run()
-    # system.md.add_potential(potential)
-    # system.run()
 
 def test_plugin_potential():
     import gmx
