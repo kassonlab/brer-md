@@ -2,8 +2,10 @@
 // Created by Eric Irrgang on 10/13/17.
 //
 
-#include <cmath>
 #include "harmonicpotential.h"
+#include <cmath>
+
+#include <array>
 
 namespace plugin
 {
@@ -62,6 +64,11 @@ gmx::PotentialPointData HarmonicRestraint::evaluate(gmx::Vector r1,
                                                  double t)
 {
     return calculate(r1, r2, t);
+}
+
+std::array<unsigned long, 2> HarmonicRestraint::sites() const
+{
+    return {site1_, site2_};
 }
 
 } // end namespace plugin

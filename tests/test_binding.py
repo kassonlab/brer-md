@@ -38,6 +38,8 @@ def test_plugin_potential():
     from gmx.data import tpr_filename
     system = gmx.System._from_file(tpr_filename)
     potential = myplugin.HarmonicRestraint()
+    potential.set_params(1, 4, 2.0, 100.0)
+    # potential.set_params(1, 4, 0, 0)
     with gmx.context.DefaultContext(system.runner) as session:
         session.add_force(potential)
         session.run()

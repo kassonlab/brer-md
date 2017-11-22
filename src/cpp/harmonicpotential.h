@@ -63,24 +63,72 @@ class Harmonic
 class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
 {
     public:
+        HarmonicRestraint(unsigned long int site1,
+                          unsigned long int site2,
+                          real R0,
+                          real k) :
+            Harmonic{R0, k},
+            site1_{site1},
+            site2_{site2}
+        {};
+
+        std::array<unsigned long, 2> sites() const override;
+
         gmx::PotentialPointData evaluate(gmx::Vector r1,
                                          gmx::Vector r2,
                                          double t) override;
+
+    private:
+        unsigned long int site1_{0};
+        unsigned long int site2_{0};
 };
 
 class HarmonicModule : public gmxapi::MDModule
 {
     public:
+        using param_t = Harmonic::input_param_type;
+
         const char *name() override
         {
             return "HarmonicModule";
         }
 
+        /*!
+         * \brief implement gmxapi::MDModule::getRestraint()
+         *
+         * \return Handle to configured library object.
+         */
         std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
         {
-            auto restraint = std::make_shared<HarmonicRestraint>();
+            auto restraint = std::make_shared<HarmonicRestraint>(site1_, site2_, R0_, k_);
             return restraint;
         }
+
+        /*!
+         * \brief Set restraint parameters.
+         *
+         * \todo generalize this
+         * \param site1
+         * \param site2
+         * \param k
+         * \param R0
+         */
+        void setParams(unsigned long int site1,
+                        unsigned long int site2,
+                        real R0,
+                        real k)
+        {
+            site1_ = site1;
+            site2_ = site2;
+            R0_ = R0;
+            k_ = k;
+        }
+
+    private:
+        unsigned long int site1_{0};
+        unsigned long int site2_{0};
+        real R0_{0};
+        real k_{0};
 };
 
 } // end namespace plugin

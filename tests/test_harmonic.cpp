@@ -128,6 +128,7 @@ TEST(HarmonicPotentialPlugin, Bind)
         auto session = runner->initialize(context);
 
         auto module = std::make_shared<plugin::HarmonicModule>();
+        module->setParams(1, 4, 2.0, 100.0);
         session->setRestraint(module);
 
         gmxapi::Status status;

@@ -15,32 +15,39 @@
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
 
-// No, let's not have a dependency on gmxpy
-//class PYBIND11_EXPORT GmxapiDerived: public gmxpy::MDModule
-//{
-//    public:
-//        using gmxpy::MDModule::MDModule;
-//};
-//
-//template<class T>
-//class PYBIND11_EXPORT Restraint : public T, public gmxpy::PyMDModule
-//{
-//
-//};
-
+/*!
+ * \brief Templated wrapper to use in Python bindings.
+ *
+ * Mix-in from below.
+ * \tparam T
+ */
 template<class T>
-class Restraint : public T
+class PyRestraint : public T, public std::enable_shared_from_this<PyRestraint<T>>
 {
     public:
+
         void bind(py::object object);
 
         using T::name;
 
+        /*!
+         * \brief
+         *
+         * T must either derive from gmxapi::MDModule or provide a template specialization for
+         * PyRestraint<T>::getModule().
+         * \return
+         */
         std::shared_ptr<gmxapi::MDModule> getModule();
+
+        static std::shared_ptr<PyRestraint<T>> create()
+        {
+            auto newRestraint = std::make_shared<PyRestraint<T>>();
+            return newRestraint;
+        }
 };
 
 template<class T>
-void Restraint<T>::bind(py::object object)
+void PyRestraint<T>::bind(py::object object)
 {
     PyObject* capsule = object.ptr();
     if (PyCapsule_IsValid(capsule, gmxapi::MDHolder::api_name))
@@ -61,12 +68,23 @@ void Restraint<T>::bind(py::object object)
     }
 }
 
+// If T is derived from gmxapi::MDModule, create a default-constructed std::shared_ptr<T>
+// \todo Need a better default that can call a shared_from_this()
 template<class T>
-std::shared_ptr<gmxapi::MDModule> Restraint<T>::getModule()
+std::shared_ptr<gmxapi::MDModule> PyRestraint<T>::getModule()
 {
     auto module = std::make_shared<typename std::enable_if<std::is_base_of<gmxapi::MDModule, T>::value, T>::type>();
     return module;
 }
+
+template<>
+std::shared_ptr<gmxapi::MDModule> PyRestraint<plugin::HarmonicModule>::getModule()
+{
+    return shared_from_this();
+}
+
+
+
 
 class MyRestraint
 {
@@ -77,7 +95,7 @@ class MyRestraint
 };
 
 template<>
-std::shared_ptr<gmxapi::MDModule> Restraint<MyRestraint>::getModule()
+std::shared_ptr<gmxapi::MDModule> PyRestraint<MyRestraint>::getModule()
 {
     auto module = std::make_shared<gmxapi::MDModule>();
     return module;
@@ -122,18 +140,24 @@ PYBIND11_MODULE(myplugin, m) {
     // function that provides pybind11 bindings.
 
     // Make a null restraint for testing.
-    py::class_<Restraint<MyRestraint>> md_module(m, "MyRestraint");
-    md_module.def(py::init<>(), "Create default MyRestraint");
-    md_module.def("bind", &Restraint<MyRestraint>::bind);
+    py::class_<PyRestraint<MyRestraint>, std::shared_ptr<PyRestraint<MyRestraint>>> md_module(m, "MyRestraint");
+    md_module.def(py::init(&PyRestraint<MyRestraint>::create), "Create default MyRestraint");
+    md_module.def("bind", &PyRestraint<MyRestraint>::bind);
 
     // The template parameters specify the C++ class to export and the handle type.
     // The function parameters specify the containing module and the Python name for the class.
-//    py::class_<Restraint<MyRestraint>> potential(m, "Potential");
+//    py::class_<PyRestraint<MyRestraint>> potential(m, "Potential");
 //    potential.def(py::init());
 //    // Set the Python docstring.
 //    potential.doc() = MyRestraint::docstring;
 
-    py::class_<Restraint<plugin::HarmonicModule>, std::shared_ptr<Restraint<plugin::HarmonicModule>>> harmonic(m, "HarmonicRestraint");
-    harmonic.def(py::init<>(), "Construct HarmonicRestraint");
-    harmonic.def("bind", &Restraint<plugin::HarmonicModule>::bind);
+    // This bindings specification could actually be done in a templated function to automatically
+    // generate parameter setters/getters
+    py::class_<PyRestraint<plugin::HarmonicModule>, std::shared_ptr<PyRestraint<plugin::HarmonicModule>>> harmonic(m, "HarmonicRestraint");
+    harmonic.def(py::init(&PyRestraint<plugin::HarmonicModule>::create), "Construct HarmonicRestraint");
+    harmonic.def("bind", &PyRestraint<plugin::HarmonicModule>::bind);
+    //harmonic.def_property(name, getter, setter, extra)
+//    harmonic.def_property("pairs", &PyRestraint<plugin::HarmonicModule>::getPairs, &PyRestraint<plugin::HarmonicModule>::setPairs, "The indices of particle pairs to restrain");
+    harmonic.def("set_params", &PyRestraint<plugin::HarmonicModule>::setParams, "Set a pair, spring constant, and equilibrium distance.");
+
 }
