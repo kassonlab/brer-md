@@ -28,8 +28,8 @@ def test_add_potential():
         potential.bind(generic_object)
     assert str(exc_info).endswith("bind method requires a python capsule as input")
 
-    with gmx.context.DefaultContext(system.runner) as session:
-        session.add_force(potential)
+    system.add_potential(potential)
+    with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
 
 def test_plugin_potential():
@@ -40,6 +40,7 @@ def test_plugin_potential():
     potential = myplugin.HarmonicRestraint()
     potential.set_params(1, 4, 2.0, 100.0)
     # potential.set_params(1, 4, 0, 0)
-    with gmx.context.DefaultContext(system.runner) as session:
-        session.add_force(potential)
+
+    system.add_potential(potential)
+    with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
