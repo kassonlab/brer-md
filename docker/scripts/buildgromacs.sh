@@ -2,7 +2,7 @@
 # To be run in a docker image with $HOME/develop mounted to /develop with
 #     docker run -v $HOME/develop/:/develop/ -ti plugintesting bash
 
-cd /external && \
+(cd /external && \
 mkdir -p gromacs-build && \
 cd gromacs-build && \
 rm -f CMakeCache.txt && \
@@ -13,4 +13,4 @@ cmake ../gromacs-source -DGMX_DEVELOPER_BUILD=ON \
     -DCMAKE_C_FLAGS_DEBUG='-O0 -g3' \
     -DGMX_USE_RDTSCP=OFF && \
 make -j4 && \
-make install
+make install)

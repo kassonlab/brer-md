@@ -21,10 +21,10 @@
 #     # Build another image with gmxpy as well
 #     docker build . -t plugintest
 
-FROM ipython/scipystack
+FROM jupyter/scipy-notebook
 
-WORKDIR /external
-ADD sources.list /etc/apt/sources.list
+# jupyter/scipy-notebook sets the USER to jovyan. Temporarily switch it back to root to install more stuff.
+USER root
 
 RUN \
     sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
@@ -35,7 +35,9 @@ RUN \
 
 RUN \
   DEBIAN_FRONTEND=noninteractive apt-get install -y \
-  cmake3 gdb doxygen mscgen graphviz openmpi-bin libopenmpi-dev libfftw3-dev vim
+  cmake gdb doxygen mscgen graphviz openmpi-bin libopenmpi-dev libfftw3-dev vim
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libopenblas-dev
 
 RUN \
   DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pip python-pip && \
@@ -46,22 +48,20 @@ RUN \
   pip3 install sphinx
 
 # Remove cache to save space in the image, but only after all apt-get activity is done.
-RUN \
-  rm -rf /var/lib/apt/lists/*
+RUN rm -rf /var/lib/apt/lists/*
 
 ADD gromacs-gmxapi /external/gromacs-source
-
-ADD gmxpy /external/gmxpy
-
-ADD samplerestraint /external/samplerestraint
 
 ADD scripts /external/scripts
 
 RUN bash -x /external/scripts/buildgromacs.sh
 
+# Set user back to jovyan as per jupyter/scipy-notebook
+USER jovyan
+
 # To be able to step through with gdb, run with something like the following, replacing
 # 'imagename' with the name of the docker image built with this recipe.
 # docker run --rm -ti --security-opt seccomp=unconfined imagename bash
-CMD bash
+#CMD bash
 
 

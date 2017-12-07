@@ -52,7 +52,9 @@ add_executable(harmonic-test test_harmonic.cpp)
 add_test(HarmonicPotentialPlugin harmonic-test)
 
 target_include_directories(harmonic-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(harmonic-test harmonicpotential libgromacs Gromacs::gmxapi
+
+set_target_properties(harmonic-test PROPERTIES SKIP_BUILD_RPATH FALSE)
+target_link_libraries(harmonic-test harmonicpotential Gromacs::gmxapi
                       gtest_main)
 
 set_tests_properties(HarmonicPotentialPlugin PROPERTIES

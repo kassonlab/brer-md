@@ -129,3 +129,10 @@ Update the image
 Start a temporary container from the checkpoint
 
     docker run --rm -v /Users/eric/develop/:/develop/ --init -ti plugintest:build20171028 bash -x scripts/setuptoolsinstall.sh
+
+Jupyter notebook
+================
+
+The docker image described above is based on the jupyter/scipy-notebook docker image.
+
+    docker run -it --rm -p 8888:8888 plugintest

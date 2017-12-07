@@ -23,30 +23,29 @@
 
 FROM gmxapi
 
-WORKDIR /external
-
-ADD gmxpy /external/gmxpy
-ADD samplerestraint /external/samplerestraint
+# jupyter/scipy-notebook sets the USER to jovyan. Temporarily switch it back to root to install more stuff.
+USER root
 
 ADD scripts /external/scripts
 
-RUN pip3 install --upgrade setuptools && \
-    pip install --upgrade setuptools
+RUN pip install --upgrade setuptools
 
-RUN pip3 install --upgrade cmake && \
-    pip install --upgrade cmake
+RUN pip install --upgrade cmake
 
-RUN pip3 install --upgrade pytest && \
-    pip install --upgrade pytest && \
-    pip3 install --upgrade tox && \
-    pip install --upgrade tox
+ADD gmxpy gmxpy
+ADD samplerestraint samplerestraint
+
+RUN pwd
+RUN chown -R jovyan .
+
+USER jovyan
+
+RUN conda install pytest tox
 
 RUN bash -x /external/scripts/setuptoolsinstall.sh
+
+RUN bash -x /external/scripts/buildplugin.sh
 
 # To be able to step through with gdb, run with something like the following, replacing
 # 'imagename' with the name of the docker image built with this recipe.
 # docker run --rm -ti --security-opt seccomp=unconfined imagename bash
-CMD bash -x /external/scripts/buildplugin.sh
-
-
-

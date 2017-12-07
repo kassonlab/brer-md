@@ -3,8 +3,6 @@
 
 pip uninstall -y gmx
 
-cd /external/gmxpy && \
-gmxapi_DIR=/usr/local/gromacs python setup.py install --verbose
-
-gmxapi_DIR=/usr/local/gromacs python setup.py test
-
+(cd gmxpy && \
+gmxapi_DIR=/usr/local/gromacs python setup.py install --verbose && \
+gmxapi_DIR=/usr/local/gromacs python setup.py test)
