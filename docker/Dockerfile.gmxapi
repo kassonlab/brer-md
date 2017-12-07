@@ -1,0 +1,67 @@
+# This Dockerfile is used to produce a working installation of gmxpy and libgmxapi
+# against which to develop plugins. The sample plugin is also built, but not installed.
+# These dependencies are currently in private repositories, so they should be
+# retrieved before building the docker image so that the sources are available in
+# the same directory as the Dockerfile as 'gromacs-gmxapi' and 'gmxpy'.
+#
+#     # Get this repository and this Dockerfile
+#     mkdir docker-build-dir
+#     cd docker-build-dir
+#     git clone git@bitbucket.org:kassonlab/samplerestraint.git
+#     cp samplerestraint/Dockerfile ./
+#
+#     # Get the dependencies
+#     git clone git@bitbucket.org:kassonlab/gromacs_api.git gromacs-gmxapi
+#     (cd gromacs-gmxapi && git checkout develop-0.0.3)
+#     git clone git@bitbucket.org:kassonlab/gmxpy-dev.git gmxpy
+#
+#     # Build the image with this Dockerfile
+#     docker build . -f Dockerfile.gmxapi -t gmxapi
+#
+#     # Build another image with gmxpy as well
+#     docker build . -t plugintest
+
+FROM ipython/scipystack
+
+WORKDIR /external
+ADD sources.list /etc/apt/sources.list
+
+RUN \
+    sed -i 's/# \(.*multiverse$\)/\1/g' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get -y upgrade && \
+    apt-get install -y software-properties-common && \
+    apt-get install -y byobu curl git htop man unzip vim wget
+
+RUN \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y \
+  cmake3 gdb doxygen mscgen graphviz openmpi-bin libopenmpi-dev libfftw3-dev vim
+
+RUN \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y python3-pip python-pip && \
+  rm -rf /var/lib/apt/lists/* && \
+  pip3 install --upgrade pip && \
+  python -m pip install --upgrade pip && \
+  pip install sphinx && \
+  pip3 install sphinx
+
+# Remove cache to save space in the image, but only after all apt-get activity is done.
+RUN \
+  rm -rf /var/lib/apt/lists/*
+
+ADD gromacs-gmxapi /external/gromacs-source
+
+ADD gmxpy /external/gmxpy
+
+ADD samplerestraint /external/samplerestraint
+
+ADD scripts /external/scripts
+
+RUN bash -x /external/scripts/buildgromacs.sh
+
+# To be able to step through with gdb, run with something like the following, replacing
+# 'imagename' with the name of the docker image built with this recipe.
+# docker run --rm -ti --security-opt seccomp=unconfined imagename bash
+CMD bash
+
+

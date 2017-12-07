@@ -15,6 +15,11 @@
 # Configure the CMake project
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/gromacs-build)
 
+set(_type "${CMAKE_BUILD_TYPE}")
+if(${_type} STREQUAL "")
+    set(_type "Release")
+endif()
+
 set(_configure_command "${CMAKE_COMMAND} -G \"${CMAKE_GENERATOR}\"
                     ${CMAKE_CURRENT_LIST_DIR}/gromacs
                     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/gromacs

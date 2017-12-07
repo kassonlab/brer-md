@@ -16,7 +16,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 option(BUILD_TESTING "set ON to build testing framework" ON)
 
 # Either install dependencies privately for this plugin or use locally installed packages at user's option.
-option(PRIVATE_DEPENDENCIES "set ON to build GROMACS components instead of using existing installations." ON)
+option(PRIVATE_DEPENDENCIES "set ON to build GROMACS components instead of using existing installations." OFF)
 
 if(PRIVATE_DEPENDENCIES)
     # We need to build and install the packages at configure time in order to use their generated
