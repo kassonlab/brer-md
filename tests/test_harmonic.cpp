@@ -10,17 +10,11 @@
 #include "harmonicpotential.h"
 
 #include "gmxapi/context.h"
-#include "gmxapi/runner.h"
-#include "gmxapi/md/mdmodule.h"
-#include "gmxapi/md/runnerstate.h"
 #include "gmxapi/md.h"
-#include "gmxapi/gmxapi.h"
+#include "gmxapi/session.h"
 #include "gmxapi/status.h"
 #include "gmxapi/system.h"
 
-#include "gromacs/math/vectypes.h"
-#include "gromacs/restraint/restraintpotential.h"
-#include "gromacs/restraint/vectortype.h"
 #include "gromacs/utility/classhelpers.h"
 #include "gromacs/utility/arrayref.h"
 
@@ -37,36 +31,6 @@ std::ostream& operator<<(std::ostream& stream, const gmx::Vector& vec)
 }
 
 const auto filename = plugin::testing::sample_tprfilename;
-
-
-template<class T>
-class SimpleRestraint : public ::gmx::IRestraintPotential, private T
-{
-    public:
-        gmx::PotentialPointData evaluate(gmx::Vector r1,
-                                         gmx::Vector r2,
-                                         double t) override
-        {
-            std::cout << "time: " << t << ": |r2 - r1| = |" << r2 << " -  " << r1 << "| = |" << r2 - r1 << "| = " << norm(r2 - r1) << "\n";
-            return T::calculate(r1, r2, t);
-        }
-};
-
-class SimpleApiModule : public gmxapi::MDModule
-{
-    public:
-        const char *name() override
-        {
-            return "NullApiModule";
-        }
-
-        std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
-        {
-            auto restraint = std::make_shared<SimpleRestraint<::plugin::Harmonic>>();
-            return restraint;
-        }
-};
-
 
 TEST(HarmonicPotentialPlugin, Build)
 {
@@ -123,13 +87,12 @@ TEST(HarmonicPotentialPlugin, Bind)
     {
         auto system = gmxapi::fromTprFile(filename);
         std::shared_ptr<gmxapi::Context> context = gmxapi::defaultContext();
-        auto runner = system->runner();
-
-        auto session = runner->initialize(context);
 
         auto module = std::make_shared<plugin::HarmonicModule>();
         module->setParams(1, 4, 2.0, 100.0);
-        session->setRestraint(module);
+        system->setRestraint(module);
+
+        auto session = system->launch(context);
 
         gmxapi::Status status;
         ASSERT_NO_THROW(status = session->run());

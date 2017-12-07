@@ -1,0 +1,3 @@
+[submodule "extern/gromacs"]
+	path = extern/gromacs
+	url = git@bitbucket.org:kassonlab/gromacs_api.git
