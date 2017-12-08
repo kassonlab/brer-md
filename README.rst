@@ -135,4 +135,6 @@ Jupyter notebook
 
 The docker image described above is based on the jupyter/scipy-notebook docker image.
 
-    docker run -it --rm -p 8888:8888 plugintest
+    docker run -it --rm -p 8888:8888 plugintest start-notebook.sh
+
+Open the suggested URL locally and look for the `examples` directory in the sample repository.
