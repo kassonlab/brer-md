@@ -34,11 +34,48 @@ def test_add_potential():
 
 def test_plugin_potential():
     import gmx
+    import os
     import myplugin
-    from gmx.data import tpr_filename
+    try:
+        # use GromacsWrapper if available
+        import gromacs
+        import gromacs.formats
+        from gromacs.tools import Solvate as solvate
+        solvate(o='water.gro', box=[5,5,5])
+        mdpparams = [('integrator', 'md'),
+                     ('nsteps', 1000),
+                     ('nstxout', 100),
+                     ('nstvout', 100),
+                     ('nstfout', 100),
+                     ('tcoupl', 'v-rescale'),
+                     ('tc-grps', 'System'),
+                     ('tau-t', 1),
+                     ('ref-t', 298)]
+        mdp = gromacs.formats.MDP()
+        for param, value in mdpparams:
+            mdp[param] = value
+        mdp.write('water.mdp')
+        with open('input.top', 'w') as fh:
+            fh.write("""#include "gromos43a1.ff/forcefield.itp"
+#include "gromos43a1.ff/spc.itp"
+
+[ system ]
+; Name
+spc
+
+[ molecules ]
+; Compound  #mols
+SOL         4055
+""")
+        gromacs.grompp(f='water.mdp', c='water.gro', po='water.mdp', pp='water.top', o='water.tpr', p='input.top')
+        tpr_filename = 'water.tpr'
+    except ImportError:
+        from gmx.data import tpr_filename
+        raise
+    print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
     system = gmx.System._from_file(tpr_filename)
     potential = myplugin.HarmonicRestraint()
-    potential.set_params(1, 4, 2.0, 100.0)
+    potential.set_params(1, 4, 2.0, 10000.0)
     # potential.set_params(1, 4, 0, 0)
 
     system.add_potential(potential)

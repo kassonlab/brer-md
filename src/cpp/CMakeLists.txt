@@ -1,8 +1,6 @@
-set(SOURCE_FILES
-    harmonicpotential.h
-    harmonicpotential.cpp)
-
-add_library(harmonicpotential SHARED ${SOURCE_FILES})
+add_library(harmonicpotential SHARED
+            harmonicpotential.h
+            harmonicpotential.cpp)
 
 target_include_directories(harmonicpotential PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

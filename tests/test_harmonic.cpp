@@ -81,11 +81,51 @@ TEST(HarmonicPotentialPlugin, ForceCalc)
     ASSERT_EQ(-2*e1, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
 }
 
+TEST(HarmonicPotentialPlugin, EnergyCalc)
+{
+    constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);
+    // define some unit vectors
+    const vec3<real> e1{real(1), real(0), real(0)};
+    const vec3<real> e2{real(0), real(1), real(0)};
+    const vec3<real> e3{real(0), real(0), real(1)};
+
+    const real R0{1.0};
+    const real k{1.0};
+
+    // store temporary values long enough for inspection
+    real energy{0};
+
+    plugin::Harmonic puller{R0, k};
+
+    // When input vectors are equal, potential energy is still calculable.
+    auto calculateEnergy = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.calculate(a,b,0).energy; };
+    ASSERT_EQ(real(0.5*k*R0*R0), calculateEnergy(e1, e1));
+
+    // Default equilibrium distance is 1.0, so energy should be zero when norm(r12) == 1.0.
+    energy = calculateEnergy(zerovec, e1);
+    ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
+
+    energy = calculateEnergy(e1, zerovec);
+    ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
+
+    energy = calculateEnergy(e1, 2*e1);
+    ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
+
+    // -kx should give vector (1, 0, 0) when vector r1 == r2 - (2, 0, 0)
+    energy = calculateEnergy(-2*e1, zerovec);
+    ASSERT_EQ(real(0.5*k*R0*R0), energy) << " where energy is " << energy << "\n";
+
+    // -kx should give vector (-2, 0, 0) when vector r1 == r2 + (2, 0, 0)
+    energy = calculateEnergy(2*e1, -e1);
+    ASSERT_EQ(real(0.5*k*4*R0*R0), energy) << " where energy is " << energy << "\n";
+}
+
 TEST(HarmonicPotentialPlugin, Bind)
 {
 
     {
-        auto system = gmxapi::fromTprFile(filename);
+        std::string waterfile = "/Users/eric/develop/CLionProjects/harmonicRestraint/water.tpr";
+        auto system = gmxapi::fromTprFile(waterfile);
         std::shared_ptr<gmxapi::Context> context = gmxapi::defaultContext();
 
         auto module = std::make_shared<plugin::HarmonicModule>();

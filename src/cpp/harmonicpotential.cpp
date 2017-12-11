@@ -36,26 +36,24 @@ gmx::PotentialPointData Harmonic::calculate(gmx::Vector v,
                                    gmx_unused double t)
 {
 
-    auto r1 = v - v0;
+    auto rdiff = v - v0;
+    const auto Rsquared = dot(rdiff, rdiff);
+    const auto R = sqrt(Rsquared);
     // TODO: find appropriate math header and namespace
 
-    auto R = sqrt(dot(r1, r1));
-
-    gmx::PotentialPointData output;
     // Potential energy is 0.5 * k * (norm(r1) - R0)**2
     // Force in direction of r1 is -k * (norm(r1) - R0) * r1/norm(r1)
-    const auto r1squared = dot(r1, r1);
-    const auto magnitude = sqrt(r1squared);
+    gmx::PotentialPointData output;
     // output.energy = real(0.5) * k * (norm(r1) - R0) * (norm(r1) - R0);
-    output.energy = real(0.5) * k * (r1squared + (-2*magnitude*R0) + R0*R0);
+    output.energy = real(0.5) * k * (Rsquared + (-2*R*R0) + R0*R0);
     // Direction of force is ill-defined when v == v0
     if (R != 0)
     {
         // F = -k * (1.0 - R0/norm(r1)) * r1
-        output.force = k * (double(R0)/magnitude - 1.0)*r1;
+        output.force = k * (double(R0)/R - 1.0)*rdiff;
     }
 
-    history.emplace_back(magnitude - R0);
+//    history.emplace_back(magnitude - R0);
     return output;
 }
 

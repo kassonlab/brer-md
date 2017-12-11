@@ -25,7 +25,7 @@ class Harmonic
         {};
 
         Harmonic() :
-            Harmonic{2.0, 100.0}
+            Harmonic{0.0, 0.0}
         {};
 
         // Allow easier automatic generation of bindings.
@@ -40,15 +40,16 @@ class Harmonic
                                           gmx::Vector v0,
                                           gmx_unused double t);
 
-        std::vector<float> history{};
+        // Cache of historical distance data. Not thread safe
+//        std::vector<float> history{};
 
         // The class will either be inherited as a mix-in or inherit a CRTP base class. Either way, it probably needs proper virtual destructor management.
         virtual ~Harmonic() {
-            for (auto&& distance: history)
-            {
-                std::cout << distance << "\n";
-            }
-            std::cout << std::endl;
+//            for (auto&& distance: history)
+//            {
+//                std::cout << distance << "\n";
+//            }
+//            std::cout << std::endl;
         }
 
     private:
@@ -60,6 +61,7 @@ class Harmonic
         real k;
 };
 
+// implement IRestraintPotential in terms of Harmonic
 class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
 {
     public:
@@ -74,6 +76,7 @@ class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
 
         std::array<unsigned long, 2> sites() const override;
 
+        // \todo provide this facility automatically
         gmx::PotentialPointData evaluate(gmx::Vector r1,
                                          gmx::Vector r2,
                                          double t) override;
