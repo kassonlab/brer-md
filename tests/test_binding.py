@@ -69,7 +69,7 @@ SOL         4055
 """)
         gromacs.grompp(f='water.mdp', c='water.gro', po='water.mdp', pp='water.top', o='water.tpr', p='input.top')
         tpr_filename = 'water.tpr'
-    except ImportError:
+    except:
         from gmx.data import tpr_filename
         raise
     print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
