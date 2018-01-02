@@ -77,7 +77,7 @@ class SimpleApiModule : public gmxapi::MDModule
 ////        ASSERT_NO_THROW(session->run(1000));
 //        ASSERT_TRUE(status.success());
 //    }
-
-}
+//
+//}
 
 } // end anonymous namespace
