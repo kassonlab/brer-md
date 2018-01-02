@@ -71,7 +71,6 @@ SOL         4055
         tpr_filename = 'water.tpr'
     except:
         from gmx.data import tpr_filename
-        raise
     print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
     system = gmx.System._from_file(tpr_filename)
     potential = myplugin.HarmonicRestraint()
