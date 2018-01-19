@@ -15,39 +15,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 option(BUILD_TESTING "set ON to build testing framework" ON)
 
-# Either install dependencies privately for this plugin or use locally installed packages at user's option.
-option(PRIVATE_DEPENDENCIES "set ON to build GROMACS components instead of using existing installations." OFF)
-
-if(PRIVATE_DEPENDENCIES)
-    # We need to build and install the packages at configure time in order to use their generated
-    # import targets
-    include(extern/CMakeLists.txt)
-    # Look only in the packages we just installed.
-    find_package(gmxapi 0.0.3 REQUIRED CONFIG
-                 NO_CMAKE_PATH
-                 NO_CMAKE_ENVIRONMENT_PATH
-                 NO_SYSTEM_ENVIRONMENT_PATH
-                 NO_CMAKE_PACKAGE_REGISTRY
-                 NO_CMAKE_SYSTEM_PATH
-                 NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
-                 PATHS ${CMAKE_CURRENT_BINARY_DIR}/gromacs
-                 )
-    find_package(GROMACS REQUIRED CONFIG
-                 NO_CMAKE_PATH
-                 NO_CMAKE_ENVIRONMENT_PATH
-                 NO_SYSTEM_ENVIRONMENT_PATH
-                 NO_CMAKE_PACKAGE_REGISTRY
-                 NO_CMAKE_SYSTEM_PATH
-                 NO_CMAKE_SYSTEM_PACKAGE_REGISTRY
-                 PATHS ${CMAKE_CURRENT_BINARY_DIR}/gromacs
-                 )
-endif(PRIVATE_DEPENDENCIES)
-
 # Assuming GROMACS is in our path or that we have set either the gmxapi_DIR or GROMACS_DIR environment variables,
 # this will find the CMake configuration for the GROMACS libraries we need and define the CMake library objects
 # Gromacs::gmxapi
 find_package(gmxapi
-             0.0.3 REQUIRED CONFIG
+             0.0.4 REQUIRED CONFIG
              PATHS "$ENV{GROMACS_DIR}"
              )
 

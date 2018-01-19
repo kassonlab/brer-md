@@ -8,4 +8,4 @@ target_include_directories(harmonicpotential PUBLIC
                            )
 set_target_properties(harmonicpotential PROPERTIES SKIP_BUILD_RPATH FALSE)
 
-target_link_libraries(harmonicpotential PRIVATE Gromacs::gmxapi)
+target_link_libraries(harmonicpotential PRIVATE Gromacs::gmxapi libgromacs)
