@@ -3,6 +3,8 @@
 # assuming you are in ``/path/to/repo``, run the tests with something like
 #     PYTHONPATH=./build/src/pythonmodule pytest tests
 
+import pytest
+
 def test_dependencies():
     import gmx
     assert gmx
@@ -15,6 +17,7 @@ def test_imports():
     assert myplugin
     import gmx.core
 
+@pytest.mark.usefixtures("cleandir")
 def test_add_potential():
     import gmx
     import myplugin
@@ -32,6 +35,7 @@ def test_add_potential():
     with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
 
+@pytest.mark.usefixtures("cleandir")
 def test_plugin_potential():
     import gmx
     import os
