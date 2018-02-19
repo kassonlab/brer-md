@@ -3,6 +3,9 @@
 # assuming you are in ``/path/to/repo``, run the tests with something like
 #     PYTHONPATH=./build/src/pythonmodule pytest tests
 
+# This test is not currently run automatically in any way. Build the module, point your PYTHONPATH at it,
+# and run pytest in the tests directory.
+
 import pytest
 
 def test_dependencies():
@@ -40,6 +43,13 @@ def test_plugin_potential():
     import gmx
     import os
     import myplugin
+
+    import os
+    cwd = os.path.dirname(__file__)
+    water = os.path.join(cwd, 'data', 'water.gro')
+    import shutil
+    shutil.copy(water, './')
+
     try:
         # use GromacsWrapper if available
         import gromacs
@@ -72,10 +82,13 @@ spc
 SOL         4055
 """)
         gromacs.grompp(f='water.mdp', c='water.gro', po='water.mdp', pp='water.top', o='water.tpr', p='input.top')
-        tpr_filename = 'water.tpr'
+        tpr_filename = os.path.abspath('water.tpr')
     except:
         from gmx.data import tpr_filename
+        raise
     print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
+
+    # Low level API
     system = gmx.System._from_file(tpr_filename)
     potential = myplugin.HarmonicRestraint()
     potential.set_params(1, 4, 2.0, 10000.0)
@@ -84,3 +97,32 @@ SOL         4055
     system.add_potential(potential)
     with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
+
+
+    # gmx 0.0.4
+    md = gmx.workflow.from_tpr(tpr_filename)
+    # Create a WorkElement for the potential
+    #potential = gmx.core.TestModule()
+    potential_element = gmx.workflow.WorkElement(namespace="myplugin",
+                                                 operation="HarmonicRestraint",
+                                                 params=[1, 4, 2.0, 10000.0])
+    # Note that we could flexibly capture accessor methods as workflow elements, too.
+    potential_element.name = "harmonic_restraint"
+    before = md.workspec.elements[md.name]
+    md.add_dependancy(potential_element)
+    assert potential_element.name in md.workspec.elements
+    assert potential_element.workspec is md.workspec
+    after = md.workspec.elements[md.name]
+    assert not before is after
+
+    # Context will need to do these in __enter__
+    # potential = myplugin.HarmonicRestraint()
+    # potential.set_params(1, 4, 2.0, 10000.0)
+
+    context = gmx.context.ParallelArrayContext(md)
+    with context as session:
+        if context.rank == 0:
+            print(context.work)
+        session.run()
+
+
