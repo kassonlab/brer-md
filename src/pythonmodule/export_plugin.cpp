@@ -8,9 +8,10 @@
 #include "gmxapi/md/mdmodule.h"
 #include "gmxapi/gmxapi.h"
 
-#include <pybind11/pybind11.h>
-#include <iostream>
-#include <harmonicpotential.h>
+#include "pybind11/pybind11.h"
+#include "pybind11/stl.h"
+
+#include "harmonicpotential.h"
 
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
@@ -111,6 +112,102 @@ void export_gmxapi(py::module& mymodule)
 {
 };
 
+/*!
+ * \brief Allow the Context to launch this graph node.
+ *
+ * Produced by RestraintBuilder::build(), objects of this type are functors that fit the Session launch(rank)
+ * call signature.
+ */
+class RestraintLauncher
+{
+    public:
+        /*!
+         * \brief Use objects as functors.
+         *
+         * \param rank Index of this worker in the ensemble of simulations.
+         *
+         * Called once by the Context when launching a Session, performs start-up tasks for the API object(s).
+         */
+        void operator()(int rank)
+        {};
+};
+
+/*!
+ * \brief Graph updater for Restraint element.
+ *
+ * Returned by create_builder(), translates the workflow operation into API operations.
+ */
+class RestraintBuilder
+{
+    public:
+        /*!
+         * \brief Create directly from workflow element.
+         *
+         * \param element a Python object implementing the gmx.workflow.WorkElement interface.
+         *
+         * It doesn't make sense to take a py::object here. We could take a serialized version of the element
+         * iff we also got a reference to the current context, but right now we use the gmx.workflow.WorkElement's
+         * reference to the WorkSpec, which has a reference to the Context, to get, say, the communicator.
+         * Arguably, a builder provided by the restraint shouldn't do such a thing.
+         *
+         * Either the builder / translator / DAG updater should be Context agnostic or should actually be
+         * implemented in the Context, in which case we need some better convention about what that translation
+         * should look like and what resources need to be provided by the module to do it.
+         */
+        explicit RestraintBuilder(py::object element)
+        {
+            // Params attribute should be a Python list
+            py::list parameter_list = element.attr("params");
+            // Get positional parameters: two ints and two doubles.
+            _site1_index = py::cast<unsigned long>(parameter_list[0]);
+            _site2_index = py::cast<unsigned long>(parameter_list[1]);
+            _equilibrium_position = py::cast<real>(parameter_list[2]);
+            _spring_constant = py::cast<real>(parameter_list[3]);
+        };
+
+        /*!
+         * \brief Add node(s) to graph for the work element.
+         *
+         * \param graph networkx.DiGraph object still evolving in gmx.context.
+         */
+        void build(py::object graph)
+        {
+            auto potential = PyRestraint<plugin::HarmonicModule>::create();
+            potential->setParams(_site1_index, _site2_index, _equilibrium_position, _spring_constant);
+
+            auto subscriber = _subscriber;
+            py::list potential_list = subscriber.attr("potential");
+            potential_list.append(potential);
+            std::unique_ptr<RestraintLauncher>();
+        };
+
+        /*!
+         * \brief Accept subscription of an MD task.
+         *
+         * \param subscriber Python object with a 'potential' attribute that is a Python list.
+         *
+         * During build, an object is added to the subscriber's self.potential, which is then bound with
+         * system.add_potential(potential) during the subscriber's launch()
+         */
+        void add_subscriber(py::object subscriber)
+        {
+            assert(py::hasattr(subscriber, "potential"));
+            _subscriber = subscriber;
+        };
+
+        py::object _subscriber;
+        unsigned long _site1_index;
+        unsigned long _site2_index;
+        real _equilibrium_position;
+        real _spring_constant;
+};
+
+std::unique_ptr<RestraintBuilder> create_builder(const py::object element)
+{
+    std::unique_ptr<RestraintBuilder> builder{new RestraintBuilder(element)};
+    return builder;
+}
+
 // The first argument is the name of the module when importing to Python. This should be the same as the name specified
 // as the OUTPUT_NAME for the shared object library in the CMakeLists.txt file. The second argument, 'm', can be anything
 // but it might as well be short since we use it to refer to aspects of the module we are defining.
@@ -151,6 +248,11 @@ PYBIND11_MODULE(myplugin, m) {
 //    // Set the Python docstring.
 //    potential.doc() = MyRestraint::docstring;
 
+
+    py::class_<RestraintBuilder> builder(m, "Builder");
+    builder.def("add_subscriber", &RestraintBuilder::add_subscriber);
+    builder.def("build", &RestraintBuilder::build);
+
     // This bindings specification could actually be done in a templated function to automatically
     // generate parameter setters/getters
     py::class_<PyRestraint<plugin::HarmonicModule>, std::shared_ptr<PyRestraint<plugin::HarmonicModule>>> harmonic(m, "HarmonicRestraint");
@@ -160,4 +262,12 @@ PYBIND11_MODULE(myplugin, m) {
 //    harmonic.def_property("pairs", &PyRestraint<plugin::HarmonicModule>::getPairs, &PyRestraint<plugin::HarmonicModule>::setPairs, "The indices of particle pairs to restrain");
     harmonic.def("set_params", &PyRestraint<plugin::HarmonicModule>::setParams, "Set a pair, spring constant, and equilibrium distance.");
 
+    /*
+     * To implement gmxapi_workspec_1_0, the module needs a function that a Context can import that
+     * produces a builder that translates workspec elements for session launching. The object returned
+     * by our function needs to have an add_subscriber(other_builder) method and a build(graph) method.
+     * The build() method returns None or a launcher. A launcher has a signature like launch(rank) and
+     * returns None or a runner.
+     */
+    m.def("create_restraint", [](const py::object element){ return create_builder(element); });
 }

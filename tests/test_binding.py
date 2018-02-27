@@ -44,7 +44,6 @@ def test_plugin_potential():
     import os
     import myplugin
 
-    import os
     cwd = os.path.dirname(__file__)
     water = os.path.join(cwd, 'data', 'water.gro')
     import shutil
@@ -85,28 +84,27 @@ SOL         4055
         tpr_filename = os.path.abspath('water.tpr')
     except:
         from gmx.data import tpr_filename
-        raise
     print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
 
     # Low level API
     system = gmx.System._from_file(tpr_filename)
     potential = myplugin.HarmonicRestraint()
     potential.set_params(1, 4, 2.0, 10000.0)
-    # potential.set_params(1, 4, 0, 0)
 
     system.add_potential(potential)
     with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
-
 
     # gmx 0.0.4
     md = gmx.workflow.from_tpr(tpr_filename)
     # Create a WorkElement for the potential
     #potential = gmx.core.TestModule()
     potential_element = gmx.workflow.WorkElement(namespace="myplugin",
-                                                 operation="HarmonicRestraint",
+                                                 operation="create_restraint",
                                                  params=[1, 4, 2.0, 10000.0])
-    # Note that we could flexibly capture accessor methods as workflow elements, too.
+    # Note that we could flexibly capture accessor methods as workflow elements, too. Maybe we can
+    # hide the extra Python bindings by letting myplugin.HarmonicRestraint automatically convert
+    # to a WorkElement when add_dependency is called on it.
     potential_element.name = "harmonic_restraint"
     before = md.workspec.elements[md.name]
     md.add_dependancy(potential_element)
