@@ -9,7 +9,7 @@ set_target_properties(sampleplugin PROPERTIES OUTPUT_NAME myplugin)
 set_target_properties(sampleplugin PROPERTIES DEBUG_POSTFIX "")
 
 # The Python module requires the new library we wrote as well as the gmxapi that we found in the top-level CMakeLists.txt
-target_link_libraries(sampleplugin PRIVATE Gromacs::gmxapi harmonicpotential)
+target_link_libraries(sampleplugin PRIVATE Gromacs::gmxapi harmonicpotential ensemblepotential)
 
 # We might as well add an install target.
 # We can find the user's site-packages directory with `python -m site --user-site`

@@ -12,6 +12,7 @@
 #include "pybind11/stl.h"
 
 #include "harmonicpotential.h"
+#include "ensemblepotential.h"
 
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
@@ -137,7 +138,7 @@ class RestraintLauncher
  *
  * Returned by create_builder(), translates the workflow operation into API operations.
  */
-class RestraintBuilder
+class HarmonicRestraintBuilder
 {
     public:
         /*!
@@ -154,7 +155,7 @@ class RestraintBuilder
          * implemented in the Context, in which case we need some better convention about what that translation
          * should look like and what resources need to be provided by the module to do it.
          */
-        explicit RestraintBuilder(py::object element)
+        explicit HarmonicRestraintBuilder(py::object element)
         {
             // Params attribute should be a Python list
             py::list parameter_list = element.attr("params");
@@ -202,9 +203,9 @@ class RestraintBuilder
         real _spring_constant;
 };
 
-std::unique_ptr<RestraintBuilder> create_builder(const py::object element)
+std::unique_ptr<HarmonicRestraintBuilder> create_builder(const py::object element)
 {
-    std::unique_ptr<RestraintBuilder> builder{new RestraintBuilder(element)};
+    std::unique_ptr<HarmonicRestraintBuilder> builder{new HarmonicRestraintBuilder(element)};
     return builder;
 }
 
@@ -249,18 +250,28 @@ PYBIND11_MODULE(myplugin, m) {
 //    potential.doc() = MyRestraint::docstring;
 
 
-    py::class_<RestraintBuilder> builder(m, "Builder");
-    builder.def("add_subscriber", &RestraintBuilder::add_subscriber);
-    builder.def("build", &RestraintBuilder::build);
-
     // This bindings specification could actually be done in a templated function to automatically
     // generate parameter setters/getters
+
+    // Builder to be returned from create_restraint,
+    py::class_<HarmonicRestraintBuilder> builder(m, "HarmonicBuilder");
+    builder.def("add_subscriber", &HarmonicRestraintBuilder::add_subscriber);
+    builder.def("build", &HarmonicRestraintBuilder::build);
+
+    // API object to build.
+    // We use a shared_ptr handle because both the Python interpreter and libgromacs may need to extend
+    // the lifetime of the object.
     py::class_<PyRestraint<plugin::HarmonicModule>, std::shared_ptr<PyRestraint<plugin::HarmonicModule>>> harmonic(m, "HarmonicRestraint");
     harmonic.def(py::init(&PyRestraint<plugin::HarmonicModule>::create), "Construct HarmonicRestraint");
     harmonic.def("bind", &PyRestraint<plugin::HarmonicModule>::bind);
     //harmonic.def_property(name, getter, setter, extra)
 //    harmonic.def_property("pairs", &PyRestraint<plugin::HarmonicModule>::getPairs, &PyRestraint<plugin::HarmonicModule>::setPairs, "The indices of particle pairs to restrain");
     harmonic.def("set_params", &PyRestraint<plugin::HarmonicModule>::setParams, "Set a pair, spring constant, and equilibrium distance.");
+
+    using PyEnsemble = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>;
+    // Builder to be returned from ensemble_restraint
+    // API object to build.
+    py::class_<PyEnsemble, std::shared_ptr<PyEnsemble>> ensemble(m, "EnsembleRestraint");
 
     /*
      * To implement gmxapi_workspec_1_0, the module needs a function that a Context can import that
@@ -270,4 +281,6 @@ PYBIND11_MODULE(myplugin, m) {
      * returns None or a runner.
      */
     m.def("create_restraint", [](const py::object element){ return create_builder(element); });
+
+
 }
