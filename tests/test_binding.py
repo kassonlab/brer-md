@@ -96,6 +96,7 @@ SOL         4055
         session.run()
 
     # gmx 0.0.4
+    assert gmx.__version__ == '0.0.4'
     md = gmx.workflow.from_tpr(tpr_filename)
     # Create a WorkElement for the potential
     #potential = gmx.core.TestModule()

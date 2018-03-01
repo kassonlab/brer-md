@@ -36,6 +36,27 @@ class Harmonic
         struct output_type
         {};
 
+        /*!
+         * \brief Calculate harmonic force on particle at position v in reference to position v0.
+         *
+         * \param v position at which to evaluate force
+         * \param v0 position of harmonic bond reference
+         * \return F = -k ((v - v0)/|v - v0| - R0);
+         *
+         * R0 == 1.0 is the equilibrium distance in the harmonic potential.
+         * k == 1.0 is the spring constant.
+         *
+         * In the case of a pair of harmonically bonded particles, the force on particle i is evaluated with particle j as
+         * the reference point with
+         * \code
+         * auto force = calculateForce(r_i, r_j);
+         * \endcode
+         *
+         * The force on particle j is the opposite as the force vector for particle i. E.g.
+         * \code
+         * assert(-1 * force, calculateForce(r_j, r_i));
+         * \endcode
+         */
         gmx::PotentialPointData calculate(gmx::Vector v,
                                           gmx::Vector v0,
                                           gmx_unused double t);
@@ -62,6 +83,7 @@ class Harmonic
 };
 
 // implement IRestraintPotential in terms of Harmonic
+// To be templated and moved.
 class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
 {
     public:
