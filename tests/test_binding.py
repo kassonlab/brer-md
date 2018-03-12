@@ -34,7 +34,7 @@ def test_add_potential():
         potential.bind(generic_object)
     assert str(exc_info).endswith("bind method requires a python capsule as input")
 
-    system.add_potential(potential)
+    system.add_mdmodule(potential)
     with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
 
@@ -91,13 +91,20 @@ SOL         4055
     potential = myplugin.HarmonicRestraint()
     potential.set_params(1, 4, 2.0, 10000.0)
 
-    system.add_potential(potential)
+    system.add_mdmodule(potential)
     with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
 
     # gmx 0.0.4
     assert gmx.__version__ == '0.0.4'
     md = gmx.workflow.from_tpr(tpr_filename)
+
+    context = gmx.context.ParallelArrayContext(md)
+    with context as session:
+        if context.rank == 0:
+            print(context.work)
+        session.run()
+
     # Create a WorkElement for the potential
     #potential = gmx.core.TestModule()
     potential_element = gmx.workflow.WorkElement(namespace="myplugin",
@@ -108,7 +115,7 @@ SOL         4055
     # to a WorkElement when add_dependency is called on it.
     potential_element.name = "harmonic_restraint"
     before = md.workspec.elements[md.name]
-    md.add_dependancy(potential_element)
+    md.add_dependency(potential_element)
     assert potential_element.name in md.workspec.elements
     assert potential_element.workspec is md.workspec
     after = md.workspec.elements[md.name]
