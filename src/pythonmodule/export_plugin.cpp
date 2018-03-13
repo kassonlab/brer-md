@@ -20,7 +20,9 @@ namespace py = pybind11;
 /*!
  * \brief Templated wrapper to use in Python bindings.
  *
- * Mix-in from below.
+ * Mix-in from below. Adds a bind behavior, a getModule() method to get a gmxapi::MDModule adapter,
+ * and a create() method that assures a single shared_ptr record for an object that may sometimes
+ * be referred to by a raw pointer and/or have shared_from_this called.
  * \tparam T
  */
 template<class T>
@@ -36,7 +38,9 @@ class PyRestraint : public T, public std::enable_shared_from_this<PyRestraint<T>
          * \brief
          *
          * T must either derive from gmxapi::MDModule or provide a template specialization for
-         * PyRestraint<T>::getModule().
+         * PyRestraint<T>::getModule(). If T derives from gmxapi::MDModule, we can keep a weak pointer
+         * to ourself and generate a shared_ptr on request, but std::enable_shared_from_this already
+         * does that, so we use it when we can.
          * \return
          */
         std::shared_ptr<gmxapi::MDModule> getModule();
@@ -85,7 +89,11 @@ std::shared_ptr<gmxapi::MDModule> PyRestraint<plugin::HarmonicModule>::getModule
     return shared_from_this();
 }
 
-
+template<>
+std::shared_ptr<gmxapi::MDModule> PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::getModule()
+{
+    return shared_from_this();
+}
 
 
 class MyRestraint
@@ -170,6 +178,8 @@ class HarmonicRestraintBuilder
          * \brief Add node(s) to graph for the work element.
          *
          * \param graph networkx.DiGraph object still evolving in gmx.context.
+         *
+         * \todo This does not follow the latest graph building protocol as described.
          */
         void build(py::object graph)
         {
@@ -203,9 +213,88 @@ class HarmonicRestraintBuilder
         real _spring_constant;
 };
 
-std::unique_ptr<HarmonicRestraintBuilder> create_builder(const py::object element)
+class EnsembleRestraintBuilder
+{
+    public:
+        explicit EnsembleRestraintBuilder(py::object element)
+        {
+            // Params attribute should be a Python list
+            py::list parameter_list = element.attr("params");
+            // Get positional parameters: two ints and two doubles.
+            _site1_index = py::cast<unsigned long>(parameter_list[0]);
+            _site2_index = py::cast<unsigned long>(parameter_list[1]);
+
+            auto nbins = py::cast<size_t>(parameter_list[2]);
+            auto min_dist = py::cast<double>(parameter_list[3]);
+            auto max_dist = pybind11::cast<double>(parameter_list[4]);
+            auto experimental = pybind11::cast<std::vector<double>>(parameter_list[5]);
+            auto nsamples = pybind11::cast<unsigned int>(parameter_list[6]);
+            auto sample_period = pybind11::cast<double>(parameter_list[7]);
+            auto nwindows = pybind11::cast<unsigned int>(parameter_list[8]);
+            auto window_update_period = pybind11::cast<double>(parameter_list[9]);
+            auto K = pybind11::cast<double>(parameter_list[10]);
+            auto sigma = pybind11::cast<double>(parameter_list[11]);
+
+
+            auto params = plugin::make_ensemble_params(nbins, min_dist, max_dist, experimental, nsamples, sample_period, nwindows, window_update_period, K, sigma);
+            _params = std::move(*params);
+
+            // Note that if we want to grab a reference to the Context or its communicator, we can get it
+            // here through element.workspec._context
+        }
+
+        /*!
+         * \brief Add node(s) to graph for the work element.
+         *
+         * \param graph networkx.DiGraph object still evolving in gmx.context.
+         *
+         * \todo This does not follow the latest graph building protocol as described.
+         */
+        void build(py::object graph)
+        {
+            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create();
+            potential->setParams(_site1_index, _site2_index, _params);
+
+            auto subscriber = _subscriber;
+            py::list potential_list = subscriber.attr("potential");
+            potential_list.append(potential);
+
+            // Note this is a dummy launcher. MDSystem.add_mdmodule() will get called in a launch after this one.
+            // To do anything useful, the launcher returned will need to keep access to the potential shared_ptr
+            // or take over the responsibility of creating it.
+            std::unique_ptr<RestraintLauncher>();
+        };
+
+        /*!
+         * \brief Accept subscription of an MD task.
+         *
+         * \param subscriber Python object with a 'potential' attribute that is a Python list.
+         *
+         * During build, an object is added to the subscriber's self.potential, which is then bound with
+         * system.add_potential(potential) during the subscriber's launch()
+         */
+        void add_subscriber(py::object subscriber)
+        {
+            assert(py::hasattr(subscriber, "potential"));
+            _subscriber = subscriber;
+        };
+
+        py::object _subscriber;
+        unsigned long _site1_index;
+        unsigned long _site2_index;
+
+        plugin::ensemble_input_param_type _params;
+};
+
+std::unique_ptr<HarmonicRestraintBuilder> create_harmonic_builder(const py::object element)
 {
     std::unique_ptr<HarmonicRestraintBuilder> builder{new HarmonicRestraintBuilder(element)};
+    return builder;
+}
+
+std::unique_ptr<EnsembleRestraintBuilder> create_ensemble_builder(const py::object element)
+{
+    auto builder = std::make_unique<EnsembleRestraintBuilder>(element);
     return builder;
 }
 
@@ -254,9 +343,9 @@ PYBIND11_MODULE(myplugin, m) {
     // generate parameter setters/getters
 
     // Builder to be returned from create_restraint,
-    py::class_<HarmonicRestraintBuilder> builder(m, "HarmonicBuilder");
-    builder.def("add_subscriber", &HarmonicRestraintBuilder::add_subscriber);
-    builder.def("build", &HarmonicRestraintBuilder::build);
+    py::class_<HarmonicRestraintBuilder> harmonic_builder(m, "HarmonicBuilder");
+    harmonic_builder.def("add_subscriber", &HarmonicRestraintBuilder::add_subscriber);
+    harmonic_builder.def("build", &HarmonicRestraintBuilder::build);
 
     // API object to build.
     // We use a shared_ptr handle because both the Python interpreter and libgromacs may need to extend
@@ -268,10 +357,21 @@ PYBIND11_MODULE(myplugin, m) {
 //    harmonic.def_property("pairs", &PyRestraint<plugin::HarmonicModule>::getPairs, &PyRestraint<plugin::HarmonicModule>::setPairs, "The indices of particle pairs to restrain");
     harmonic.def("set_params", &PyRestraint<plugin::HarmonicModule>::setParams, "Set a pair, spring constant, and equilibrium distance.");
 
+
+    // Builder to be returned from create_restraint
+    pybind11::class_<EnsembleRestraintBuilder> ensemble_builder(m, "EnsembleBuilder");
+    ensemble_builder.def("add_subscriber", &EnsembleRestraintBuilder::add_subscriber);
+    ensemble_builder.def("build", &EnsembleRestraintBuilder::build);
+
     using PyEnsemble = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>;
+    py::class_<plugin::EnsembleRestraint::input_param_type> ensemble_params(m, "EnsembleRestraintParams");
     // Builder to be returned from ensemble_restraint
     // API object to build.
     py::class_<PyEnsemble, std::shared_ptr<PyEnsemble>> ensemble(m, "EnsembleRestraint");
+    ensemble.def(py::init(&PyEnsemble::create), "Construct EnsembleRestraint");
+    ensemble.def("bind", &PyEnsemble::bind, "Implement binding protocol");
+    ensemble.def("set_params", &PyEnsemble::setParams, "Set the parameters");
+
 
     /*
      * To implement gmxapi_workspec_1_0, the module needs a function that a Context can import that
@@ -280,7 +380,8 @@ PYBIND11_MODULE(myplugin, m) {
      * The build() method returns None or a launcher. A launcher has a signature like launch(rank) and
      * returns None or a runner.
      */
-    m.def("create_restraint", [](const py::object element){ return create_builder(element); });
-
+    m.def("make_ensemble_params", &plugin::make_ensemble_params);
+    m.def("create_restraint", [](const py::object element){ return create_harmonic_builder(element); });
+    m.def("ensemble_restraint", [](const py::object element){ return create_ensemble_builder(element); });
 
 }

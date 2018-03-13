@@ -123,57 +123,50 @@ class BlurToGrid
         const double _sigma;
 };
 
-
-EnsembleHarmonic::EnsembleHarmonic() :
-    _nbins{0},
-    _binWidth{0},
-    _min_dist{0},
-    _max_dist{0},
+EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
+                                   double min_dist,
+                                   double max_dist,
+                                   unsigned int nsamples,
+                                   double sample_period,
+                                   unsigned int nwindows,
+                                   double window_update_period,
+                                   double K,
+                                   double sigma) :
+    _nbins{nbins},
+    _min_dist{min_dist},
+    _max_dist{max_dist},
+    _binWidth{(_max_dist - _min_dist)/_nbins},
     _histogram{nullptr},
     _experimental{nullptr},
-    _nsamples{0},
+    _nsamples{nsamples},
     _current_sample{0},
-    _sample_period{0},
+    _sample_period{sample_period},
     _next_sample_time{_sample_period},
     _distance_samples(_nsamples),
-    _nwindows{0},
+    _nwindows{nwindows},
     _current_window{0},
-    _window_update_period{0},
+    _window_update_period{window_update_period},
     _next_window_update_time{_window_update_period},
     _windows(),
-    _K{0},
-    _sigma{0}
+    _K{K},
+    _sigma{sigma}
 {
     // We leave _histogram and _experimental unallocated until we have valid data to put in them, so that
     // (_histogram == nullptr) == invalid histogram.
 }
 
-//template<typename TS, typename TX>
-//class Discretizer
-//{
-//    public:
-//        Discretizer(TS size, TX minimum, TX maximum):
-//            _min{minimum},
-//            _max{maximum},
-//            _dx{(maximum - minimum)/size}
-//        {};
-//
-//        TS operator()(TX value) const
-//        {
-//            return static_cast<TS>(floor((value - _min)/_dx));
-//        }
-//
-//    private:
-//        const TX _min;
-//        const TX _max;
-//        const TX _dx;
-//};
-//// Class template argument deduction not available until C++17, so we use a factory function for static dispatch.
-//template<typename TS, typename TX>
-//Discretizer<TS, TX> make_discretizer(TS size, TX minimum, TX maximum)
-//{
-//    return Discretizer<TS, TX>(size, minimum, maximum);
-//};
+EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
+    EnsembleHarmonic(params.nbins,
+                     params.min_dist,
+                     params.max_dist,
+                     params.nsamples,
+                     params.sample_period,
+                     params.nwindows,
+                     params.window_update_period,
+                     params.K,
+                     params.sigma)
+{
+}
 
 gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                                                     gmx::Vector v0,
@@ -312,9 +305,6 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
     }
     return output;
 }
-
-EnsembleRestraint::EnsembleRestraint()
-{}
 
 EnsembleResourceHandle EnsembleResources::getHandle()
 {

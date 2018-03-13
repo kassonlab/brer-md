@@ -39,7 +39,7 @@ def test_add_potential():
         session.run()
 
 @pytest.mark.usefixtures("cleandir")
-def test_plugin_potential():
+def test_harmonic_potential():
     import gmx
     import os
     import myplugin
@@ -124,6 +124,84 @@ SOL         4055
     # Context will need to do these in __enter__
     # potential = myplugin.HarmonicRestraint()
     # potential.set_params(1, 4, 2.0, 10000.0)
+
+    context = gmx.context.ParallelArrayContext(md)
+    with context as session:
+        if context.rank == 0:
+            print(context.work)
+        session.run()
+
+
+
+@pytest.mark.usefixtures("cleandir")
+def test_ensemble_potential():
+    import gmx
+    import os
+    import myplugin
+
+    cwd = os.path.dirname(__file__)
+    water = os.path.join(cwd, 'data', 'water.gro')
+    import shutil
+    shutil.copy(water, './')
+
+    try:
+        # use GromacsWrapper if available
+        import gromacs
+        import gromacs.formats
+        from gromacs.tools import Solvate as solvate
+        solvate(o='water.gro', box=[5,5,5])
+        mdpparams = [('integrator', 'md'),
+                     ('nsteps', 1000),
+                     ('nstxout', 100),
+                     ('nstvout', 100),
+                     ('nstfout', 100),
+                     ('tcoupl', 'v-rescale'),
+                     ('tc-grps', 'System'),
+                     ('tau-t', 1),
+                     ('ref-t', 298)]
+        mdp = gromacs.formats.MDP()
+        for param, value in mdpparams:
+            mdp[param] = value
+        mdp.write('water.mdp')
+        with open('input.top', 'w') as fh:
+            fh.write("""#include "gromos43a1.ff/forcefield.itp"
+#include "gromos43a1.ff/spc.itp"
+
+[ system ]
+; Name
+spc
+
+[ molecules ]
+; Compound  #mols
+SOL         4055
+""")
+        gromacs.grompp(f='water.mdp', c='water.gro', po='water.mdp', pp='water.top', o='water.tpr', p='input.top')
+        tpr_filename = os.path.abspath('water.tpr')
+    except:
+        from gmx.data import tpr_filename
+    print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
+
+    # Low level API
+    system = gmx.System._from_file(tpr_filename)
+    potential = myplugin.EnsembleRestraint()
+    params = myplugin.make_ensemble_params(10, 0., 10., [0.]*10, 10, 100, 20, 1000, 10000, 1.)
+    potential.set_params(1, 4, params)
+
+    # gmx 0.0.4
+    assert gmx.__version__ == '0.0.4'
+    md = gmx.workflow.from_tpr(tpr_filename)
+
+    # Create a WorkElement for the potential
+    #potential = gmx.core.TestModule()
+    potential = gmx.workflow.WorkElement(namespace="myplugin",
+                                                 operation="ensemble_restraint",
+                                                 params=[1, 4, 10, 0., 10., [0.]*10, 10, 100, 20, 1000, 10000, 1.])
+    # Note that we could flexibly capture accessor methods as workflow elements, too. Maybe we can
+    # hide the extra Python bindings by letting myplugin.HarmonicRestraint automatically convert
+    # to a WorkElement when add_dependency is called on it.
+    potential.name = "ensemble_restraint"
+    before = md.workspec.elements[md.name]
+    md.add_dependency(potential)
 
     context = gmx.context.ParallelArrayContext(md)
     with context as session:

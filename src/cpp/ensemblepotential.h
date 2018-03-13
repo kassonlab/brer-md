@@ -6,7 +6,7 @@
 #define HARMONICRESTRAINT_ENSEMBLEPOTENTIAL_H
 
 #include <vector>
-#include <queue>
+#include <array>
 
 #include "gmxapi/gromacsfwd.h"
 #include "gmxapi/md/mdmodule.h"
@@ -28,7 +28,27 @@ class RestraintModule : public gmxapi::MDModule // consider names
     public:
         using param_t = typename R::input_param_type;
 
+        const char *name() override
+        {
+                return "RestraintModule";
+        }
+
+        std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
+        {
+                auto restraint = std::make_shared<R>(_site1, _site2, _params);
+                return restraint;
+        }
+
+        void setParams(unsigned long int site1,
+                       unsigned long int site2,
+                       const typename R::input_param_type& params)
+        {
+                _params = params;
+        }
+
     private:
+        unsigned long int _site1{0};
+        unsigned long int _site2{0};
         param_t _params;
 };
 
@@ -81,6 +101,58 @@ class EnsembleResources
         EnsembleResourceHandle getHandle();
 };
 
+struct ensemble_input_param_type
+{
+    /// Width of bins (distance) in histogram
+    size_t nbins{0};
+    /// Histogram boundaries.
+    double min_dist{0};
+    double max_dist{0};
+    PairHist experimental{};
+
+    /// Number of samples to store during each window.
+    unsigned int nsamples{0};
+    double sample_period{0};
+
+    /// Number of windows to use for smoothing histogram updates.
+    unsigned int nwindows{0};
+    double window_update_period{0};
+
+    /// Harmonic force coefficient
+    double K{0};
+    /// Smoothing factor: width of Gaussian interpolation for histogram
+    double sigma{0};
+
+};
+
+
+std::unique_ptr<ensemble_input_param_type>
+make_ensemble_params(size_t nbins,
+                     double min_dist,
+                     double max_dist,
+                     const std::vector<double>& experimental,
+                     unsigned int nsamples,
+                     double sample_period,
+                     unsigned int nwindows,
+                     double window_update_period,
+                     double K,
+                     double sigma)
+{
+    auto params = std::make_unique<ensemble_input_param_type>();
+    params->nbins = nbins;
+    params->min_dist = min_dist;
+    params->max_dist = max_dist;
+    params->experimental = experimental;
+    params->nsamples = nsamples;
+    params->sample_period = sample_period;
+    params->nwindows = nwindows;
+    params->window_update_period = window_update_period;
+    params->K = K;
+    params->sigma = sigma;
+
+    return params;
+};
+
 /*!
  * \brief a Roux-like pair restraint calculator for application across an ensemble of trajectories.
  *
@@ -98,7 +170,21 @@ class EnsembleResources
 class EnsembleHarmonic
 {
     public:
-        EnsembleHarmonic();
+        using input_param_type = ensemble_input_param_type;
+
+//        EnsembleHarmonic();
+
+        explicit EnsembleHarmonic(const input_param_type &params);
+
+        EnsembleHarmonic(size_t nbins,
+                                 double min_dist,
+                                 double max_dist,
+                                 unsigned int nsamples,
+                                 double sample_period,
+                                 unsigned int nwindows,
+                                 double window_update_period,
+                                 double K,
+                                 double sigma);
 
         // If dispatching this virtual function is not fast enough, the compiler may be able to better optimize a free
         // function that receives the current restraint as an argument.
@@ -109,18 +195,18 @@ class EnsembleHarmonic
     private:
         /// Width of bins (distance) in histogram
         size_t _nbins;
-        double _binWidth;
         /// Histogram boundaries.
         double _min_dist;
         double _max_dist;
+        double _binWidth;
         /// Smoothed historic distribution for this restraint. An element of the array of restraints in this simulation.
         // Was `hij` in earlier code.
         std::unique_ptr<PairHist> _histogram;
         std::unique_ptr<PairHist> _experimental;
 
         /// Number of samples to store during each window.
-        size_t _nsamples;
-        size_t _current_sample;
+        unsigned int _nsamples;
+        unsigned int _current_sample;
         double _sample_period;
         double _next_sample_time;
         /// Accumulated list of samples during a new window.
@@ -151,9 +237,31 @@ class EnsembleHarmonic
 class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHarmonic
 {
     public:
-        EnsembleRestraint();
+        using EnsembleHarmonic::input_param_type;
 
-        struct input_param_type{};
+        EnsembleRestraint(unsigned long int site1,
+                          unsigned long int site2,
+                          const input_param_type& params) :
+                EnsembleHarmonic(params),
+                _site1{site1},
+                _site2{site2}
+        {}
+
+        std::array<unsigned long int, 2> sites() const override
+        {
+                return {};
+        }
+
+        gmx::PotentialPointData evaluate(gmx::Vector r1,
+                                         gmx::Vector r2,
+                                         double t) override
+        {
+                return calculate(r1, r2, t);
+        };
+
+    private:
+        unsigned long int _site1{0};
+        unsigned long int _site2{0};
 };
 
 
