@@ -6,6 +6,7 @@
 #define HARMONICRESTRAINT_ENSEMBLEPOTENTIAL_H
 
 #include <vector>
+#include <queue>
 
 #include "gmxapi/gromacsfwd.h"
 #include "gmxapi/md/mdmodule.h"
@@ -22,7 +23,7 @@ namespace plugin
  * \tparam R a class implementing the gmx::IRestraintPotential interface.
  */
 template<class R>
-class RestraintModule : public gmxapi::MDModule
+class RestraintModule : public gmxapi::MDModule // consider names
 {
     public:
         using param_t = typename R::input_param_type;
@@ -31,13 +32,68 @@ class RestraintModule : public gmxapi::MDModule
         param_t _params;
 };
 
-
 // Histogram for a single restrained pair.
 using PairHist = std::vector<double>;
 
+/*!
+ * \brief An active handle to ensemble resources provided by the Context.
+ *
+ * The semantics of holding this handle aren't determined yet, but it should be held as briefly as possible since it
+ * may involve locking global resources or preventing the simulation from advancing. Basically, though, it allows the
+ * Context implementation flexibility in how or where it provides services.
+ */
+class EnsembleResourceHandle
+{
+    public:
+        /*!
+         * \brief Ensemble reduce.
+         *
+         * For first draft, assume an all-to-all sum.
+         * \tparam T
+         * \param data
+         */
+        template<typename T>
+        void reduce(const std::vector<T>& input, std::vector<T>* output);
+
+        /*!
+         * \brief Apply a function to each input and accumulate the output.
+         *
+         * \tparam I Iterable.
+         * \tparam T Output type.
+         * \param iterable iterable object to produce inputs to function
+         * \param output structure that should be present and up-to-date on all ranks.
+         * \param function map each input in iterable through this function to accumulate output.
+         */
+        template<typename I, typename T>
+        void map_reduce(const I& iterable, T* output, void (*function)(double, const PairHist&, PairHist*));
+};
+
+/*!
+ * \brief Reference to workflow-level resources managed by the Context.
+ *
+ * Provides a connection to the higher-level workflow management with which to access resources and operations. The
+ * reference provides no resources directly and we may find that it should not extend the life of a Session or Context.
+ * Resources are accessed through Handle objects returned by member functions.
+ */
+class EnsembleResources
+{
+    public:
+        EnsembleResourceHandle getHandle();
+};
 
 /*!
  * \brief a Roux-like pair restraint calculator for application across an ensemble of trajectories.
+ *
+ * Applies a force between two sites according to the difference between an experimentally observed
+ * site pair distance distribution and the distance distribution observed earlier in the simulation
+ * trajectory. The sampled distribution is averaged from the previous `nwindows` histograms from all
+ * ensemble members. Each window contains a histogram populated with `nsamples` distances recorded at
+ * `sample_period` step intervals.
+ *
+ * \internal
+ * During a the window_update_period steps of a window, the potential applied is a harmonic function of
+ * the difference between the sampled and experimental histograms. At the beginning of the window, this
+ * difference is found and a Gaussian blur is applied.
  */
 class EnsembleHarmonic
 {
@@ -51,20 +107,40 @@ class EnsembleHarmonic
                                           gmx_unused double t);
 
     private:
-        /// Historic distribution for this restraint. An element of the array of restraints in this simulation.
-        // Was `hij` in earlier code.
-        PairHist _histogram;
-
         /// Width of bins (distance) in histogram
+        size_t _nbins;
         double _binWidth;
+        /// Histogram boundaries.
+        double _min_dist;
+        double _max_dist;
+        /// Smoothed historic distribution for this restraint. An element of the array of restraints in this simulation.
+        // Was `hij` in earlier code.
+        std::unique_ptr<PairHist> _histogram;
+        std::unique_ptr<PairHist> _experimental;
+
+        /// Number of samples to store during each window.
+        size_t _nsamples;
+        size_t _current_sample;
+        double _sample_period;
+        double _next_sample_time;
+        /// Accumulated list of samples during a new window.
+        std::vector<double> _distance_samples;
+
+        /// Number of windows to use for smoothing histogram updates.
+        size_t _nwindows;
+        size_t _current_window;
+        double _window_update_period;
+        double _next_window_update_time;
+        /// The history of nwindows histograms for this restraint.
+        std::vector<std::unique_ptr<PairHist>> _windows;
+
         /// Harmonic force coefficient
         double _K;
         /// Smoothing factor: width of Gaussian interpolation for histogram
         double _sigma;
 
-        /// Histogram boundaries.
-        double _max_dist;
-        double _min_dist;
+        /// Ensemble resources
+        EnsembleResources _ensemble;
 };
 
 /*!
