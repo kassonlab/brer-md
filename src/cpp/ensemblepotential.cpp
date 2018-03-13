@@ -21,61 +21,6 @@ void EnsembleResourceHandle::map_reduce(const T_I &iterable,
                                         )
 {}
 
-//// From the full set of trajectories in the ensemble, calculate the new smoothed difference between the experimental
-//// distribution and sampled distribution.
-//void calculate_histogram(std::vector<pair_data> vec_pd,
-//                         const char *out_filename,
-//                         parameters params,
-//                         int ensemble_number) {
-//
-//
-////    if (boost::filesystem::exists(out_filename)) {
-////        backup_file(out_filename, ensemble_number - 1);
-////    }
-////
-////    std::ofstream hist_file;
-////    hist_file.open(out_filename);
-////
-////    hist_file << params.bin_width << "," << params.sigma << ",";
-////    hist_file << params.min_dist << "," << params.max_dist << "\n";
-//
-//    // Normalizing coefficient for a Gaussian (normal) distribution.
-//    auto norm = 1.0 / sqrt(2.0 * M_PI * pow(params.sigma, 2.0));
-//
-//    // for each pair?
-//    for (auto &pd: vec_pd) {
-//        auto &exp_data = pd.exp_distribution;
-//        if (exp_data.empty()) {
-////            char error[BUFFER_LENGTH];
-////            snprintf(error, BUFFER_LENGTH, "Cannot calculate histogram if experimental distribution is empty");
-//            throw std::invalid_argument(error);
-//        }
-//
-//        auto &sim_data = pd.sim_dist_data;
-//        auto num_bins = exp_data.size();
-//        auto num_samples = sim_data.size();
-//        // Adjust normalization to average a sum of num_samples distributions.
-//        auto sample_norm = (1.0 / num_samples) * norm;
-//
-//        // for each bin
-//        for (int n = 0; n < num_bins; ++n) {
-//            double h_ij_n{0}, dif_ij_n{0};
-//            // for each distance value in the samples for this simulation, Gaussian blur to this bin.
-//            for (auto &sample_dist: sim_data) {
-//                h_ij_n += sample_norm * exp(-pow(n * params.bin_width - sample_dist,
-//                                                 2.0) / (2 * pow(params.sigma, 2)));
-//            }
-//            // Record the difference between the smoothed data and the experimental data.
-//            dif_ij_n = h_ij_n - exp_data.at(n);
-//
-//            if (n == 0) hist_file << dif_ij_n;
-//            else hist_file << "," << dif_ij_n;
-//        }
-//        hist_file << "\n";
-//    }
-//    hist_file.close();
-//}
-
 /*!
  * \brief Apply a Gaussian blur when building a density grid for a list of values.
  *
@@ -262,14 +207,7 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
         double dev = R;
 
         double f{0};
-//        if (_histogram.empty())
-//        {
-//            // Load from filesystem on first step.
-//            _histogram = getRouxHistogram(getenv("HISTDIF"), _binWidth, _sigma, _min_dist, _max_dist);
-//            assert(!_histogram.empty());
-//            assert(_min_dist!=0);
-//            assert(_max_dist!=0);
-//        }
+
         if (dev > _max_dist)
         {
             f = _K * (_max_dist - dev);

@@ -99,6 +99,7 @@ class EnsembleResources
 {
     public:
         EnsembleResourceHandle getHandle();
+        
 };
 
 struct ensemble_input_param_type
