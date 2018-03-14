@@ -14,6 +14,8 @@
 #include "gromacs/restraint/restraintpotential.h"
 #include "gromacs/utility/real.h"
 
+#include "make_unique.h"
+
 namespace plugin
 {
 
@@ -139,7 +141,8 @@ make_ensemble_params(size_t nbins,
                      double K,
                      double sigma)
 {
-    auto params = std::make_unique<ensemble_input_param_type>();
+    using gmx::compat::make_unique;
+    auto params = make_unique<ensemble_input_param_type>();
     params->nbins = nbins;
     params->min_dist = min_dist;
     params->max_dist = max_dist;

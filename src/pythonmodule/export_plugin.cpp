@@ -13,6 +13,7 @@
 
 #include "harmonicpotential.h"
 #include "ensemblepotential.h"
+#include "make_unique.h"
 
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
@@ -294,7 +295,8 @@ std::unique_ptr<HarmonicRestraintBuilder> create_harmonic_builder(const py::obje
 
 std::unique_ptr<EnsembleRestraintBuilder> create_ensemble_builder(const py::object element)
 {
-    auto builder = std::make_unique<EnsembleRestraintBuilder>(element);
+    using gmx::compat::make_unique;
+    auto builder = make_unique<EnsembleRestraintBuilder>(element);
     return builder;
 }
 
