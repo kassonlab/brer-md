@@ -190,7 +190,9 @@ class HarmonicRestraintBuilder
             auto subscriber = _subscriber;
             py::list potential_list = subscriber.attr("potential");
             potential_list.append(potential);
-            std::unique_ptr<RestraintLauncher>();
+
+            // does note add a launcher to the graph.
+            //std::unique_ptr<RestraintLauncher>();
         };
 
         /*!
@@ -219,6 +221,10 @@ class EnsembleRestraintBuilder
     public:
         explicit EnsembleRestraintBuilder(py::object element)
         {
+            // It looks like we need some boilerplate exceptions for plugins so we have something to
+            // raise if the element is invalid.
+            assert(py::hasattr(element, "params"));
+
             // Params attribute should be a Python list
             py::list parameter_list = element.attr("params");
             // Get positional parameters: two ints and two doubles.
@@ -241,7 +247,12 @@ class EnsembleRestraintBuilder
             _params = std::move(*params);
 
             // Note that if we want to grab a reference to the Context or its communicator, we can get it
-            // here through element.workspec._context
+            // here through element.workspec._context. We need a more general API solution, but this code is
+            // in the Python bindings code, so we know we are in a Python Context.
+            assert(py::hasattr(element, "workspec"));
+            auto workspec = element.attr("workspec");
+            assert(py::hasattr(workspec, "_context"));
+            _context = workspec.attr("_context");
         }
 
         /*!
@@ -249,7 +260,7 @@ class EnsembleRestraintBuilder
          *
          * \param graph networkx.DiGraph object still evolving in gmx.context.
          *
-         * \todo This does not follow the latest graph building protocol as described.
+         * \todo This may not follow the latest graph building protocol as described.
          */
         void build(py::object graph)
         {
@@ -261,9 +272,37 @@ class EnsembleRestraintBuilder
             potential_list.append(potential);
 
             // Note this is a dummy launcher. MDSystem.add_mdmodule() will get called in a launch after this one.
-            // To do anything useful, the launcher returned will need to keep access to the potential shared_ptr
+            // To do anything useful, the launcher created will need to keep access to the potential shared_ptr
             // or take over the responsibility of creating it.
-            std::unique_ptr<RestraintLauncher>();
+            // No launcher added to graph yet.
+            //std::unique_ptr<RestraintLauncher>();
+
+            // Temporarily subvert things to get quick-and-dirty solution for testing.
+            // Need to capture Python communicator and pybind syntax in closure so EnsembleResources
+            // can just call with matrix arguments.
+
+            // Binds nothing, but needs py::object comm
+            auto function_helper = [](py::object comm,
+                                      const plugin::Matrix<double>& send,
+                                      plugin::Matrix<double>* receive)
+                {
+                    assert(py::hasattr(comm, "Allreduce"));
+                    comm.attr("Allreduce")(send, receive);
+                };
+
+            // Bind a copy of py::object comm
+            assert(py::hasattr(_context, "_communicator"));
+            auto comm = _context.attr("_communicator");
+
+            using namespace std::placeholders;
+            auto functor = std::bind(function_helper, std::move(comm), _1, _2);
+
+            // To use a reduce function on the Python side, we need to provide it with a Python buffer-like object,
+            // so we will create one here. Note: it looks like the SharedData element will be useful after all.
+            auto resources = std::make_shared<plugin::EnsembleResources>();
+            resources->setReduce(std::move(functor));
+
+            potential->setResources(resources);
         };
 
         /*!
@@ -281,6 +320,7 @@ class EnsembleRestraintBuilder
         };
 
         py::object _subscriber;
+        py::object _context;
         unsigned long _site1_index;
         unsigned long _site2_index;
 
@@ -386,4 +426,17 @@ PYBIND11_MODULE(myplugin, m) {
     m.def("create_restraint", [](const py::object element){ return create_harmonic_builder(element); });
     m.def("ensemble_restraint", [](const py::object element){ return create_ensemble_builder(element); });
 
+    // Matrix utility class (temporary). Borrowed from http://pybind11.readthedocs.io/en/master/advanced/pycpp/numpy.html#arrays
+    py::class_<plugin::Matrix<double>, std::shared_ptr<plugin::Matrix<double>>>(m, "Matrix", py::buffer_protocol())
+        .def_buffer([](plugin::Matrix<double> &matrix) -> py::buffer_info {
+            return py::buffer_info(
+                matrix.data(),                               /* Pointer to buffer */
+                sizeof(double),                          /* Size of one scalar */
+                py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
+                2,                                      /* Number of dimensions */
+                { matrix.rows(), matrix.cols() },                 /* Buffer dimensions */
+                { sizeof(double) * matrix.cols(),             /* Strides (in bytes) for each index */
+                  sizeof(double) }
+            );
+        });
 }

@@ -19,6 +19,104 @@
 namespace plugin
 {
 
+// Histogram for a single restrained pair.
+using PairHist = std::vector<double>;
+
+
+// Stop-gap for cross-language data exchange pending SharedData implementation and inclusion of Eigen.
+// Adapted from pybind docs.
+template<class T>
+class Matrix {
+    public:
+        Matrix(size_t rows, size_t cols) :
+            _rows(rows),
+            _cols(cols),
+            _data(_rows*_cols, 0)
+        {
+        }
+
+        explicit Matrix(std::vector<T>&& captured_data) :
+            _rows{1},
+            _cols{captured_data.size()},
+            _data{std::move(captured_data)}
+        {
+        }
+
+        std::vector<T> *vector() { return &_data; }
+        T* data() { return _data.data(); };
+        size_t rows() const { return _rows; }
+        size_t cols() const { return _cols; }
+    private:
+        size_t _rows;
+        size_t _cols;
+        std::vector<T> _data;
+};
+
+// Defer implicit instantiation to ensemblepotential.cpp
+extern template class Matrix<double>;
+
+/*!
+ * \brief An active handle to ensemble resources provided by the Context.
+ *
+ * The semantics of holding this handle aren't determined yet, but it should be held as briefly as possible since it
+ * may involve locking global resources or preventing the simulation from advancing. Basically, though, it allows the
+ * Context implementation flexibility in how or where it provides services.
+ */
+class EnsembleResourceHandle
+{
+    public:
+        /*!
+         * \brief Ensemble reduce.
+         *
+         * For first draft, assume an all-to-all sum. Reduce the input into the stored Matrix.
+         * // Template later... \tparam T
+         * \param data
+         */
+//        void reduce(const Matrix<double>& input);
+
+        /*!
+         * \brief Ensemble reduce.
+         * \param send Matrices to be summed across the ensemble using Context resources.
+         * \param receive destination of reduced data instead of updating internal Matrix.
+         */
+        void reduce(const Matrix<double>& send, Matrix<double>* receive);
+
+        /*!
+         * \brief Apply a function to each input and accumulate the output.
+         *
+         * \tparam I Iterable.
+         * \tparam T Output type.
+         * \param iterable iterable object to produce inputs to function
+         * \param output structure that should be present and up-to-date on all ranks.
+         * \param function map each input in iterable through this function to accumulate output.
+         */
+        template<typename I, typename T>
+        void map_reduce(const I& iterable, T* output, void (*function)(double, const PairHist&, PairHist*));
+
+        // to be abstracted and hidden...
+        std::function<void(const Matrix<double>&, Matrix<double>*)>* _reduce;
+};
+
+/*!
+ * \brief Reference to workflow-level resources managed by the Context.
+ *
+ * Provides a connection to the higher-level workflow management with which to access resources and operations. The
+ * reference provides no resources directly and we may find that it should not extend the life of a Session or Context.
+ * Resources are accessed through Handle objects returned by member functions.
+ */
+class EnsembleResources
+{
+    public:
+        EnsembleResourceHandle getHandle();
+
+//        void setMatrix(std::shared_ptr<Matrix> matrix);
+        void setReduce(std::function<void(const Matrix<double>&, Matrix<double>*)>&& reduce);
+
+    private:
+//        std::shared_ptr<Matrix> _matrix;
+        std::function<void(const Matrix<double>&, Matrix<double>*)> _reduce;
+};
+
 /*!
  * \brief Template for MDModules from restraints.
  *
@@ -48,61 +146,20 @@ class RestraintModule : public gmxapi::MDModule // consider names
                 _params = params;
         }
 
+        void setResources(std::shared_ptr<EnsembleResources> resources)
+        {
+            _resources = std::move(resources);
+        }
+
     private:
         unsigned long int _site1{0};
         unsigned long int _site2{0};
         param_t _params;
+
+        // Need to figure out if this is copyable or who owns it.
+        std::shared_ptr<EnsembleResources> _resources;
 };
 
-// Histogram for a single restrained pair.
-using PairHist = std::vector<double>;
-
-/*!
- * \brief An active handle to ensemble resources provided by the Context.
- *
- * The semantics of holding this handle aren't determined yet, but it should be held as briefly as possible since it
- * may involve locking global resources or preventing the simulation from advancing. Basically, though, it allows the
- * Context implementation flexibility in how or where it provides services.
- */
-class EnsembleResourceHandle
-{
-    public:
-        /*!
-         * \brief Ensemble reduce.
-         *
-         * For first draft, assume an all-to-all sum.
-         * \tparam T
-         * \param data
-         */
-        template<typename T>
-        void reduce(const std::vector<T>& input, std::vector<T>* output);
-
-        /*!
-         * \brief Apply a function to each input and accumulate the output.
-         *
-         * \tparam I Iterable.
-         * \tparam T Output type.
-         * \param iterable iterable object to produce inputs to function
-         * \param output structure that should be present and up-to-date on all ranks.
-         * \param function map each input in iterable through this function to accumulate output.
-         */
-        template<typename I, typename T>
-        void map_reduce(const I& iterable, T* output, void (*function)(double, const PairHist&, PairHist*));
-};
-
-/*!
- * \brief Reference to workflow-level resources managed by the Context.
- *
- * Provides a connection to the higher-level workflow management with which to access resources and operations. The
- * reference provides no resources directly and we may find that it should not extend the life of a Session or Context.
- * Resources are accessed through Handle objects returned by member functions.
- */
-class EnsembleResources
-{
-    public:
-        EnsembleResourceHandle getHandle();
-        
-};
 
 struct ensemble_input_param_type
 {
@@ -128,6 +185,10 @@ struct ensemble_input_param_type
 
 };
 
+// \todo We should be able to automate a lot of the parameter setting stuff
+// by having the developer specify a map of parameter names and the corresponding type, but that could get tricky.
+// The statically compiled fast parameter structure would be generated with a recursive variadic template
+// the way a tuple is. ref https://eli.thegreenplace.net/2014/variadic-templates-in-c/
 
 std::unique_ptr<ensemble_input_param_type>
 make_ensemble_params(size_t nbins,
@@ -222,7 +283,7 @@ class EnsembleHarmonic
         double _window_update_period;
         double _next_window_update_time;
         /// The history of nwindows histograms for this restraint.
-        std::vector<std::unique_ptr<PairHist>> _windows;
+        std::vector<std::unique_ptr<Matrix<double>>> _windows;
 
         /// Harmonic force coefficient
         double _K;
@@ -253,7 +314,7 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
 
         std::array<unsigned long int, 2> sites() const override
         {
-                return {};
+                return {_site1, _site2};
         }
 
         gmx::PotentialPointData evaluate(gmx::Vector r1,
@@ -263,9 +324,15 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
                 return calculate(r1, r2, t);
         };
 
+        void setResources(EnsembleResources resources)
+        {
+            _resources = resources;
+        }
+
     private:
         unsigned long int _site1{0};
         unsigned long int _site2{0};
+        EnsembleResources _resources;
 };
 
 

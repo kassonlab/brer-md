@@ -9,9 +9,13 @@
 namespace plugin
 {
 
-template<typename T>
-void EnsembleResourceHandle::reduce(const std::vector<T>& input, std::vector<T>* output)
-{}
+// Explicit instantiation.
+template class ::plugin::Matrix<double>;
+
+void EnsembleResourceHandle::reduce(const ::plugin::Matrix<double>& send, ::plugin::Matrix<double>* receive)
+{
+    (*_reduce)(send, receive);
+}
 
 template<typename T_I, typename T_O>
 void EnsembleResourceHandle::map_reduce(const T_I &iterable,
@@ -118,7 +122,8 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                                                     double t)
 {
     auto rdiff = v - v0;
-    const auto Rsquared = dot(rdiff, rdiff);
+    const auto Rsquared = dot(rdiff,
+                              rdiff);
     const auto R = sqrt(Rsquared);
 
     // Store historical data every sample_period steps
@@ -138,8 +143,9 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
     if (t >= _next_window_update_time)
     {
         // Get next histogram array, recycling old one if available.
-        std::unique_ptr<PairHist> new_window{new std::vector<double>(_nbins, 0.)};
-        std::unique_ptr<PairHist> temp_window;
+        std::unique_ptr<Matrix<double>> new_window = gmx::compat::make_unique<Matrix<double>>(1,
+                                                                                          _nbins);
+        std::unique_ptr<Matrix<double>> temp_window;
         if (_windows.size() == _nwindows)
         {
             // Recycle the oldest window.
@@ -149,13 +155,18 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
         }
         else
         {
-            temp_window.reset(new std::vector<double>(_nbins));
+            auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
+                                                                          _nbins);
+            temp_window.swap(new_temp_window);
         }
 
         // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
-        auto blur = BlurToGrid(_min_dist, _max_dist, _sigma);
+        auto blur = BlurToGrid(_min_dist,
+                               _max_dist,
+                               _sigma);
         assert(new_window != nullptr);
-        blur(_distance_samples, new_window.get());
+        blur(_distance_samples,
+             new_window->vector());
         // We can just do the blur locally since there aren't many bins. Bundling these operations for
         // all restraints could give us a chance at some parallelism. We should at least use some
         // threading if we can.
@@ -165,21 +176,22 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
         auto ensemble = _ensemble.getHandle();
         // Get global reduction (sum) and checkpoint.
         assert(temp_window != nullptr);
-        ensemble.reduce(*new_window, temp_window.get());
+        ensemble.reduce(*new_window,
+                        temp_window.get());
 
         // Update window list with smoothed data.
         _windows.emplace_back(std::move(new_window));
 
         // Get new histogram difference. Subtract the experimental distribution to get the values to use in our potential.
-        for (auto& bin : *_histogram)
+        for (auto &bin : *_histogram)
         {
             bin = 0;
         }
-        for (const auto& window : _windows)
+        for (const auto &window : _windows)
         {
-            for (auto i=0 ; i < window->size(); ++i)
+            for (size_t i = 0; i < window->cols(); ++i)
             {
-                (*_histogram)[i] += (*window)[i] - (*_experimental)[i];
+                _histogram->at(i) += window->vector()->at(i) - _experimental->at(i);
             }
         }
 
@@ -201,55 +213,69 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
     gmx::PotentialPointData output;
     // Energy not needed right now.
 //    output.energy = 0;
-    if (R != 0) // Direction of force is ill-defined when v == v0
+
+    // Start applying force after we have sufficient historical data.
+    if (_windows.size() == _nwindows)
     {
-
-        double dev = R;
-
-        double f{0};
-
-        if (dev > _max_dist)
+        if (R != 0) // Direction of force is ill-defined when v == v0
         {
-            f = _K * (_max_dist - dev);
-        }
-        else if (dev < _min_dist)
-        {
-            f = - _K * (_min_dist - dev);
-        }
-        else
-        {
-            double f_scal{0};
 
-//  for (auto element : hij){
-//      cout << "Hist element " << element << endl;
-//    }
-            size_t numBins = _histogram->size();
-            //cout << "number of bins " << numBins << endl;
-            double x, argExp;
-            double normConst = sqrt(2 * M_PI) * pow(_sigma,
-                                                    3.0);
+            double dev = R;
 
-            for (auto n = 0; n < numBins; n++)
+            double f{0};
+
+            if (dev > _max_dist)
             {
-                x = n * _binWidth - dev;
-                argExp = -0.5 * pow(x / _sigma,
-                                    2.0);
-                f_scal += _histogram->at(n) * x / normConst * exp(argExp);
+                f = _K * (_max_dist - dev);
             }
-            f = -_K * f_scal;
-        }
+            else if (dev < _min_dist)
+            {
+                f = -_K * (_min_dist - dev);
+            }
+            else
+            {
+                double f_scal{0};
 
-        output.force = f / norm(rdiff) * rdiff;
+                //  for (auto element : hij){
+                //      cout << "Hist element " << element << endl;
+                //    }
+                size_t numBins = _histogram->size();
+                //cout << "number of bins " << numBins << endl;
+                double x, argExp;
+                double normConst = sqrt(2 * M_PI) * pow(_sigma,
+                                                        3.0);
+
+                for (auto n = 0; n < numBins; n++)
+                {
+                    x = n * _binWidth - dev;
+                    argExp = -0.5 * pow(x / _sigma,
+                                        2.0);
+                    f_scal += _histogram->at(n) * x / normConst * exp(argExp);
+                }
+                f = -_K * f_scal;
+            }
+
+            output.force = f / norm(rdiff) * rdiff;
+        }
     }
     return output;
 }
 
 EnsembleResourceHandle EnsembleResources::getHandle()
 {
-    return {};
+    auto handle = EnsembleResourceHandle();
+    assert(_reduce != nullptr);
+    handle._reduce = &_reduce;
+    return handle;
+}
+
+void EnsembleResources::setReduce(std::function<void(const Matrix<double> &,
+                                                                     Matrix<double> *)>&& reduce)
+{
+    _reduce = std::move(reduce);
 }
 
 // Explicitly instantiate a definition.
-template class RestraintModule<EnsembleRestraint>;
+template class ::plugin::RestraintModule<EnsembleRestraint>;
 
 } // end namespace plugin

@@ -27,3 +27,11 @@ def cleandir():
     """
     newpath = tempfile.mkdtemp()
     os.chdir(newpath)
+
+
+try:
+    from mpi4py import MPI
+    withmpi_only = pytest.mark.skipif(not MPI.Is_initialized(),
+                                      reason="Test requires MPI, but MPI is not initialized or too small.")
+except ImportError:
+    withmpi_only = pytest.mark.skip(reason="Test requires at MPI, but mpi4py is not available.")
