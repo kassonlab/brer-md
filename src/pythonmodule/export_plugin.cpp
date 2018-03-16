@@ -4,12 +4,12 @@
 
 #include "export_plugin.h"
 
+#include "pybind11/pybind11.h"
+#include "pybind11/stl.h"
+
 #include "gmxapi/md.h"
 #include "gmxapi/md/mdmodule.h"
 #include "gmxapi/gmxapi.h"
-
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
 
 #include "harmonicpotential.h"
 #include "ensemblepotential.h"
