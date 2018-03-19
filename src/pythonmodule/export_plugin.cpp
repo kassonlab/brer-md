@@ -231,6 +231,8 @@ class EnsembleRestraintBuilder
 
             // Params attribute should be a Python list
             py::dict parameter_dict = element.attr("params");
+            // \todo Check for the presence of these dictionary keys to avoid hard-to-diagnose error.
+
             // Get positional parameters: two ints and two doubles.
             py::list sites = parameter_dict["sites"];
             _site1_index = py::cast<unsigned long>(sites[0]);
