@@ -167,12 +167,16 @@ class HarmonicRestraintBuilder
         explicit HarmonicRestraintBuilder(py::object element)
         {
             // Params attribute should be a Python list
-            py::list parameter_list = element.attr("params");
+            auto parameter_dict = py::cast<py::dict>(element.attr("params"));
             // Get positional parameters: two ints and two doubles.
-            _site1_index = py::cast<unsigned long>(parameter_list[0]);
-            _site2_index = py::cast<unsigned long>(parameter_list[1]);
-            _equilibrium_position = py::cast<real>(parameter_list[2]);
-            _spring_constant = py::cast<real>(parameter_list[3]);
+            assert(parameter_dict.contains("sites"));
+            assert(parameter_dict.contains("R0"));
+            assert(parameter_dict.contains("k"));
+            py::list sites = parameter_dict["sites"];
+            _site1_index = py::cast<unsigned long>(sites[0]);
+            _site2_index = py::cast<unsigned long>(sites[1]);
+            _equilibrium_position = py::cast<real>(parameter_dict["R0"]);
+            _spring_constant = py::cast<real>(parameter_dict["k"]);
         };
 
         /*!
@@ -226,22 +230,22 @@ class EnsembleRestraintBuilder
             assert(py::hasattr(element, "params"));
 
             // Params attribute should be a Python list
-            py::list parameter_list = element.attr("params");
+            py::dict parameter_dict = element.attr("params");
             // Get positional parameters: two ints and two doubles.
-            _site1_index = py::cast<unsigned long>(parameter_list[0]);
-            _site2_index = py::cast<unsigned long>(parameter_list[1]);
+            py::list sites = parameter_dict["sites"];
+            _site1_index = py::cast<unsigned long>(sites[0]);
+            _site2_index = py::cast<unsigned long>(sites[1]);
 
-            auto nbins = py::cast<size_t>(parameter_list[2]);
-            auto min_dist = py::cast<double>(parameter_list[3]);
-            auto max_dist = pybind11::cast<double>(parameter_list[4]);
-            auto experimental = pybind11::cast<std::vector<double>>(parameter_list[5]);
-            auto nsamples = pybind11::cast<unsigned int>(parameter_list[6]);
-            auto sample_period = pybind11::cast<double>(parameter_list[7]);
-            auto nwindows = pybind11::cast<unsigned int>(parameter_list[8]);
-            auto window_update_period = pybind11::cast<double>(parameter_list[9]);
-            auto K = pybind11::cast<double>(parameter_list[10]);
-            auto sigma = pybind11::cast<double>(parameter_list[11]);
-
+            auto nbins = py::cast<size_t>(parameter_dict["nbins"]);
+            auto min_dist = py::cast<double>(parameter_dict["min_dist"]);
+            auto max_dist = pybind11::cast<double>(parameter_dict["max_dist"]);
+            auto experimental = pybind11::cast<std::vector<double>>(parameter_dict["experimental"]);
+            auto nsamples = pybind11::cast<unsigned int>(parameter_dict["nsamples"]);
+            auto sample_period = pybind11::cast<double>(parameter_dict["sample_period"]);
+            auto nwindows = pybind11::cast<unsigned int>(parameter_dict["nwindows"]);
+            auto window_update_period = pybind11::cast<double>(parameter_dict["window_update_period"]);
+            auto K = pybind11::cast<double>(parameter_dict["k"]);
+            auto sigma = pybind11::cast<double>(parameter_dict["sigma"]);
 
             auto params = plugin::make_ensemble_params(nbins, min_dist, max_dist, experimental, nsamples, sample_period, nwindows, window_update_period, K, sigma);
             _params = std::move(*params);

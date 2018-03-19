@@ -123,9 +123,12 @@ SOL         4055
 
     # Create a WorkElement for the potential
     #potential = gmx.core.TestModule()
+    params = {'sites': [1, 4],
+              'R0': 2.0,
+              'k': 10000.0}
     potential_element = gmx.workflow.WorkElement(namespace="myplugin",
                                                  operation="create_restraint",
-                                                 params=[1, 4, 2.0, 10000.0])
+                                                 params=params)
     # Note that we could flexibly capture accessor methods as workflow elements, too. Maybe we can
     # hide the extra Python bindings by letting myplugin.HarmonicRestraint automatically convert
     # to a WorkElement when add_dependency is called on it.
@@ -203,9 +206,20 @@ SOL         4055
 
     # Create a WorkElement for the potential
     #potential = gmx.core.TestModule()
+    params = {'sites': [1, 4],
+              'nbins': 10,
+              'min_dist': 0.,
+              'max_dist': 10.,
+              'experimental': [0.]*10,
+              'nsamples': 1,
+              'sample_period': 1,
+              'nwindows': 4,
+              'window_update_period': 1,
+              'k': 10000.,
+              'sigma': 1.}
     potential = gmx.workflow.WorkElement(namespace="myplugin",
                                          operation="ensemble_restraint",
-                                         params=[1, 4, 10, 0., 10., [0.]*10, 10, 100, 20, 1000, 10000, 1.])
+                                         params=params)
     # Note that we could flexibly capture accessor methods as workflow elements, too. Maybe we can
     # hide the extra Python bindings by letting myplugin.HarmonicRestraint automatically convert
     # to a WorkElement when add_dependency is called on it.
@@ -286,9 +300,20 @@ SOL         4055
 
     # Create a WorkElement for the potential
     #potential = gmx.core.TestModule()
+    params = {'sites': [1, 4],
+              'nbins': 10,
+              'min_dist': 0.,
+              'max_dist': 10.,
+              'experimental': [0.]*10,
+              'nsamples': 1,
+              'sample_period': 1,
+              'nwindows': 4,
+              'window_update_period': 1,
+              'k': 10000.,
+              'sigma': 1.}
     potential = gmx.workflow.WorkElement(namespace="myplugin",
                                          operation="ensemble_restraint",
-                                         params=[1, 4, 10, 0., 10., [0.]*10, 1, 1, 4, 1, 10000, 1.])
+                                         params=params)
     # Note that we could flexibly capture accessor methods as workflow elements, too. Maybe we can
     # hide the extra Python bindings by letting myplugin.HarmonicRestraint automatically convert
     # to a WorkElement when add_dependency is called on it.
