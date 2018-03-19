@@ -117,9 +117,9 @@ EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
 {
 }
 
-gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
-                                                    gmx::Vector v0,
-                                                    double t)
+void EnsembleHarmonic::callback(gmx::Vector v,
+                                gmx::Vector v0,
+                                double t)
 {
     auto rdiff = v - v0;
     const auto Rsquared = dot(rdiff,
@@ -208,6 +208,18 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
         // Clean up drift in sample times.
         _next_sample_time = t + _sample_period;
     };
+
+}
+
+gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
+                                                    gmx::Vector v0,
+                                                    double t)
+{
+    auto rdiff = v - v0;
+    const auto Rsquared = dot(rdiff,
+                              rdiff);
+    const auto R = sqrt(Rsquared);
+
 
     // Compute output
     gmx::PotentialPointData output;

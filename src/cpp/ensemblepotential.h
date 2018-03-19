@@ -257,6 +257,11 @@ class EnsembleHarmonic
                                           gmx::Vector v0,
                                           gmx_unused double t);
 
+        // An update function to be called on the simulation master rank/thread periodically by the Restraint framework.
+        void callback(gmx::Vector v,
+                      gmx::Vector v0,
+                      double t);
+
     private:
         /// Width of bins (distance) in histogram
         size_t _nbins;
@@ -322,6 +327,15 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
                                          double t) override
         {
                 return calculate(r1, r2, t);
+        };
+
+
+        // An update function to be called on the simulation master rank/thread periodically by the Restraint framework.
+        void update(gmx::Vector v,
+                    gmx::Vector v0,
+                    double t) override
+        {
+            callback(v, v0, t);
         };
 
         void setResources(EnsembleResources resources)
