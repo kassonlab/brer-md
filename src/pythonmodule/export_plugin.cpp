@@ -182,10 +182,10 @@ class HarmonicRestraintBuilder
             assert(parameter_dict.contains("R0"));
             assert(parameter_dict.contains("k"));
             py::list sites = parameter_dict["sites"];
-            _site1_index = py::cast<unsigned long>(sites[0]);
-            _site2_index = py::cast<unsigned long>(sites[1]);
-            _equilibrium_position = py::cast<real>(parameter_dict["R0"]);
-            _spring_constant = py::cast<real>(parameter_dict["k"]);
+            site1Index_ = py::cast<unsigned long>(sites[0]);
+            site2Index_ = py::cast<unsigned long>(sites[1]);
+            equilibriumPosition_ = py::cast<real>(parameter_dict["R0"]);
+            springConstant_ = py::cast<real>(parameter_dict["k"]);
         };
 
         /*!
@@ -197,9 +197,9 @@ class HarmonicRestraintBuilder
          */
         void build(py::object graph)
         {
-            auto potential = PyRestraint<plugin::HarmonicModule>::create(_site1_index, _site2_index, _equilibrium_position, _spring_constant);
+            auto potential = PyRestraint<plugin::HarmonicModule>::create(site1Index_, site2Index_, equilibriumPosition_, springConstant_);
 
-            auto subscriber = _subscriber;
+            auto subscriber = subscriber_;
             py::list potential_list = subscriber.attr("potential");
             potential_list.append(potential);
 
@@ -218,14 +218,14 @@ class HarmonicRestraintBuilder
         void add_subscriber(py::object subscriber)
         {
             assert(py::hasattr(subscriber, "potential"));
-            _subscriber = subscriber;
+            subscriber_ = subscriber;
         };
 
-        py::object _subscriber;
-        unsigned long _site1_index;
-        unsigned long _site2_index;
-        real _equilibrium_position;
-        real _spring_constant;
+        py::object subscriber_;
+        unsigned long site1Index_;
+        unsigned long site2Index_;
+        real equilibriumPosition_;
+        real springConstant_;
 };
 
 class EnsembleRestraintBuilder
@@ -243,8 +243,8 @@ class EnsembleRestraintBuilder
 
             // Get positional parameters: two ints and two doubles.
             py::list sites = parameter_dict["sites"];
-            _site1_index = py::cast<unsigned long>(sites[0]);
-            _site2_index = py::cast<unsigned long>(sites[1]);
+            site1Index_ = py::cast<unsigned long>(sites[0]);
+            site2Index_ = py::cast<unsigned long>(sites[1]);
 
             auto nbins = py::cast<size_t>(parameter_dict["nbins"]);
             auto min_dist = py::cast<double>(parameter_dict["min_dist"]);
@@ -258,7 +258,7 @@ class EnsembleRestraintBuilder
             auto sigma = pybind11::cast<double>(parameter_dict["sigma"]);
 
             auto params = plugin::make_ensemble_params(nbins, min_dist, max_dist, experimental, nsamples, sample_period, nwindows, window_update_period, K, sigma);
-            _params = std::move(*params);
+            params_ = std::move(*params);
 
             // Note that if we want to grab a reference to the Context or its communicator, we can get it
             // here through element.workspec._context. We need a more general API solution, but this code is
@@ -266,7 +266,7 @@ class EnsembleRestraintBuilder
             assert(py::hasattr(element, "workspec"));
             auto workspec = element.attr("workspec");
             assert(py::hasattr(workspec, "_context"));
-            _context = workspec.attr("_context");
+            context_ = workspec.attr("_context");
         }
 
         /*!
@@ -292,8 +292,8 @@ class EnsembleRestraintBuilder
                 };
 
             // Bind a copy of py::object comm
-            assert(py::hasattr(_context, "_communicator"));
-            auto comm = _context.attr("_communicator");
+            assert(py::hasattr(context_, "_communicator"));
+            auto comm = context_.attr("_communicator");
 
             using namespace std::placeholders;
             auto functor = std::bind(function_helper, std::move(comm), _1, _2);
@@ -302,9 +302,9 @@ class EnsembleRestraintBuilder
             // so we will create one here. Note: it looks like the SharedData element will be useful after all.
             auto resources = std::make_shared<plugin::EnsembleResources>(std::move(functor));
 
-            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(_site1_index, _site2_index, _params, resources);
+            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(site1Index_, site2Index_, params_, resources);
 
-            auto subscriber = _subscriber;
+            auto subscriber = subscriber_;
             py::list potential_list = subscriber.attr("potential");
             potential_list.append(potential);
 
@@ -321,15 +321,15 @@ class EnsembleRestraintBuilder
         void add_subscriber(py::object subscriber)
         {
             assert(py::hasattr(subscriber, "potential"));
-            _subscriber = subscriber;
+            subscriber_ = subscriber;
         };
 
-        py::object _subscriber;
-        py::object _context;
-        unsigned long _site1_index;
-        unsigned long _site2_index;
+        py::object subscriber_;
+        py::object context_;
+        unsigned long site1Index_;
+        unsigned long site2Index_;
 
-        plugin::ensemble_input_param_type _params;
+        plugin::ensemble_input_param_type params_;
 };
 
 std::unique_ptr<HarmonicRestraintBuilder> create_harmonic_builder(const py::object element)

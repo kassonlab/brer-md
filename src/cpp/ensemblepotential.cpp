@@ -82,24 +82,24 @@ EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
                                    double window_update_period,
                                    double K,
                                    double sigma) :
-    _nbins{nbins},
-    _min_dist{min_dist},
-    _max_dist{max_dist},
-    _binWidth{(_max_dist - _min_dist)/_nbins},
-    _histogram(_nbins, 0),
-    _experimental{experimental},
-    _nsamples{nsamples},
-    _current_sample{0},
-    _sample_period{sample_period},
-    _next_sample_time{_sample_period},
-    _distance_samples(_nsamples),
-    _nwindows{nwindows},
-    _current_window{0},
-    _window_update_period{window_update_period},
-    _next_window_update_time{_window_update_period},
-    _windows(),
-    _K{K},
-    _sigma{sigma}
+    nBins_{nbins},
+    minDist_{min_dist},
+    maxDist_{max_dist},
+    binWidth_{(maxDist_ - minDist_)/nBins_},
+    histogram_(nBins_, 0),
+    experimental_{experimental},
+    nSamples_{nsamples},
+    currentSample_{0},
+    samplePeriod_{sample_period},
+    nextSampleTime_{samplePeriod_},
+    distanceSamples_(nSamples_),
+    nWindows_{nwindows},
+    currentWindow_{0},
+    windowUpdatePeriod_{window_update_period},
+    nextWindowUpdateTime_{windowUpdatePeriod_},
+    windows_(),
+    k_{K},
+    sigma_{sigma}
 {
     // We leave _histogram and _experimental unallocated until we have valid data to put in them, so that
     // (_histogram == nullptr) == invalid histogram.
@@ -132,10 +132,10 @@ void EnsembleHarmonic::callback(gmx::Vector v,
     // Store historical data every sample_period steps
     {
         std::lock_guard<std::mutex> lock(samples_mutex_);
-        if (t >= _next_sample_time)
+        if (t >= nextSampleTime_)
         {
-            _distance_samples[_current_sample++] = R;
-            _next_sample_time += _sample_period;
+            distanceSamples_[currentSample_++] = R;
+            nextSampleTime_ += samplePeriod_;
         };
     }
 
@@ -151,32 +151,32 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         // Since we reset the samples state at the bottom, we should probably grab the mutex here for
         // better exception safety.
         std::lock_guard<std::mutex> lock_samples(samples_mutex_);
-        if (t >= _next_window_update_time)
+        if (t >= nextWindowUpdateTime_)
         {
             // Get next histogram array, recycling old one if available.
             std::unique_ptr<Matrix<double>> new_window = gmx::compat::make_unique<Matrix<double>>(1,
-                                                                                                  _nbins);
+                                                                                                  nBins_);
             std::unique_ptr<Matrix<double>> temp_window;
-            if (_windows.size() == _nwindows)
+            if (windows_.size() == nWindows_)
             {
                 // Recycle the oldest window.
                 // \todo wrap this in a helper class that manages a buffer we can shuffle through.
-                _windows[0].swap(temp_window);
-                _windows.erase(_windows.begin());
+                windows_[0].swap(temp_window);
+                windows_.erase(windows_.begin());
             }
             else
             {
                 auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
-                                                                                _nbins);
+                                                                                nBins_);
                 temp_window.swap(new_temp_window);
             }
 
             // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
-            auto blur = BlurToGrid(_min_dist,
-                                   _max_dist,
-                                   _sigma);
+            auto blur = BlurToGrid(minDist_,
+                                   maxDist_,
+                                   sigma_);
             assert(new_window != nullptr);
-            blur(_distance_samples,
+            blur(distanceSamples_,
                  new_window->vector());
             // We can just do the blur locally since there aren't many bins. Bundling these operations for
             // all restraints could give us a chance at some parallelism. We should at least use some
@@ -191,18 +191,18 @@ void EnsembleHarmonic::callback(gmx::Vector v,
                             temp_window.get());
 
             // Update window list with smoothed data.
-            _windows.emplace_back(std::move(new_window));
+            windows_.emplace_back(std::move(new_window));
 
             // Get new histogram difference. Subtract the experimental distribution to get the values to use in our potential.
-            for (auto &bin : _histogram)
+            for (auto &bin : histogram_)
             {
                 bin = 0;
             }
-            for (const auto &window : _windows)
+            for (const auto &window : windows_)
             {
                 for (size_t i = 0; i < window->cols(); ++i)
                 {
-                    _histogram.at(i) += window->vector()->at(i) - _experimental.at(i);
+                    histogram_.at(i) += window->vector()->at(i) - experimental_.at(i);
                 }
             }
 
@@ -211,13 +211,13 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             // with the same number of MD steps in each interval, and the interval will effectively lose digits as the
             // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
             // to a facility, we can look for a part of the code with access to the current timestep.
-            _next_window_update_time += _window_update_period;
-            ++_current_window;
+            nextWindowUpdateTime_ += windowUpdatePeriod_;
+            ++currentWindow_;
 
             // Reset sample bufering.
-            _current_sample = 0;
+            currentSample_ = 0;
             // Clean up drift in sample times.
-            _next_sample_time = t + _sample_period;
+            nextSampleTime_ = t + samplePeriod_;
         };
     }
 
@@ -239,7 +239,7 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
 //    output.energy = 0;
 
     // Start applying force after we have sufficient historical data.
-    if (_windows.size() == _nwindows)
+    if (windows_.size() == nWindows_)
     {
         if (R != 0) // Direction of force is ill-defined when v == v0
         {
@@ -248,13 +248,13 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
 
             double f{0};
 
-            if (dev > _max_dist)
+            if (dev > maxDist_)
             {
-                f = _K * (_max_dist - dev);
+                f = k_ * (maxDist_ - dev);
             }
-            else if (dev < _min_dist)
+            else if (dev < minDist_)
             {
-                f = -_K * (_min_dist - dev);
+                f = -k_ * (minDist_ - dev);
             }
             else
             {
@@ -263,20 +263,20 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                 //  for (auto element : hij){
                 //      cout << "Hist element " << element << endl;
                 //    }
-                size_t numBins = _histogram.size();
+                size_t numBins = histogram_.size();
                 //cout << "number of bins " << numBins << endl;
                 double x, argExp;
-                double normConst = sqrt(2 * M_PI) * pow(_sigma,
+                double normConst = sqrt(2 * M_PI) * pow(sigma_,
                                                         3.0);
 
                 for (auto n = 0; n < numBins; n++)
                 {
-                    x = n * _binWidth - dev;
-                    argExp = -0.5 * pow(x / _sigma,
+                    x = n * binWidth_ - dev;
+                    argExp = -0.5 * pow(x / sigma_,
                                         2.0);
-                    f_scal += _histogram.at(n) * x / normConst * exp(argExp);
+                    f_scal += histogram_.at(n) * x / normConst * exp(argExp);
                 }
-                f = -_K * f_scal;
+                f = -k_ * f_scal;
             }
 
             output.force = f / norm(rdiff) * rdiff;
@@ -288,8 +288,8 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
 EnsembleResourceHandle EnsembleResources::getHandle() const
 {
     auto handle = EnsembleResourceHandle();
-    assert(bool(_reduce));
-    handle._reduce = &_reduce;
+    assert(bool(reduce_));
+    handle._reduce = &reduce_;
     return handle;
 }
 
