@@ -79,7 +79,7 @@ class EnsembleResourceHandle
          * \param send Matrices to be summed across the ensemble using Context resources.
          * \param receive destination of reduced data instead of updating internal Matrix.
          */
-        void reduce(const Matrix<double>& send, Matrix<double>* receive);
+        void reduce(const Matrix<double>& send, Matrix<double>* receive) const;
 
         /*!
          * \brief Apply a function to each input and accumulate the output.
@@ -94,7 +94,7 @@ class EnsembleResourceHandle
         void map_reduce(const I& iterable, T* output, void (*function)(double, const PairHist&, PairHist*));
 
         // to be abstracted and hidden...
-        std::function<void(const Matrix<double>&, Matrix<double>*)>* _reduce;
+        const std::function<void(const Matrix<double>&, Matrix<double>*)>* _reduce;
 };
 
 /*!
@@ -107,10 +107,11 @@ class EnsembleResourceHandle
 class EnsembleResources
 {
     public:
-        EnsembleResourceHandle getHandle();
+        explicit EnsembleResources(std::function<void(const Matrix<double>&, Matrix<double>*)>&& reduce) :
+            _reduce(reduce)
+        {};
 
-//        void setMatrix(std::shared_ptr<Matrix> matrix);
-        void setReduce(std::function<void(const Matrix<double>&, Matrix<double>*)>&& reduce);
+        EnsembleResourceHandle getHandle() const;
 
     private:
 //        std::shared_ptr<Matrix> _matrix;
@@ -128,6 +129,20 @@ class RestraintModule : public gmxapi::MDModule // consider names
     public:
         using param_t = typename R::input_param_type;
 
+        RestraintModule(unsigned long int site1,
+                        unsigned long int site2,
+                        const typename R::input_param_type& params,
+                        std::shared_ptr<EnsembleResources> resources) :
+            _site1{site1},
+            _site2{site2},
+            _params{params},
+            _resources{std::move(resources)}
+        {
+
+        };
+
+        ~RestraintModule() override = default;
+
         const char *name() override
         {
                 return "RestraintModule";
@@ -135,25 +150,13 @@ class RestraintModule : public gmxapi::MDModule // consider names
 
         std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
         {
-                auto restraint = std::make_shared<R>(_site1, _site2, _params);
+                auto restraint = std::make_shared<R>(_site1, _site2, _params, _resources);
                 return restraint;
         }
 
-        void setParams(unsigned long int site1,
-                       unsigned long int site2,
-                       const typename R::input_param_type& params)
-        {
-                _params = params;
-        }
-
-        void setResources(std::shared_ptr<EnsembleResources> resources)
-        {
-            _resources = std::move(resources);
-        }
-
     private:
-        unsigned long int _site1{0};
-        unsigned long int _site2{0};
+        unsigned long int _site1;
+        unsigned long int _site2;
         param_t _params;
 
         // Need to figure out if this is copyable or who owns it.
@@ -244,6 +247,7 @@ class EnsembleHarmonic
         EnsembleHarmonic(size_t nbins,
                                  double min_dist,
                                  double max_dist,
+                                 const PairHist &experimental,
                                  unsigned int nsamples,
                                  double sample_period,
                                  unsigned int nwindows,
@@ -260,7 +264,8 @@ class EnsembleHarmonic
         // An update function to be called on the simulation master rank/thread periodically by the Restraint framework.
         void callback(gmx::Vector v,
                       gmx::Vector v0,
-                      double t);
+                      double t,
+                      const EnsembleResources &resources);
 
     private:
         /// Width of bins (distance) in histogram
@@ -271,8 +276,8 @@ class EnsembleHarmonic
         double _binWidth;
         /// Smoothed historic distribution for this restraint. An element of the array of restraints in this simulation.
         // Was `hij` in earlier code.
-        std::unique_ptr<PairHist> _histogram;
-        std::unique_ptr<PairHist> _experimental;
+        PairHist _histogram;
+        PairHist _experimental;
 
         /// Number of samples to store during each window.
         unsigned int _nsamples;
@@ -295,8 +300,8 @@ class EnsembleHarmonic
         /// Smoothing factor: width of Gaussian interpolation for histogram
         double _sigma;
 
-        /// Ensemble resources
-        EnsembleResources _ensemble;
+        std::mutex samples_mutex_;
+        std::mutex windows_mutex_;
 };
 
 /*!
@@ -311,10 +316,13 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
 
         EnsembleRestraint(unsigned long int site1,
                           unsigned long int site2,
-                          const input_param_type& params) :
+                          const input_param_type& params,
+                          std::shared_ptr<EnsembleResources> resources
+        ) :
                 EnsembleHarmonic(params),
                 _site1{site1},
-                _site2{site2}
+                _site2{site2},
+                _resources{std::move(resources)}
         {}
 
         std::array<unsigned long int, 2> sites() const override
@@ -335,18 +343,21 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
                     gmx::Vector v0,
                     double t) override
         {
-            callback(v, v0, t);
+            callback(v,
+                     v0,
+                     t,
+                     *_resources);
         };
 
-        void setResources(EnsembleResources resources)
+        void setResources(std::unique_ptr<EnsembleResources>&& resources)
         {
-            _resources = resources;
+            _resources = std::move(resources);
         }
 
     private:
-        unsigned long int _site1{0};
-        unsigned long int _site2{0};
-        EnsembleResources _resources;
+        unsigned long int _site1;
+        unsigned long int _site2;
+        std::shared_ptr<EnsembleResources> _resources;
 };
 
 

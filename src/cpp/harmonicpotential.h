@@ -113,6 +113,18 @@ class HarmonicModule : public gmxapi::MDModule
     public:
         using param_t = Harmonic::input_param_type;
 
+        HarmonicModule(unsigned long int site1,
+                       unsigned long int site2,
+                       real R0,
+                       real k)
+        {
+            site1_ = site1;
+            site2_ = site2;
+            R0_ = R0;
+            k_ = k;
+        }
+
+
         const char *name() override
         {
             return "HarmonicModule";
@@ -150,10 +162,10 @@ class HarmonicModule : public gmxapi::MDModule
         }
 
     private:
-        unsigned long int site1_{0};
-        unsigned long int site2_{0};
-        real R0_{0};
-        real k_{0};
+        unsigned long int site1_;
+        unsigned long int site2_;
+        real R0_;
+        real k_;
 };
 
 } // end namespace plugin

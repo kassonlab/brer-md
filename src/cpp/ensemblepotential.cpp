@@ -12,7 +12,7 @@ namespace plugin
 // Explicit instantiation.
 template class ::plugin::Matrix<double>;
 
-void EnsembleResourceHandle::reduce(const ::plugin::Matrix<double>& send, ::plugin::Matrix<double>* receive)
+void EnsembleResourceHandle::reduce(const ::plugin::Matrix<double>& send, ::plugin::Matrix<double>* receive) const
 {
     (*_reduce)(send, receive);
 }
@@ -75,6 +75,7 @@ class BlurToGrid
 EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
                                    double min_dist,
                                    double max_dist,
+                                   const PairHist &experimental,
                                    unsigned int nsamples,
                                    double sample_period,
                                    unsigned int nwindows,
@@ -85,8 +86,8 @@ EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
     _min_dist{min_dist},
     _max_dist{max_dist},
     _binWidth{(_max_dist - _min_dist)/_nbins},
-    _histogram{nullptr},
-    _experimental{nullptr},
+    _histogram(_nbins, 0),
+    _experimental{experimental},
     _nsamples{nsamples},
     _current_sample{0},
     _sample_period{sample_period},
@@ -108,6 +109,7 @@ EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
     EnsembleHarmonic(params.nbins,
                      params.min_dist,
                      params.max_dist,
+                     params.experimental,
                      params.nsamples,
                      params.sample_period,
                      params.nwindows,
@@ -119,7 +121,8 @@ EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
 
 void EnsembleHarmonic::callback(gmx::Vector v,
                                 gmx::Vector v0,
-                                double t)
+                                double t,
+                                const EnsembleResources &resources)
 {
     auto rdiff = v - v0;
     const auto Rsquared = dot(rdiff,
@@ -127,11 +130,14 @@ void EnsembleHarmonic::callback(gmx::Vector v,
     const auto R = sqrt(Rsquared);
 
     // Store historical data every sample_period steps
-    if (t >= _next_sample_time)
     {
-        _distance_samples[_current_sample++] = R;
-        _next_sample_time += _sample_period;
-    };
+        std::lock_guard<std::mutex> lock(samples_mutex_);
+        if (t >= _next_sample_time)
+        {
+            _distance_samples[_current_sample++] = R;
+            _next_sample_time += _sample_period;
+        };
+    }
 
     // Every nsteps:
     //   0. Drop oldest window
@@ -140,74 +146,80 @@ void EnsembleHarmonic::callback(gmx::Vector v,
     //   3. On update, checkpoint the historical data source.
     //   4. Update historic windows.
     //   5. Use handles retained from previous windows to reconstruct the smoothed working histogram
-    if (t >= _next_window_update_time)
     {
-        // Get next histogram array, recycling old one if available.
-        std::unique_ptr<Matrix<double>> new_window = gmx::compat::make_unique<Matrix<double>>(1,
-                                                                                          _nbins);
-        std::unique_ptr<Matrix<double>> temp_window;
-        if (_windows.size() == _nwindows)
+        std::lock_guard<std::mutex> lock_windows(windows_mutex_);
+        // Since we reset the samples state at the bottom, we should probably grab the mutex here for
+        // better exception safety.
+        std::lock_guard<std::mutex> lock_samples(samples_mutex_);
+        if (t >= _next_window_update_time)
         {
-            // Recycle the oldest window.
-            // \todo wrap this in a helper class that manages a buffer we can shuffle through.
-            _windows.front().swap(temp_window);
-            _windows.erase(_windows.begin());
-        }
-        else
-        {
-            auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
-                                                                          _nbins);
-            temp_window.swap(new_temp_window);
-        }
-
-        // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
-        auto blur = BlurToGrid(_min_dist,
-                               _max_dist,
-                               _sigma);
-        assert(new_window != nullptr);
-        blur(_distance_samples,
-             new_window->vector());
-        // We can just do the blur locally since there aren't many bins. Bundling these operations for
-        // all restraints could give us a chance at some parallelism. We should at least use some
-        // threading if we can.
-
-        // We request a handle each time before using resources to make error handling easier if there is a failure in
-        // one of the ensemble member processes and to give more freedom to how resources are managed from step to step.
-        auto ensemble = _ensemble.getHandle();
-        // Get global reduction (sum) and checkpoint.
-        assert(temp_window != nullptr);
-        ensemble.reduce(*new_window,
-                        temp_window.get());
-
-        // Update window list with smoothed data.
-        _windows.emplace_back(std::move(new_window));
-
-        // Get new histogram difference. Subtract the experimental distribution to get the values to use in our potential.
-        for (auto &bin : *_histogram)
-        {
-            bin = 0;
-        }
-        for (const auto &window : _windows)
-        {
-            for (size_t i = 0; i < window->cols(); ++i)
+            // Get next histogram array, recycling old one if available.
+            std::unique_ptr<Matrix<double>> new_window = gmx::compat::make_unique<Matrix<double>>(1,
+                                                                                                  _nbins);
+            std::unique_ptr<Matrix<double>> temp_window;
+            if (_windows.size() == _nwindows)
             {
-                _histogram->at(i) += window->vector()->at(i) - _experimental->at(i);
+                // Recycle the oldest window.
+                // \todo wrap this in a helper class that manages a buffer we can shuffle through.
+                _windows[0].swap(temp_window);
+                _windows.erase(_windows.begin());
             }
-        }
+            else
+            {
+                auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
+                                                                                _nbins);
+                temp_window.swap(new_temp_window);
+            }
+
+            // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
+            auto blur = BlurToGrid(_min_dist,
+                                   _max_dist,
+                                   _sigma);
+            assert(new_window != nullptr);
+            blur(_distance_samples,
+                 new_window->vector());
+            // We can just do the blur locally since there aren't many bins. Bundling these operations for
+            // all restraints could give us a chance at some parallelism. We should at least use some
+            // threading if we can.
+
+            // We request a handle each time before using resources to make error handling easier if there is a failure in
+            // one of the ensemble member processes and to give more freedom to how resources are managed from step to step.
+            auto ensemble = resources.getHandle();
+            // Get global reduction (sum) and checkpoint.
+            assert(temp_window != nullptr);
+            ensemble.reduce(*new_window,
+                            temp_window.get());
+
+            // Update window list with smoothed data.
+            _windows.emplace_back(std::move(new_window));
+
+            // Get new histogram difference. Subtract the experimental distribution to get the values to use in our potential.
+            for (auto &bin : _histogram)
+            {
+                bin = 0;
+            }
+            for (const auto &window : _windows)
+            {
+                for (size_t i = 0; i < window->cols(); ++i)
+                {
+                    _histogram.at(i) += window->vector()->at(i) - _experimental.at(i);
+                }
+            }
 
 
-        // Note we do not have the integer timestep available here. Therefore, we can't guarantee that updates occur
-        // with the same number of MD steps in each interval, and the interval will effectively lose digits as the
-        // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
-        // to a facility, we can look for a part of the code with access to the current timestep.
-        _next_window_update_time += _window_update_period;
-        ++_current_window;
+            // Note we do not have the integer timestep available here. Therefore, we can't guarantee that updates occur
+            // with the same number of MD steps in each interval, and the interval will effectively lose digits as the
+            // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
+            // to a facility, we can look for a part of the code with access to the current timestep.
+            _next_window_update_time += _window_update_period;
+            ++_current_window;
 
-        // Reset sample bufering.
-        _current_sample = 0;
-        // Clean up drift in sample times.
-        _next_sample_time = t + _sample_period;
-    };
+            // Reset sample bufering.
+            _current_sample = 0;
+            // Clean up drift in sample times.
+            _next_sample_time = t + _sample_period;
+        };
+    }
 
 }
 
@@ -251,7 +263,7 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                 //  for (auto element : hij){
                 //      cout << "Hist element " << element << endl;
                 //    }
-                size_t numBins = _histogram->size();
+                size_t numBins = _histogram.size();
                 //cout << "number of bins " << numBins << endl;
                 double x, argExp;
                 double normConst = sqrt(2 * M_PI) * pow(_sigma,
@@ -262,7 +274,7 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                     x = n * _binWidth - dev;
                     argExp = -0.5 * pow(x / _sigma,
                                         2.0);
-                    f_scal += _histogram->at(n) * x / normConst * exp(argExp);
+                    f_scal += _histogram.at(n) * x / normConst * exp(argExp);
                 }
                 f = -_K * f_scal;
             }
@@ -273,18 +285,12 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
     return output;
 }
 
-EnsembleResourceHandle EnsembleResources::getHandle()
+EnsembleResourceHandle EnsembleResources::getHandle() const
 {
     auto handle = EnsembleResourceHandle();
-    assert(_reduce != nullptr);
+    assert(bool(_reduce));
     handle._reduce = &_reduce;
     return handle;
-}
-
-void EnsembleResources::setReduce(std::function<void(const Matrix<double> &,
-                                                                     Matrix<double> *)>&& reduce)
-{
-    _reduce = std::move(reduce);
 }
 
 // Explicitly instantiate a definition.

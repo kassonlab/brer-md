@@ -30,7 +30,6 @@ template<class T>
 class PyRestraint : public T, public std::enable_shared_from_this<PyRestraint<T>>
 {
     public:
-
         void bind(py::object object);
 
         using T::name;
@@ -46,11 +45,25 @@ class PyRestraint : public T, public std::enable_shared_from_this<PyRestraint<T>
          */
         std::shared_ptr<gmxapi::MDModule> getModule();
 
-        static std::shared_ptr<PyRestraint<T>> create()
+        /*!
+         * \brief Factory function to get a managed pointer to a new restraint.
+         *
+         * \tparam ArgsT
+         * \param args
+         * \return
+         */
+        template<typename ... ArgsT>
+        static std::shared_ptr<PyRestraint<T>> create(ArgsT... args)
         {
-            auto newRestraint = std::make_shared<PyRestraint<T>>();
+            auto newRestraint = std::make_shared<PyRestraint<T>>(args...);
             return newRestraint;
         }
+
+        template<typename ... ArgsT>
+        explicit PyRestraint(ArgsT... args) :
+            T{args...}
+        {}
+
 };
 
 template<class T>
@@ -118,10 +131,6 @@ const char* MyRestraint::docstring =
 R"rawdelimiter(Some sort of custom potential.
 )rawdelimiter";
 
-void export_gmxapi(py::module& mymodule)
-{
-};
-
 /*!
  * \brief Allow the Context to launch this graph node.
  *
@@ -188,8 +197,7 @@ class HarmonicRestraintBuilder
          */
         void build(py::object graph)
         {
-            auto potential = PyRestraint<plugin::HarmonicModule>::create();
-            potential->setParams(_site1_index, _site2_index, _equilibrium_position, _spring_constant);
+            auto potential = PyRestraint<plugin::HarmonicModule>::create(_site1_index, _site2_index, _equilibrium_position, _spring_constant);
 
             auto subscriber = _subscriber;
             py::list potential_list = subscriber.attr("potential");
@@ -270,19 +278,6 @@ class EnsembleRestraintBuilder
          */
         void build(py::object graph)
         {
-            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create();
-            potential->setParams(_site1_index, _site2_index, _params);
-
-            auto subscriber = _subscriber;
-            py::list potential_list = subscriber.attr("potential");
-            potential_list.append(potential);
-
-            // Note this is a dummy launcher. MDSystem.add_mdmodule() will get called in a launch after this one.
-            // To do anything useful, the launcher created will need to keep access to the potential shared_ptr
-            // or take over the responsibility of creating it.
-            // No launcher added to graph yet.
-            //std::unique_ptr<RestraintLauncher>();
-
             // Temporarily subvert things to get quick-and-dirty solution for testing.
             // Need to capture Python communicator and pybind syntax in closure so EnsembleResources
             // can just call with matrix arguments.
@@ -305,10 +300,14 @@ class EnsembleRestraintBuilder
 
             // To use a reduce function on the Python side, we need to provide it with a Python buffer-like object,
             // so we will create one here. Note: it looks like the SharedData element will be useful after all.
-            auto resources = std::make_shared<plugin::EnsembleResources>();
-            resources->setReduce(std::move(functor));
+            auto resources = std::make_shared<plugin::EnsembleResources>(std::move(functor));
 
-            potential->setResources(resources);
+            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(_site1_index, _site2_index, _params, resources);
+
+            auto subscriber = _subscriber;
+            py::list potential_list = subscriber.attr("potential");
+            potential_list.append(potential);
+
         };
 
         /*!
@@ -352,7 +351,6 @@ std::unique_ptr<EnsembleRestraintBuilder> create_ensemble_builder(const py::obje
 PYBIND11_MODULE(myplugin, m) {
     m.doc() = "sample plugin"; // This will be the text of the module's docstring.
 
-    export_gmxapi(m);
     // New plan: Instead of inheriting from gmx.core.MDModule, we can use a local import of
     // gmxapi::MDModule in both gmxpy and in extension modules. When md.add_potential() is
     // called, instead of relying on a binary interface to the MDModule, it will pass itself
@@ -376,7 +374,13 @@ PYBIND11_MODULE(myplugin, m) {
 
     // Make a null restraint for testing.
     py::class_<PyRestraint<MyRestraint>, std::shared_ptr<PyRestraint<MyRestraint>>> md_module(m, "MyRestraint");
-    md_module.def(py::init(&PyRestraint<MyRestraint>::create), "Create default MyRestraint");
+    md_module.def(py::init<>(
+        []()
+        {
+            return PyRestraint<MyRestraint>::create();
+        }),
+        "Create default MyRestraint"
+    );
     md_module.def("bind", &PyRestraint<MyRestraint>::bind);
 
     // The template parameters specify the C++ class to export and the handle type.
@@ -399,12 +403,21 @@ PYBIND11_MODULE(myplugin, m) {
     // We use a shared_ptr handle because both the Python interpreter and libgromacs may need to extend
     // the lifetime of the object.
     py::class_<PyRestraint<plugin::HarmonicModule>, std::shared_ptr<PyRestraint<plugin::HarmonicModule>>> harmonic(m, "HarmonicRestraint");
-    harmonic.def(py::init(&PyRestraint<plugin::HarmonicModule>::create), "Construct HarmonicRestraint");
+    harmonic.def(
+        py::init(
+            [](unsigned long int site1,
+               unsigned long int site2,
+               real R0,
+               real k)
+            {
+                return PyRestraint<plugin::HarmonicModule>::create(site1, site2, R0, k);
+            }
+        ),
+        "Construct HarmonicRestraint"
+    );
     harmonic.def("bind", &PyRestraint<plugin::HarmonicModule>::bind);
     //harmonic.def_property(name, getter, setter, extra)
 //    harmonic.def_property("pairs", &PyRestraint<plugin::HarmonicModule>::getPairs, &PyRestraint<plugin::HarmonicModule>::setPairs, "The indices of particle pairs to restrain");
-    harmonic.def("set_params", &PyRestraint<plugin::HarmonicModule>::setParams, "Set a pair, spring constant, and equilibrium distance.");
-
 
     // Builder to be returned from create_restraint
     pybind11::class_<EnsembleRestraintBuilder> ensemble_builder(m, "EnsembleBuilder");
@@ -416,9 +429,8 @@ PYBIND11_MODULE(myplugin, m) {
     // Builder to be returned from ensemble_restraint
     // API object to build.
     py::class_<PyEnsemble, std::shared_ptr<PyEnsemble>> ensemble(m, "EnsembleRestraint");
-    ensemble.def(py::init(&PyEnsemble::create), "Construct EnsembleRestraint");
+    // EnsembleRestraint can only be created via builder for now.
     ensemble.def("bind", &PyEnsemble::bind, "Implement binding protocol");
-    ensemble.def("set_params", &PyEnsemble::setParams, "Set the parameters");
 
 
     /*

@@ -104,8 +104,8 @@ SOL         4055
 
     # Low level API
     system = gmx.System._from_file(tpr_filename)
-    potential = myplugin.HarmonicRestraint()
-    potential.set_params(1, 4, 2.0, 10000.0)
+    potential = myplugin.HarmonicRestraint(1, 4, 2.0, 10000.0)
+    # potential.set_params(1, 4, 2.0, 10000.0)
 
     system.add_mdmodule(potential)
     with gmx.context.DefaultContext(system.workflow) as session:
