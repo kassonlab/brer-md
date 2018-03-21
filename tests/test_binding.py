@@ -210,11 +210,11 @@ SOL         4055
               'nbins': 10,
               'min_dist': 0.,
               'max_dist': 10.,
-              'experimental': [0.]*10,
+              'experimental': [1.]*10,
               'nsamples': 1,
-              'sample_period': 1,
+              'sample_period': 0.001,
               'nwindows': 4,
-              'window_update_period': 1,
+              'window_update_period': 0.001,
               'k': 10000.,
               'sigma': 1.}
     potential = gmx.workflow.WorkElement(namespace="myplugin",
@@ -228,6 +228,7 @@ SOL         4055
     md.add_dependency(potential)
 
     context = gmx.context.ParallelArrayContext(md)
+
     with context as session:
         session.run()
 
@@ -306,9 +307,9 @@ SOL         4055
               'max_dist': 10.,
               'experimental': [0.]*10,
               'nsamples': 1,
-              'sample_period': 1,
+              'sample_period': 0.001,
               'nwindows': 4,
-              'window_update_period': 1,
+              'window_update_period': 0.001,
               'k': 10000.,
               'sigma': 1.}
     potential = gmx.workflow.WorkElement(namespace="myplugin",

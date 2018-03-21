@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <array>
+#include <mutex>
 
 #include "gmxapi/gromacsfwd.h"
 #include "gmxapi/md/mdmodule.h"

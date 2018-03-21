@@ -281,22 +281,16 @@ class EnsembleRestraintBuilder
             // Temporarily subvert things to get quick-and-dirty solution for testing.
             // Need to capture Python communicator and pybind syntax in closure so EnsembleResources
             // can just call with matrix arguments.
-
-            // Binds nothing, but needs py::object comm
-            auto function_helper = [](py::object comm,
-                                      const plugin::Matrix<double>& send,
-                                      plugin::Matrix<double>* receive)
-                {
-                    assert(py::hasattr(comm, "Allreduce"));
-                    comm.attr("Allreduce")(send, receive);
-                };
-
-            // Bind a copy of py::object comm
-            assert(py::hasattr(context_, "_communicator"));
-            auto comm = context_.attr("_communicator");
-
-            using namespace std::placeholders;
-            auto functor = std::bind(function_helper, std::move(comm), _1, _2);
+            
+            // This can be replaced with a subscription and delayed until launch, if necessary.
+            assert(py::hasattr(context_, "ensemble_update"));
+            // make a local copy of the Python object so we can capture it in the lambda
+            auto update = context_.attr("ensemble_update");
+            // Make a bindings-independent callable with standardizeable signature.
+            auto functor = [update](const plugin::Matrix<double>& send, plugin::Matrix<double>* receive)
+            {
+                update(send, receive);
+            };
 
             // To use a reduce function on the Python side, we need to provide it with a Python buffer-like object,
             // so we will create one here. Note: it looks like the SharedData element will be useful after all.
