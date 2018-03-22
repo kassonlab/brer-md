@@ -247,6 +247,7 @@ class EnsembleRestraintBuilder
             site2Index_ = py::cast<unsigned long>(sites[1]);
 
             auto nbins = py::cast<size_t>(parameter_dict["nbins"]);
+            auto binWidth = py::cast<double>(parameter_dict["binWidth"]);
             auto min_dist = py::cast<double>(parameter_dict["min_dist"]);
             auto max_dist = pybind11::cast<double>(parameter_dict["max_dist"]);
             auto experimental = pybind11::cast<std::vector<double>>(parameter_dict["experimental"]);
@@ -257,7 +258,7 @@ class EnsembleRestraintBuilder
             auto K = pybind11::cast<double>(parameter_dict["k"]);
             auto sigma = pybind11::cast<double>(parameter_dict["sigma"]);
 
-            auto params = plugin::make_ensemble_params(nbins, min_dist, max_dist, experimental, nsamples, sample_period, nwindows, window_update_period, K, sigma);
+            auto params = plugin::make_ensemble_params(nbins, binWidth, min_dist, max_dist, experimental, nsamples, sample_period, nwindows, window_update_period, K, sigma);
             params_ = std::move(*params);
 
             // Note that if we want to grab a reference to the Context or its communicator, we can get it

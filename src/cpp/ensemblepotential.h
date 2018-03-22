@@ -167,11 +167,15 @@ class RestraintModule : public gmxapi::MDModule // consider names
 
 struct ensemble_input_param_type
 {
-    /// Width of bins (distance) in histogram
+    /// distance histogram parameters
     size_t nbins{0};
-    /// Histogram boundaries.
+    double binWidth{0.};
+
+    /// Flat-bottom potential boundaries.
     double min_dist{0};
     double max_dist{0};
+
+    /// Experimental reference distribution.
     PairHist experimental{};
 
     /// Number of samples to store during each window.
@@ -196,6 +200,7 @@ struct ensemble_input_param_type
 
 std::unique_ptr<ensemble_input_param_type>
 make_ensemble_params(size_t nbins,
+                     double binWidth,
                      double min_dist,
                      double max_dist,
                      const std::vector<double>& experimental,
@@ -209,6 +214,7 @@ make_ensemble_params(size_t nbins,
     using gmx::compat::make_unique;
     auto params = make_unique<ensemble_input_param_type>();
     params->nbins = nbins;
+    params->binWidth = binWidth;
     params->min_dist = min_dist;
     params->max_dist = max_dist;
     params->experimental = experimental;
@@ -246,15 +252,16 @@ class EnsembleHarmonic
         explicit EnsembleHarmonic(const input_param_type &params);
 
         EnsembleHarmonic(size_t nbins,
-                                 double min_dist,
-                                 double max_dist,
-                                 const PairHist &experimental,
-                                 unsigned int nsamples,
-                                 double sample_period,
-                                 unsigned int nwindows,
-                                 double window_update_period,
-                                 double K,
-                                 double sigma);
+                         double binWidth,
+                         double min_dist,
+                         double max_dist,
+                         PairHist experimental,
+                         unsigned int nsamples,
+                         double sample_period,
+                         unsigned int nwindows,
+                         double window_update_period,
+                         double K,
+                         double sigma);
 
         // If dispatching this virtual function is not fast enough, the compiler may be able to better optimize a free
         // function that receives the current restraint as an argument.
@@ -271,10 +278,11 @@ class EnsembleHarmonic
     private:
         /// Width of bins (distance) in histogram
         size_t nBins_;
-        /// Histogram boundaries.
+        double binWidth_;
+
+        /// Flat-bottom potential boundaries.
         double minDist_;
         double maxDist_;
-        double binWidth_;
         /// Smoothed historic distribution for this restraint. An element of the array of restraints in this simulation.
         // Was `hij` in earlier code.
         PairHist histogram_;
