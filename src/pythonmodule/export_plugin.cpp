@@ -281,7 +281,7 @@ class EnsembleRestraintBuilder
             // Temporarily subvert things to get quick-and-dirty solution for testing.
             // Need to capture Python communicator and pybind syntax in closure so EnsembleResources
             // can just call with matrix arguments.
-            
+
             // This can be replaced with a subscription and delayed until launch, if necessary.
             assert(py::hasattr(context_, "ensemble_update"));
             // make a local copy of the Python object so we can capture it in the lambda

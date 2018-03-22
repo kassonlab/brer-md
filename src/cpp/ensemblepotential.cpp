@@ -119,6 +119,7 @@ EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
 {
 }
 
+// Todo: reference coordinate for PBC problems.
 void EnsembleHarmonic::callback(gmx::Vector v,
                                 gmx::Vector v0,
                                 double t,
@@ -172,10 +173,13 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             }
 
             // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
+            // Todo: update with new interpretatino of max/min dist
             auto blur = BlurToGrid(minDist_,
                                    maxDist_,
                                    sigma_);
             assert(new_window != nullptr);
+            // Todo: when this callback code is extracted, we should adjust the arithmetic so that the times for the two update periods can't drift due to floating point precision problems.
+            assert(currentSample_ == distanceSamples_.size());
             blur(distanceSamples_,
                  new_window->vector());
             // We can just do the blur locally since there aren't many bins. Bundling these operations for
@@ -187,6 +191,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             auto ensemble = resources.getHandle();
             // Get global reduction (sum) and checkpoint.
             assert(temp_window != nullptr);
+            // Todo: in reduce function, give us a mean instead of a sum.
             ensemble.reduce(*new_window,
                             temp_window.get());
 
@@ -202,7 +207,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             {
                 for (size_t i = 0; i < window->cols(); ++i)
                 {
-                    histogram_.at(i) += window->vector()->at(i) - experimental_.at(i);
+                    histogram_.at(i) += (window->vector()->at(i) - experimental_.at(i))/windows_.size();
                 }
             }
 
@@ -238,49 +243,46 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
     // Energy not needed right now.
 //    output.energy = 0;
 
-    // Start applying force after we have sufficient historical data.
-    if (windows_.size() == nWindows_)
+    if (R != 0) // Direction of force is ill-defined when v == v0
     {
-        if (R != 0) // Direction of force is ill-defined when v == v0
+
+        double dev = R;
+
+        double f{0};
+
+        // Todo: update maxDist and minDist interpretration: flat bottom potential.
+        if (dev > maxDist_)
         {
-
-            double dev = R;
-
-            double f{0};
-
-            if (dev > maxDist_)
-            {
-                f = k_ * (maxDist_ - dev);
-            }
-            else if (dev < minDist_)
-            {
-                f = -k_ * (minDist_ - dev);
-            }
-            else
-            {
-                double f_scal{0};
-
-                //  for (auto element : hij){
-                //      cout << "Hist element " << element << endl;
-                //    }
-                size_t numBins = histogram_.size();
-                //cout << "number of bins " << numBins << endl;
-                double x, argExp;
-                double normConst = sqrt(2 * M_PI) * pow(sigma_,
-                                                        3.0);
-
-                for (auto n = 0; n < numBins; n++)
-                {
-                    x = n * binWidth_ - dev;
-                    argExp = -0.5 * pow(x / sigma_,
-                                        2.0);
-                    f_scal += histogram_.at(n) * x / normConst * exp(argExp);
-                }
-                f = -k_ * f_scal;
-            }
-
-            output.force = f / norm(rdiff) * rdiff;
+            f = k_ * (maxDist_ - dev);
         }
+        else if (dev < minDist_)
+        {
+            f = -k_ * (minDist_ - dev);
+        }
+        else
+        {
+            double f_scal{0};
+
+            //  for (auto element : hij){
+            //      cout << "Hist element " << element << endl;
+            //    }
+            size_t numBins = histogram_.size();
+            //cout << "number of bins " << numBins << endl;
+            double x, argExp;
+            double normConst = sqrt(2 * M_PI) * pow(sigma_,
+                                                    3.0);
+
+            for (auto n = 0; n < numBins; n++)
+            {
+                x = n * binWidth_ - dev;
+                argExp = -0.5 * pow(x / sigma_,
+                                    2.0);
+                f_scal += histogram_.at(n) * x / normConst * exp(argExp);
+            }
+            f = -k_ * f_scal;
+        }
+
+        output.force = f / norm(rdiff) * rdiff;
     }
     return output;
 }
