@@ -208,6 +208,7 @@ SOL         4055
     #potential = gmx.core.TestModule()
     params = {'sites': [1, 4],
               'nbins': 10,
+              'binWidth': 0.1,
               'min_dist': 0.,
               'max_dist': 10.,
               'experimental': [1.]*10,
@@ -303,9 +304,10 @@ SOL         4055
     #potential = gmx.core.TestModule()
     params = {'sites': [1, 4],
               'nbins': 10,
+              'binWidth': 0.1,
               'min_dist': 0.,
               'max_dist': 10.,
-              'experimental': [0.]*10,
+              'experimental': [0.5]*10,
               'nsamples': 1,
               'sample_period': 0.001,
               'nwindows': 4,
