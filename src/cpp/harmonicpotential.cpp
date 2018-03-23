@@ -43,7 +43,7 @@ gmx::PotentialPointData HarmonicRestraint::evaluate(gmx::Vector r1,
     return calculate(r1, r2, t);
 }
 
-std::array<unsigned long, 2> HarmonicRestraint::sites() const
+std::vector<unsigned long int> HarmonicRestraint::sites() const
 {
     return {site1_, site2_};
 }

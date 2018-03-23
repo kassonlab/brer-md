@@ -241,10 +241,12 @@ class EnsembleRestraintBuilder
             py::dict parameter_dict = element.attr("params");
             // \todo Check for the presence of these dictionary keys to avoid hard-to-diagnose error.
 
-            // Get positional parameters: two ints and two doubles.
+            // Get positional parameters.
             py::list sites = parameter_dict["sites"];
-            site1Index_ = py::cast<unsigned long>(sites[0]);
-            site2Index_ = py::cast<unsigned long>(sites[1]);
+            for (auto&& site : sites)
+            {
+                siteIndices_.emplace_back(py::cast<unsigned long>(site));
+            }
 
             auto nbins = py::cast<size_t>(parameter_dict["nbins"]);
             auto binWidth = py::cast<double>(parameter_dict["binWidth"]);
@@ -297,7 +299,7 @@ class EnsembleRestraintBuilder
             // so we will create one here. Note: it looks like the SharedData element will be useful after all.
             auto resources = std::make_shared<plugin::EnsembleResources>(std::move(functor));
 
-            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(site1Index_, site2Index_, params_, resources);
+            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(siteIndices_, params_, resources);
 
             auto subscriber = subscriber_;
             py::list potential_list = subscriber.attr("potential");
@@ -321,8 +323,7 @@ class EnsembleRestraintBuilder
 
         py::object subscriber_;
         py::object context_;
-        unsigned long site1Index_;
-        unsigned long site2Index_;
+        std::vector<unsigned long int> siteIndices_;
 
         plugin::ensemble_input_param_type params_;
 };

@@ -130,12 +130,10 @@ class RestraintModule : public gmxapi::MDModule // consider names
     public:
         using param_t = typename R::input_param_type;
 
-        RestraintModule(unsigned long int site1,
-                        unsigned long int site2,
+        RestraintModule(const std::vector<unsigned long int>& sites,
                         const typename R::input_param_type& params,
                         std::shared_ptr<EnsembleResources> resources) :
-            site1_{site1},
-            site2_{site2},
+            sites_{sites},
             params_{params},
             resources_{std::move(resources)}
         {
@@ -151,13 +149,12 @@ class RestraintModule : public gmxapi::MDModule // consider names
 
         std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
         {
-                auto restraint = std::make_shared<R>(site1_, site2_, params_, resources_);
+                auto restraint = std::make_shared<R>(sites_, params_, resources_);
                 return restraint;
         }
 
     private:
-        unsigned long int site1_;
-        unsigned long int site2_;
+        std::vector<unsigned long int> sites_;
         param_t params_;
 
         // Need to figure out if this is copyable or who owns it.
@@ -323,20 +320,18 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
     public:
         using EnsembleHarmonic::input_param_type;
 
-        EnsembleRestraint(unsigned long int site1,
-                          unsigned long int site2,
+        EnsembleRestraint(const std::vector<unsigned long int> sites,
                           const input_param_type& params,
                           std::shared_ptr<EnsembleResources> resources
         ) :
                 EnsembleHarmonic(params),
-                site1_{site1},
-                site2_{site2},
+                sites_{sites},
                 resources_{std::move(resources)}
         {}
 
-        std::array<unsigned long int, 2> sites() const override
+        std::vector<unsigned long int> sites() const override
         {
-                return {site1_, site2_};
+                return sites_;
         }
 
         gmx::PotentialPointData evaluate(gmx::Vector r1,
@@ -365,8 +360,7 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
         }
 
     private:
-        unsigned long int site1_;
-        unsigned long int site2_;
+        std::vector<unsigned long int> sites_;
 //        double callbackPeriod_;
 //        double nextCallback_;
         std::shared_ptr<EnsembleResources> resources_;

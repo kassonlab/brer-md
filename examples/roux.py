@@ -66,7 +66,7 @@ tpr_list = [os.path.abspath(os.path.join(directory, 'mRMR.tpr')) for directory i
 #    double sigma{0};
 
 params = {
-	'sites': [387, 2569],
+	'sites': [387, 1735, 2569],
 	'k': 100.,
 	'sigma': 0.2,
 	'nbins': 70,

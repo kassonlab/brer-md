@@ -14,6 +14,7 @@ template class ::plugin::Matrix<double>;
 
 void EnsembleResourceHandle::reduce(const ::plugin::Matrix<double>& send, ::plugin::Matrix<double>* receive) const
 {
+    assert(_reduce);
     (*_reduce)(send, receive);
 }
 
@@ -171,6 +172,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             {
                 auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
                                                                                 nBins_);
+                assert(new_temp_window);
                 temp_window.swap(new_temp_window);
             }
 
