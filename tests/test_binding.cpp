@@ -5,6 +5,7 @@
 #include "testingconfiguration.h"
 
 #include <memory>
+#include <vector>
 
 #include "gmxapi/context.h"
 #include "gmxapi/md/mdmodule.h"
@@ -35,7 +36,7 @@ class NullRestraint : public gmx::IRestraintPotential
             return {};
         }
 
-        std::array<unsigned long, 2> sites() const override
+        std::vector<unsigned long> sites() const override
         {
             return {0,0};
         }
