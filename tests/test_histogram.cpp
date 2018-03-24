@@ -5,15 +5,9 @@
 #include "testingconfiguration.h"
 
 #include <iostream>
-#include <memory>
+#include <vector>
 
-#include "harmonicpotential.h"
-
-#include "gmxapi/context.h"
-#include "gmxapi/md.h"
-#include "gmxapi/session.h"
-#include "gmxapi/status.h"
-#include "gmxapi/system.h"
+#include "ensemblepotential.h"
 
 #include "gromacs/utility/classhelpers.h"
 #include "gromacs/utility/arrayref.h"
@@ -32,92 +26,61 @@ std::ostream& operator<<(std::ostream& stream, const gmx::Vector& vec)
 
 const auto filename = plugin::testing::sample_tprfilename;
 
-TEST(HarmonicPotentialPlugin, Build)
+TEST(EnsembleHistogramPotentialPlugin, ForceCalc)
 {
-ASSERT_TRUE(true);
-ASSERT_FALSE(false);
+    constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);
+    // define some unit vectors
+    const vec3<real> e1{real(1), real(0), real(0)};
+    const vec3<real> e2{real(0), real(1), real(0)};
+    const vec3<real> e3{real(0), real(0), real(1)};
 
-plugin::Harmonic puller;
-}
+    const real R0{1.0};
+    const real k{1.0};
 
-TEST(HarmonicPotentialPlugin, ForceCalc)
-{
-constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);
-// define some unit vectors
-const vec3<real> e1{real(1), real(0), real(0)};
-const vec3<real> e2{real(0), real(1), real(0)};
-const vec3<real> e3{real(0), real(0), real(1)};
+    // store temporary values long enough for inspection
+    vec3<real> force{};
 
-const real R0{1.0};
-const real k{1.0};
+    // Get a dummy EnsembleResources. We aren't testing that here.
+    auto dummyFunc = [](const plugin::Matrix<double>&, plugin::Matrix<double>*){
+        return;};
+    auto resource = std::make_shared<plugin::EnsembleResources>(dummyFunc);
 
-// store temporary values long enough for inspection
-vec3<real> force{};
+    // Define a reference distribution with a triangular peak at the 1.0 bin.
+    const std::vector<double>
+    experimental{{0, 1, 0, 0, 0, 0, 0, 0, 0, 0}};
 
-plugin::Harmonic puller{R0, k};
 
-// When input vectors are equal, output vector is meaningless and magnitude is set to zero.
-auto calculateForce = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.calculate(a,b,0).force; };
-ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1)));
+    plugin::EnsembleHarmonic restraint{10, // nbins
+                                    1.0, // binWidth
+                                    0.0, // minDist
+                                    10.0, // maxDist
+                                    experimental, // experimental reference histogram
+                                    1, // nSamples
+                                    0.001, // samplePeriod
+                                    1, // nWindows
+                                    100., // k
+                                    1.0 // sigma
+                                    };
 
-// Default equilibrium distance is 1.0, so force should be zero when norm(r12) == 1.0.
-force = calculateForce(zerovec, e1);
-ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    auto calculateForce = [&restraint](const vec3<real>& a, const vec3<real>& b, double t) { return restraint.calculate(a,b,t).force; };
 
-force = calculateForce(e1, zerovec);
-ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    // With the initial histogram (all zeros) the force should be zero no matter where the particles are.
+    ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1, 0.)));
+    ASSERT_EQ(real(0.0), norm(calculateForce(e1, e2, 0.)));
+    ASSERT_EQ(real(0.0), norm(calculateForce(e1, -e1, 0.)));
 
-force = calculateForce(e1, 2*e1);
-ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    // Establish a history of the atoms being 2.0 apart.
+    restraint.callback(e1, 3*e1, 0.001, *resource);
 
-// -kx should give vector (1, 0, 0) when vector r1 == r2 - (2, 0, 0)
-force = calculateForce(-2*e1, zerovec);
-ASSERT_EQ(real(1), force.x);
-force = calculateForce(-2*e1, zerovec);
-ASSERT_EQ(e1, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    // Atoms should now be driven towards each other where the difference in experimental and historic distributions is greater.
+    force = calculateForce(e1, 3*e1, 0.001);
+    ASSERT_GT(force.x, 0.) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    force = calculateForce(3*e1, e1, 0.001);
+    ASSERT_LT(force.x, 0.) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
 
-// -kx should give vector (-2, 0, 0) when vector r1 == r2 + (2, 0, 0)
-force = calculateForce(2*e1, -e1);
-ASSERT_EQ(-2*e1, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
-}
+    // When input vectors are equal, output vector is meaningless and magnitude is set to zero.
+    ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1, 0.001)));
 
-TEST(HarmonicPotentialPlugin, EnergyCalc)
-{
-constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);
-// define some unit vectors
-const vec3<real> e1{real(1), real(0), real(0)};
-const vec3<real> e2{real(0), real(1), real(0)};
-const vec3<real> e3{real(0), real(0), real(1)};
-
-const real R0{1.0};
-const real k{1.0};
-
-// store temporary values long enough for inspection
-real energy{0};
-
-plugin::Harmonic puller{R0, k};
-
-// When input vectors are equal, potential energy is still calculable.
-auto calculateEnergy = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.calculate(a,b,0).energy; };
-ASSERT_EQ(real(0.5*k*R0*R0), calculateEnergy(e1, e1));
-
-// Default equilibrium distance is 1.0, so energy should be zero when norm(r12) == 1.0.
-energy = calculateEnergy(zerovec, e1);
-ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
-
-energy = calculateEnergy(e1, zerovec);
-ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
-
-energy = calculateEnergy(e1, 2*e1);
-ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
-
-// -kx should give vector (1, 0, 0) when vector r1 == r2 - (2, 0, 0)
-energy = calculateEnergy(-2*e1, zerovec);
-ASSERT_EQ(real(0.5*k*R0*R0), energy) << " where energy is " << energy << "\n";
-
-// -kx should give vector (-2, 0, 0) when vector r1 == r2 + (2, 0, 0)
-energy = calculateEnergy(2*e1, -e1);
-ASSERT_EQ(real(0.5*k*4*R0*R0), energy) << " where energy is " << energy << "\n";
 }
 
 // This should be part of a validation test, not a unit test.

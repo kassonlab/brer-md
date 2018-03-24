@@ -95,6 +95,7 @@ EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
     nSamples_{nSamples},
     currentSample_{0},
     samplePeriod_{samplePeriod},
+    // In actuality, we have nsamples at (samplePeriod - dt), but we don't have access to dt.
     nextSampleTime_{samplePeriod},
     distanceSamples_(nSamples),
     nWindows_{nWindows},
@@ -236,6 +237,8 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                                                     gmx::Vector v0,
                                                     double t)
 {
+    // This is not the vector from v to v0. It is the position of a site
+    // at v, relative to the origin v0. This is a potentially confusing convention...
     auto rdiff = v - v0;
     const auto Rsquared = dot(rdiff,
                               rdiff);
@@ -259,7 +262,7 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
         }
         else if (R < minDist_)
         {
-            f = -k_ * (minDist_ - R);
+            f = k_ * (R - minDist_);
         }
         else
         {
