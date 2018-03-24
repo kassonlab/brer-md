@@ -165,25 +165,25 @@ class RestraintModule : public gmxapi::MDModule // consider names
 struct ensemble_input_param_type
 {
     /// distance histogram parameters
-    size_t nbins{0};
+    size_t nBins{0};
     double binWidth{0.};
 
     /// Flat-bottom potential boundaries.
-    double min_dist{0};
-    double max_dist{0};
+    double minDist{0};
+    double maxDist{0};
 
     /// Experimental reference distribution.
     PairHist experimental{};
 
     /// Number of samples to store during each window.
-    unsigned int nsamples{0};
-    double sample_period{0};
+    unsigned int nSamples{0};
+    double samplePeriod{0};
 
     /// Number of windows to use for smoothing histogram updates.
-    unsigned int nwindows{0};
+    unsigned int nWindows{0};
 
     /// Harmonic force coefficient
-    double K{0};
+    double k{0};
     /// Smoothing factor: width of Gaussian interpolation for histogram
     double sigma{0};
 
@@ -195,28 +195,28 @@ struct ensemble_input_param_type
 // the way a tuple is. ref https://eli.thegreenplace.net/2014/variadic-templates-in-c/
 
 std::unique_ptr<ensemble_input_param_type>
-make_ensemble_params(size_t nbins,
-                     double binWidth,
-                     double min_dist,
-                     double max_dist,
-                     const std::vector<double> &experimental,
-                     unsigned int nsamples,
-                     double sample_period,
-                     unsigned int nwindows,
-                     double K,
-                     double sigma)
+makeEnsembleParams(size_t nbins,
+                   double binWidth,
+                   double minDist,
+                   double maxDist,
+                   const std::vector<double> &experimental,
+                   unsigned int nSamples,
+                   double samplePeriod,
+                   unsigned int nWindows,
+                   double k,
+                   double sigma)
 {
     using gmx::compat::make_unique;
     auto params = make_unique<ensemble_input_param_type>();
-    params->nbins = nbins;
+    params->nBins = nbins;
     params->binWidth = binWidth;
-    params->min_dist = min_dist;
-    params->max_dist = max_dist;
+    params->minDist = minDist;
+    params->maxDist = maxDist;
     params->experimental = experimental;
-    params->nsamples = nsamples;
-    params->sample_period = sample_period;
-    params->nwindows = nwindows;
-    params->K = K;
+    params->nSamples = nSamples;
+    params->samplePeriod = samplePeriod;
+    params->nWindows = nWindows;
+    params->k = k;
     params->sigma = sigma;
 
     return params;
@@ -247,13 +247,13 @@ class EnsembleHarmonic
 
         EnsembleHarmonic(size_t nbins,
                          double binWidth,
-                         double min_dist,
-                         double max_dist,
+                         double minDist,
+                         double maxDist,
                          PairHist experimental,
-                         unsigned int nsamples,
-                         double sample_period,
-                         unsigned int nwindows,
-                         double K,
+                         unsigned int nSamples,
+                         double samplePeriod,
+                         unsigned int nWindows,
+                         double k,
                          double sigma);
 
         // If dispatching this virtual function is not fast enough, the compiler may be able to better optimize a free
