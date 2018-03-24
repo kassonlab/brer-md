@@ -84,25 +84,24 @@ EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
                                    unsigned int nsamples,
                                    double sample_period,
                                    unsigned int nwindows,
-                                   double window_update_period,
                                    double K,
                                    double sigma) :
     nBins_{nbins},
     binWidth_{binWidth},
     minDist_{min_dist},
     maxDist_{max_dist},
-    histogram_(nBins_, 0),
+    histogram_(nbins, 0),
     experimental_{std::move(experimental)},
     nSamples_{nsamples},
     currentSample_{0},
     samplePeriod_{sample_period},
-    nextSampleTime_{samplePeriod_},
-    distanceSamples_(nSamples_),
+    nextSampleTime_{sample_period},
+    distanceSamples_(nsamples),
     nWindows_{nwindows},
     currentWindow_{0},
-    windowUpdatePeriod_{window_update_period},
-    nextWindowUpdateTime_{windowUpdatePeriod_},
-    windows_(),
+    windowStartTime_{0},
+    nextWindowUpdateTime_{nsamples*sample_period},
+    windows_{},
     k_{K},
     sigma_{sigma}
 {}
@@ -116,7 +115,6 @@ EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
                      params.nsamples,
                      params.sample_period,
                      params.nwindows,
-                     params.window_update_period,
                      params.K,
                      params.sigma)
 {
@@ -140,6 +138,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         {
             distanceSamples_[currentSample_++] = R;
             nextSampleTime_ += samplePeriod_;
+            nextSampleTime_ = currentSample_*samplePeriod_ + windowStartTime_;
         };
     }
 
@@ -220,12 +219,13 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             // with the same number of MD steps in each interval, and the interval will effectively lose digits as the
             // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
             // to a facility, we can look for a part of the code with access to the current timestep.
-            nextWindowUpdateTime_ += windowUpdatePeriod_;
-            ++currentWindow_;
+            windowStartTime_ = t;
+            nextWindowUpdateTime_ = nSamples_*samplePeriod_ + windowStartTime_;
+            ++currentWindow_; // This is currently never used. I'm not sure it will be, either...
 
             // Reset sample bufering.
             currentSample_ = 0;
-            // Clean up drift in sample times.
+            // Reset sample times.
             nextSampleTime_ = t + samplePeriod_;
         };
     }

@@ -256,11 +256,19 @@ class EnsembleRestraintBuilder
             auto nsamples = pybind11::cast<unsigned int>(parameter_dict["nsamples"]);
             auto sample_period = pybind11::cast<double>(parameter_dict["sample_period"]);
             auto nwindows = pybind11::cast<unsigned int>(parameter_dict["nwindows"]);
-            auto window_update_period = pybind11::cast<double>(parameter_dict["window_update_period"]);
             auto K = pybind11::cast<double>(parameter_dict["k"]);
             auto sigma = pybind11::cast<double>(parameter_dict["sigma"]);
 
-            auto params = plugin::make_ensemble_params(nbins, binWidth, min_dist, max_dist, experimental, nsamples, sample_period, nwindows, window_update_period, K, sigma);
+            auto params = plugin::make_ensemble_params(nbins,
+                                                       binWidth,
+                                                       min_dist,
+                                                       max_dist,
+                                                       experimental,
+                                                       nsamples,
+                                                       sample_period,
+                                                       nwindows,
+                                                       K,
+                                                       sigma);
             params_ = std::move(*params);
 
             // Note that if we want to grab a reference to the Context or its communicator, we can get it
@@ -436,7 +444,8 @@ PYBIND11_MODULE(myplugin, m) {
      * The build() method returns None or a launcher. A launcher has a signature like launch(rank) and
      * returns None or a runner.
      */
-    m.def("make_ensemble_params", &plugin::make_ensemble_params);
+    m.def("make_ensemble_params",
+          &plugin::make_ensemble_params);
     m.def("create_restraint", [](const py::object element){ return create_harmonic_builder(element); });
     m.def("ensemble_restraint", [](const py::object element){ return create_ensemble_builder(element); });
 

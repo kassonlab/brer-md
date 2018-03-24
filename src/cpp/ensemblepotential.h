@@ -181,7 +181,6 @@ struct ensemble_input_param_type
 
     /// Number of windows to use for smoothing histogram updates.
     unsigned int nwindows{0};
-    double window_update_period{0};
 
     /// Harmonic force coefficient
     double K{0};
@@ -200,11 +199,10 @@ make_ensemble_params(size_t nbins,
                      double binWidth,
                      double min_dist,
                      double max_dist,
-                     const std::vector<double>& experimental,
+                     const std::vector<double> &experimental,
                      unsigned int nsamples,
                      double sample_period,
                      unsigned int nwindows,
-                     double window_update_period,
                      double K,
                      double sigma)
 {
@@ -218,7 +216,6 @@ make_ensemble_params(size_t nbins,
     params->nsamples = nsamples;
     params->sample_period = sample_period;
     params->nwindows = nwindows;
-    params->window_update_period = window_update_period;
     params->K = K;
     params->sigma = sigma;
 
@@ -256,7 +253,6 @@ class EnsembleHarmonic
                          unsigned int nsamples,
                          double sample_period,
                          unsigned int nwindows,
-                         double window_update_period,
                          double K,
                          double sigma);
 
@@ -296,7 +292,7 @@ class EnsembleHarmonic
         /// Number of windows to use for smoothing histogram updates.
         size_t nWindows_;
         size_t currentWindow_;
-        double windowUpdatePeriod_;
+        double windowStartTime_;
         double nextWindowUpdateTime_;
         /// The history of nwindows histograms for this restraint.
         std::vector<std::unique_ptr<Matrix<double>>> windows_;
@@ -320,8 +316,8 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
     public:
         using EnsembleHarmonic::input_param_type;
 
-        EnsembleRestraint(const std::vector<unsigned long int> sites,
-                          const input_param_type& params,
+        EnsembleRestraint(const std::vector<unsigned long> &sites,
+                          const input_param_type &params,
                           std::shared_ptr<EnsembleResources> resources
         ) :
                 EnsembleHarmonic(params),

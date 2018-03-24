@@ -215,7 +215,6 @@ SOL         4055
               'nsamples': 1,
               'sample_period': 0.001,
               'nwindows': 4,
-              'window_update_period': 0.001,
               'k': 10000.,
               'sigma': 1.}
     potential = gmx.workflow.WorkElement(namespace="myplugin",
@@ -311,9 +310,9 @@ SOL         4055
               'nsamples': 1,
               'sample_period': 0.001,
               'nwindows': 4,
-              'window_update_period': 0.001,
               'k': 10000.,
               'sigma': 1.}
+
     potential = gmx.workflow.WorkElement(namespace="myplugin",
                                          operation="ensemble_restraint",
                                          params=params)
