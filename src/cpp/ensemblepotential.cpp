@@ -138,8 +138,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         if (t >= nextSampleTime_)
         {
             distanceSamples_[currentSample_++] = R;
-            nextSampleTime_ += samplePeriod_;
-            nextSampleTime_ = currentSample_*samplePeriod_ + windowStartTime_;
+            nextSampleTime_ = (currentSample_ + 1)*samplePeriod_ + windowStartTime_;
         };
     }
 
@@ -182,8 +181,8 @@ void EnsembleHarmonic::callback(gmx::Vector v,
                                    binWidth_,
                                    sigma_);
             assert(new_window != nullptr);
-            // Todo: when this callback code is extracted, we should adjust the arithmetic so that the times for the two update periods can't drift due to floating point precision problems.
-            assert(currentSample_ == distanceSamples_.size());
+            assert(distanceSamples_.size() == nSamples_);
+            assert(currentSample_ == nSamples_);
             blur(distanceSamples_,
                  new_window->vector());
             // We can just do the blur locally since there aren't many bins. Bundling these operations for
