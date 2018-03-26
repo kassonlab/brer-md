@@ -36,7 +36,7 @@ configure_file(data/water.gro water.gro COPYONLY)
 
 configure_file(testingconfiguration.in.h testingconfiguration.h)
 
-
+# Test that the library can access its dependencies and build.
 add_executable(library-test test_binding.cpp)
 add_test(BasicPlugin library-test)
 
@@ -49,6 +49,7 @@ set_tests_properties(BasicPlugin PROPERTIES
                      COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
 
 
+# Test the C++ code implementing the basic harmonic potential.
 add_executable(harmonic-test test_harmonic.cpp)
 add_test(HarmonicPotentialPlugin harmonic-test)
 
@@ -63,6 +64,7 @@ set_tests_properties(HarmonicPotentialPlugin PROPERTIES
                      COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
                      COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
 
+# Test the C++ force evaluation for the Roux-like biasing potential.
 add_executable(histogram-test test_histogram.cpp)
 add_test(EnsembleHistogramPotentialPlugin roux-test)
 
@@ -73,6 +75,21 @@ target_link_libraries(histogram-test ensemblepotential Gromacs::gmxapi
                       gtest_main)
 
 set_tests_properties(EnsembleHistogramPotentialPlugin PROPERTIES
+                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                     COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
+                     COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
+
+# Test the flat-bottom bounding potential built in to the ensemble restraint.
+add_executable(bounding-test test_bounding_restraint.cpp)
+add_test(EnsembleBoundingPotentialPlugin bounding-test)
+
+target_include_directories(bounding-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+set_target_properties(bounding-test PROPERTIES SKIP_BUILD_RPATH FALSE)
+target_link_libraries(bounding-test ensemblepotential Gromacs::gmxapi
+                      gtest_main)
+
+set_tests_properties(EnsembleBoundingPotentialPlugin PROPERTIES
                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                      COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
                      COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
