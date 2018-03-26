@@ -257,11 +257,13 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
         // Todo: update maxDist and minDist interpretration: flat bottom potential.
         if (R > maxDist_)
         {
+            // apply a force to reduce R
             f = k_ * (maxDist_ - R);
         }
         else if (R < minDist_)
         {
-            f = k_ * (R - minDist_);
+            // apply a force to increase R
+            f = k_ * (minDist_ - R);
         }
         else
         {
