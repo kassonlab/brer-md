@@ -4,6 +4,8 @@
 
 #include "ensemblepotential.h"
 
+#include <cmath>
+
 #include <vector>
 
 namespace plugin
@@ -34,27 +36,58 @@ void EnsembleResourceHandle::map_reduce(const T_I &iterable,
 class BlurToGrid
 {
     public:
-        BlurToGrid(double low, double width, double sigma) :
+        /*!
+         * \brief Contsruct the blurring functor.
+         *
+         * \param low The coordinate value of the first grid point.
+         * \param gridSpacing Distance between grid points.
+         * \param sigma Gaussian parameter for blurring inputs onto the grid.
+         */
+        BlurToGrid(double low,
+                   double gridSpacing,
+                   double sigma) :
             low_{low},
-            binWidth_{width},
-            _sigma{sigma}
+            binWidth_{gridSpacing},
+            sigma_{sigma}
         {
         };
 
-        void operator() (const std::vector<double>& distances, std::vector<double>* grid)
+        /*!
+         * \brief Callable for the functor.
+         *
+         * \param samples A list of values to be blurred onto the grid.
+         * \param grid Pointer to the container into which to accumulate a blurred histogram of samples.
+         *
+         * Example:
+         *
+         *     # Acquire 3 samples to be discretized with blurring.
+         *     std::vector<double> someData = {3.7, 8.1, 4.2};
+         *
+         *     # Create an empty grid to store magnitudes for points 0.5, 1.0, ..., 10.0.
+         *     std::vector<double> histogram(20, 0.);
+         *
+         *     # Specify the above grid and a Gaussian parameter of 0.8.
+         *     auto blur = BlurToGrid(0.5, 0.5, 0.8);
+         *
+         *     # Collect the density grid for the samples.
+         *     blur(someData, &histogram);
+         *
+         */
+        void operator() (const std::vector<double>& samples, std::vector<double>* grid)
         {
             const auto nbins = grid->size();
-            const auto num_samples = distances.size();
+            const double& dx{binWidth_};
+            const auto num_samples = samples.size();
 
-            const double denominator = 1.0/(2*_sigma*_sigma);
-            const double normalization = 1.0/(num_samples*sqrt(2.0*M_PI*_sigma*_sigma));
+            const double denominator = 1.0/(2*sigma_*sigma_);
+            const double normalization = 1.0/(num_samples*sqrt(2.0*M_PI*sigma_*sigma_));
             // We aren't doing any filtering of values too far away to contribute meaningfully, which
             // is admittedly wasteful for large sigma...
             for (size_t i = 0; i < nbins; ++i)
             {
                 double bin_value{0};
-                const double bin_x{i*binWidth_};
-                for(const auto distance : distances)
+                const double bin_x{low_ + i*dx};
+                for(const auto distance : samples)
                 {
                     const double relative_distance{bin_x - distance};
                     const auto numerator = -relative_distance*relative_distance;
@@ -72,8 +105,7 @@ class BlurToGrid
         const double binWidth_;
 
         /// Smoothing factor
-        const double _sigma;
-
+        const double sigma_;
 };
 
 EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
@@ -176,7 +208,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             }
 
             // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
-            auto blur = BlurToGrid(0.,
+            auto blur = BlurToGrid(0.0,
                                    binWidth_,
                                    sigma_);
             assert(new_window != nullptr);
