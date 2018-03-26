@@ -307,9 +307,6 @@ class EnsembleHarmonic
         double k_;
         /// Smoothing factor: width of Gaussian interpolation for histogram
         double sigma_;
-
-        std::mutex samples_mutex_;
-        std::mutex windows_mutex_;
 };
 
 /*!
