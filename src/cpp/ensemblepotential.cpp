@@ -165,14 +165,11 @@ void EnsembleHarmonic::callback(gmx::Vector v,
     const auto R = sqrt(Rsquared);
 
     // Store historical data every sample_period steps
+    if (t >= nextSampleTime_)
     {
-        std::lock_guard<std::mutex> lock(samples_mutex_);
-        if (t >= nextSampleTime_)
-        {
-            distanceSamples_[currentSample_++] = R;
-            nextSampleTime_ = (currentSample_ + 1)*samplePeriod_ + windowStartTime_;
-        };
-    }
+        distanceSamples_[currentSample_++] = R;
+        nextSampleTime_ = (currentSample_ + 1)*samplePeriod_ + windowStartTime_;
+    };
 
     // Every nsteps:
     //   0. Drop oldest window
@@ -181,85 +178,79 @@ void EnsembleHarmonic::callback(gmx::Vector v,
     //   3. On update, checkpoint the historical data source.
     //   4. Update historic windows.
     //   5. Use handles retained from previous windows to reconstruct the smoothed working histogram
+    if (t >= nextWindowUpdateTime_)
     {
-        std::lock_guard<std::mutex> lock_windows(windows_mutex_);
-        // Since we reset the samples state at the bottom, we should probably grab the mutex here for
-        // better exception safety.
-        std::lock_guard<std::mutex> lock_samples(samples_mutex_);
-        if (t >= nextWindowUpdateTime_)
+        // Get next histogram array, recycling old one if available.
+        std::unique_ptr<Matrix<double>> new_window = gmx::compat::make_unique<Matrix<double>>(1,
+                                                                                              nBins_);
+        std::unique_ptr<Matrix<double>> temp_window;
+        if (windows_.size() == nWindows_)
         {
-            // Get next histogram array, recycling old one if available.
-            std::unique_ptr<Matrix<double>> new_window = gmx::compat::make_unique<Matrix<double>>(1,
-                                                                                                  nBins_);
-            std::unique_ptr<Matrix<double>> temp_window;
-            if (windows_.size() == nWindows_)
+            // Recycle the oldest window.
+            // \todo wrap this in a helper class that manages a buffer we can shuffle through.
+            windows_[0].swap(temp_window);
+            windows_.erase(windows_.begin());
+        }
+        else
+        {
+            auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
+                                                                            nBins_);
+            assert(new_temp_window);
+            temp_window.swap(new_temp_window);
+        }
+
+        // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
+        auto blur = BlurToGrid(0.0,
+                               binWidth_,
+                               sigma_);
+        assert(new_window != nullptr);
+        assert(distanceSamples_.size() == nSamples_);
+        assert(currentSample_ == nSamples_);
+        blur(distanceSamples_,
+             new_window->vector());
+        // We can just do the blur locally since there aren't many bins. Bundling these operations for
+        // all restraints could give us a chance at some parallelism. We should at least use some
+        // threading if we can.
+
+        // We request a handle each time before using resources to make error handling easier if there is a failure in
+        // one of the ensemble member processes and to give more freedom to how resources are managed from step to step.
+        auto ensemble = resources.getHandle();
+        // Get global reduction (sum) and checkpoint.
+        assert(temp_window != nullptr);
+        // Todo: in reduce function, give us a mean instead of a sum.
+        ensemble.reduce(*new_window,
+                        temp_window.get());
+
+        // Update window list with smoothed data.
+        windows_.emplace_back(std::move(new_window));
+
+        // Get new histogram difference. Subtract the experimental distribution to get the values to use in our potential.
+        for (auto &bin : histogram_)
+        {
+            bin = 0;
+        }
+        for (const auto &window : windows_)
+        {
+            for (size_t i = 0; i < window->cols(); ++i)
             {
-                // Recycle the oldest window.
-                // \todo wrap this in a helper class that manages a buffer we can shuffle through.
-                windows_[0].swap(temp_window);
-                windows_.erase(windows_.begin());
+                histogram_.at(i) += (window->vector()->at(i) - experimental_.at(i))/windows_.size();
             }
-            else
-            {
-                auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
-                                                                                nBins_);
-                assert(new_temp_window);
-                temp_window.swap(new_temp_window);
-            }
-
-            // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
-            auto blur = BlurToGrid(0.0,
-                                   binWidth_,
-                                   sigma_);
-            assert(new_window != nullptr);
-            assert(distanceSamples_.size() == nSamples_);
-            assert(currentSample_ == nSamples_);
-            blur(distanceSamples_,
-                 new_window->vector());
-            // We can just do the blur locally since there aren't many bins. Bundling these operations for
-            // all restraints could give us a chance at some parallelism. We should at least use some
-            // threading if we can.
-
-            // We request a handle each time before using resources to make error handling easier if there is a failure in
-            // one of the ensemble member processes and to give more freedom to how resources are managed from step to step.
-            auto ensemble = resources.getHandle();
-            // Get global reduction (sum) and checkpoint.
-            assert(temp_window != nullptr);
-            // Todo: in reduce function, give us a mean instead of a sum.
-            ensemble.reduce(*new_window,
-                            temp_window.get());
-
-            // Update window list with smoothed data.
-            windows_.emplace_back(std::move(new_window));
-
-            // Get new histogram difference. Subtract the experimental distribution to get the values to use in our potential.
-            for (auto &bin : histogram_)
-            {
-                bin = 0;
-            }
-            for (const auto &window : windows_)
-            {
-                for (size_t i = 0; i < window->cols(); ++i)
-                {
-                    histogram_.at(i) += (window->vector()->at(i) - experimental_.at(i))/windows_.size();
-                }
-            }
+        }
 
 
-            // Note we do not have the integer timestep available here. Therefore, we can't guarantee that updates occur
-            // with the same number of MD steps in each interval, and the interval will effectively lose digits as the
-            // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
-            // to a facility, we can look for a part of the code with access to the current timestep.
-            windowStartTime_ = t;
-            nextWindowUpdateTime_ = nSamples_*samplePeriod_ + windowStartTime_;
-            ++currentWindow_; // This is currently never used. I'm not sure it will be, either...
+        // Note we do not have the integer timestep available here. Therefore, we can't guarantee that updates occur
+        // with the same number of MD steps in each interval, and the interval will effectively lose digits as the
+        // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
+        // to a facility, we can look for a part of the code with access to the current timestep.
+        windowStartTime_ = t;
+        nextWindowUpdateTime_ = nSamples_*samplePeriod_ + windowStartTime_;
+        ++currentWindow_; // This is currently never used. I'm not sure it will be, either...
 
-            // Reset sample bufering.
-            currentSample_ = 0;
-            // Reset sample times.
-            nextSampleTime_ = t + samplePeriod_;
-        };
-    }
+        // Reset sample bufering.
+        currentSample_ = 0;
+        // Reset sample times.
+        nextSampleTime_ = t + samplePeriod_;
+    };
 
 }
 
