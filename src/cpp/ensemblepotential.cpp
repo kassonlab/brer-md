@@ -176,7 +176,6 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             }
 
             // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
-            // Todo: update with new interpretatino of max/min dist
             auto blur = BlurToGrid(0.,
                                    binWidth_,
                                    sigma_);
