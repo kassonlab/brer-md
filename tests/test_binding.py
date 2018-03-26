@@ -224,7 +224,6 @@ SOL         4055
     # hide the extra Python bindings by letting myplugin.HarmonicRestraint automatically convert
     # to a WorkElement when add_dependency is called on it.
     potential.name = "ensemble_restraint"
-    before = md.workspec.elements[md.name]
     md.add_dependency(potential)
 
     context = gmx.context.ParallelArrayContext(md)

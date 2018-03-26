@@ -76,3 +76,31 @@ set_tests_properties(EnsembleHistogramPotentialPlugin PROPERTIES
                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                      COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
                      COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
+
+add_executable(histogram-test test_histogram.cpp)
+add_test(EnsembleHistogramPotentialPlugin roux-test)
+
+target_include_directories(histogram-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+set_target_properties(histogram-test PROPERTIES SKIP_BUILD_RPATH FALSE)
+target_link_libraries(histogram-test ensemblepotential Gromacs::gmxapi
+                      gtest_main)
+
+set_tests_properties(EnsembleHistogramPotentialPlugin PROPERTIES
+                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                     COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
+                     COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
+
+add_executable(bounding-test test_bounding.cpp)
+add_test(EnsembleBoundingPotentialPlugin bounding-test)
+
+target_include_directories(bounding-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+set_target_properties(bounding-test PROPERTIES SKIP_BUILD_RPATH FALSE)
+target_link_libraries(bounding-test ensemblepotential Gromacs::gmxapi
+                      gtest_main)
+
+set_tests_properties(EnsembleBoundingPotentialPlugin PROPERTIES
+                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                     COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
+                     COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
