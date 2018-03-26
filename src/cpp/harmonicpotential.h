@@ -96,7 +96,7 @@ class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
             site2_{site2}
         {};
 
-        std::array<unsigned long, 2> sites() const override;
+        std::vector<unsigned long int> sites() const override;
 
         // \todo provide this facility automatically
         gmx::PotentialPointData evaluate(gmx::Vector r1,

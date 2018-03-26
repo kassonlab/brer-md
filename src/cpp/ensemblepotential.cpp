@@ -14,6 +14,7 @@ template class ::plugin::Matrix<double>;
 
 void EnsembleResourceHandle::reduce(const ::plugin::Matrix<double>& send, ::plugin::Matrix<double>* receive) const
 {
+    assert(_reduce);
     (*_reduce)(send, receive);
 }
 
@@ -33,9 +34,9 @@ void EnsembleResourceHandle::map_reduce(const T_I &iterable,
 class BlurToGrid
 {
     public:
-        BlurToGrid(double min_dist, double max_dist, double sigma) :
-            _min_dist{min_dist},
-            _max_dist{max_dist},
+        BlurToGrid(double low, double width, double sigma) :
+            low_{low},
+            binWidth_{width},
             _sigma{sigma}
         {
         };
@@ -43,7 +44,6 @@ class BlurToGrid
         void operator() (const std::vector<double>& distances, std::vector<double>* grid)
         {
             const auto nbins = grid->size();
-            const double dx{(_max_dist - _min_dist)/nbins};
             const auto num_samples = distances.size();
 
             const double denominator = 1.0/(2*_sigma*_sigma);
@@ -53,7 +53,7 @@ class BlurToGrid
             for (size_t i = 0; i < nbins; ++i)
             {
                 double bin_value{0};
-                const double bin_x{i*dx};
+                const double bin_x{i*binWidth_};
                 for(const auto distance : distances)
                 {
                     const double relative_distance{bin_x - distance};
@@ -66,59 +66,62 @@ class BlurToGrid
 
     private:
         /// Minimum value of bin zero
-        const double _min_dist;
-        /// Maximum value of bin
-        const double _max_dist;
+        const double low_;
+
+        /// Size of each bin
+        const double binWidth_;
+
+        /// Smoothing factor
         const double _sigma;
+
 };
 
 EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
-                                   double min_dist,
-                                   double max_dist,
-                                   const PairHist &experimental,
-                                   unsigned int nsamples,
-                                   double sample_period,
-                                   unsigned int nwindows,
-                                   double window_update_period,
-                                   double K,
+                                   double binWidth,
+                                   double minDist,
+                                   double maxDist,
+                                   PairHist experimental,
+                                   unsigned int nSamples,
+                                   double samplePeriod,
+                                   unsigned int nWindows,
+                                   double k,
                                    double sigma) :
     nBins_{nbins},
-    minDist_{min_dist},
-    maxDist_{max_dist},
-    binWidth_{(maxDist_ - minDist_)/nBins_},
-    histogram_(nBins_, 0),
-    experimental_{experimental},
-    nSamples_{nsamples},
+    binWidth_{binWidth},
+    minDist_{minDist},
+    maxDist_{maxDist},
+    histogram_(nbins, 0),
+    experimental_{std::move(experimental)},
+    nSamples_{nSamples},
     currentSample_{0},
-    samplePeriod_{sample_period},
-    nextSampleTime_{samplePeriod_},
-    distanceSamples_(nSamples_),
-    nWindows_{nwindows},
+    samplePeriod_{samplePeriod},
+    // In actuality, we have nsamples at (samplePeriod - dt), but we don't have access to dt.
+    nextSampleTime_{samplePeriod},
+    distanceSamples_(nSamples),
+    nWindows_{nWindows},
     currentWindow_{0},
-    windowUpdatePeriod_{window_update_period},
-    nextWindowUpdateTime_{windowUpdatePeriod_},
-    windows_(),
-    k_{K},
+    windowStartTime_{0},
+    nextWindowUpdateTime_{nSamples*samplePeriod},
+    windows_{},
+    k_{k},
     sigma_{sigma}
-{
-    // We leave _histogram and _experimental unallocated until we have valid data to put in them, so that
-    // (_histogram == nullptr) == invalid histogram.
-}
+{}
 
 EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
-    EnsembleHarmonic(params.nbins,
-                     params.min_dist,
-                     params.max_dist,
+    EnsembleHarmonic(params.nBins,
+                     params.binWidth,
+                     params.minDist,
+                     params.maxDist,
                      params.experimental,
-                     params.nsamples,
-                     params.sample_period,
-                     params.nwindows,
-                     params.window_update_period,
-                     params.K,
+                     params.nSamples,
+                     params.samplePeriod,
+                     params.nWindows,
+                     params.k,
                      params.sigma)
 {
 }
 
+// Todo: reference coordinate for PBC problems.
 void EnsembleHarmonic::callback(gmx::Vector v,
                                 gmx::Vector v0,
                                 double t,
@@ -135,7 +138,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         if (t >= nextSampleTime_)
         {
             distanceSamples_[currentSample_++] = R;
-            nextSampleTime_ += samplePeriod_;
+            nextSampleTime_ = (currentSample_ + 1)*samplePeriod_ + windowStartTime_;
         };
     }
 
@@ -168,14 +171,18 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             {
                 auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
                                                                                 nBins_);
+                assert(new_temp_window);
                 temp_window.swap(new_temp_window);
             }
 
             // Reduce sampled data for this restraint in this simulation, applying a Gaussian blur to fill a grid.
-            auto blur = BlurToGrid(minDist_,
-                                   maxDist_,
+            // Todo: update with new interpretatino of max/min dist
+            auto blur = BlurToGrid(0.,
+                                   binWidth_,
                                    sigma_);
             assert(new_window != nullptr);
+            assert(distanceSamples_.size() == nSamples_);
+            assert(currentSample_ == nSamples_);
             blur(distanceSamples_,
                  new_window->vector());
             // We can just do the blur locally since there aren't many bins. Bundling these operations for
@@ -187,6 +194,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             auto ensemble = resources.getHandle();
             // Get global reduction (sum) and checkpoint.
             assert(temp_window != nullptr);
+            // Todo: in reduce function, give us a mean instead of a sum.
             ensemble.reduce(*new_window,
                             temp_window.get());
 
@@ -202,7 +210,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             {
                 for (size_t i = 0; i < window->cols(); ++i)
                 {
-                    histogram_.at(i) += window->vector()->at(i) - experimental_.at(i);
+                    histogram_.at(i) += (window->vector()->at(i) - experimental_.at(i))/windows_.size();
                 }
             }
 
@@ -211,12 +219,13 @@ void EnsembleHarmonic::callback(gmx::Vector v,
             // with the same number of MD steps in each interval, and the interval will effectively lose digits as the
             // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
             // to a facility, we can look for a part of the code with access to the current timestep.
-            nextWindowUpdateTime_ += windowUpdatePeriod_;
-            ++currentWindow_;
+            windowStartTime_ = t;
+            nextWindowUpdateTime_ = nSamples_*samplePeriod_ + windowStartTime_;
+            ++currentWindow_; // This is currently never used. I'm not sure it will be, either...
 
             // Reset sample bufering.
             currentSample_ = 0;
-            // Clean up drift in sample times.
+            // Reset sample times.
             nextSampleTime_ = t + samplePeriod_;
         };
     }
@@ -227,6 +236,8 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                                                     gmx::Vector v0,
                                                     double t)
 {
+    // This is not the vector from v to v0. It is the position of a site
+    // at v, relative to the origin v0. This is a potentially confusing convention...
     auto rdiff = v - v0;
     const auto Rsquared = dot(rdiff,
                               rdiff);
@@ -238,49 +249,44 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
     // Energy not needed right now.
 //    output.energy = 0;
 
-    // Start applying force after we have sufficient historical data.
-    if (windows_.size() == nWindows_)
+    if (R != 0) // Direction of force is ill-defined when v == v0
     {
-        if (R != 0) // Direction of force is ill-defined when v == v0
+
+        double f{0};
+
+        // Todo: update maxDist and minDist interpretration: flat bottom potential.
+        if (R > maxDist_)
         {
-
-            double dev = R;
-
-            double f{0};
-
-            if (dev > maxDist_)
-            {
-                f = k_ * (maxDist_ - dev);
-            }
-            else if (dev < minDist_)
-            {
-                f = -k_ * (minDist_ - dev);
-            }
-            else
-            {
-                double f_scal{0};
-
-                //  for (auto element : hij){
-                //      cout << "Hist element " << element << endl;
-                //    }
-                size_t numBins = histogram_.size();
-                //cout << "number of bins " << numBins << endl;
-                double x, argExp;
-                double normConst = sqrt(2 * M_PI) * pow(sigma_,
-                                                        3.0);
-
-                for (auto n = 0; n < numBins; n++)
-                {
-                    x = n * binWidth_ - dev;
-                    argExp = -0.5 * pow(x / sigma_,
-                                        2.0);
-                    f_scal += histogram_.at(n) * x / normConst * exp(argExp);
-                }
-                f = -k_ * f_scal;
-            }
-
-            output.force = f / norm(rdiff) * rdiff;
+            f = k_ * (maxDist_ - R);
         }
+        else if (R < minDist_)
+        {
+            f = k_ * (R - minDist_);
+        }
+        else
+        {
+            double f_scal{0};
+
+            //  for (auto element : hij){
+            //      cout << "Hist element " << element << endl;
+            //    }
+            size_t numBins = histogram_.size();
+            //cout << "number of bins " << numBins << endl;
+            double x, argExp;
+            double normConst = sqrt(2 * M_PI) * pow(sigma_,
+                                                    3.0);
+
+            for (size_t n = 0; n < numBins; n++)
+            {
+                x = n * binWidth_ - R;
+                argExp = -0.5 * pow(x / sigma_,
+                                    2.0);
+                f_scal += histogram_.at(n) * x / normConst * exp(argExp);
+            }
+            f = -k_ * f_scal;
+        }
+
+        output.force = f / norm(rdiff) * rdiff;
     }
     return output;
 }
