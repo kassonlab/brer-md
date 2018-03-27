@@ -66,7 +66,7 @@ set_tests_properties(HarmonicPotentialPlugin PROPERTIES
 
 # Test the C++ force evaluation for the Roux-like biasing potential.
 add_executable(histogram-test test_histogram.cpp)
-add_test(EnsembleHistogramPotentialPlugin roux-test)
+add_test(EnsembleHistogramPotentialPlugin histogram-test)
 
 target_include_directories(histogram-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
