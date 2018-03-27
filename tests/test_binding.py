@@ -111,8 +111,7 @@ SOL         4055
     with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
 
-    # gmx 0.0.4
-    assert gmx.__version__ == '0.0.4'
+    assert gmx.__version__ == '0.0.5'
     md = gmx.workflow.from_tpr(tpr_filename)
 
     context = gmx.context.ParallelArrayContext(md)
@@ -200,8 +199,7 @@ SOL         4055
         from gmx.data import tpr_filename
     print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
 
-    # gmx 0.0.4
-    assert gmx.__version__ == '0.0.4'
+    assert gmx.__version__ == '0.0.5'
     md = gmx.workflow.from_tpr([tpr_filename])
 
     # Create a WorkElement for the potential
@@ -294,8 +292,7 @@ SOL         4055
         from gmx.data import tpr_filename
     logger.info("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
 
-    # gmx 0.0.4
-    assert gmx.__version__ == '0.0.4'
+    assert gmx.__version__ == '0.0.5'
     md = gmx.workflow.from_tpr([tpr_filename, tpr_filename])
 
     # Create a WorkElement for the potential
@@ -325,6 +322,3 @@ SOL         4055
     context = gmx.context.ParallelArrayContext(md)
     with context as session:
         session.run()
-
-
-
