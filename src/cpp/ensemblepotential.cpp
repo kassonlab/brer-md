@@ -285,7 +285,6 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
 
         double f{0};
 
-        // Todo: update maxDist and minDist interpretration: flat bottom potential.
         if (R > maxDist_)
         {
             // apply a force to reduce R
@@ -300,21 +299,14 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
         {
             double f_scal{0};
 
-            //  for (auto element : hij){
-            //      cout << "Hist element " << element << endl;
-            //    }
-            size_t numBins = histogram_.size();
-            //cout << "number of bins " << numBins << endl;
-            double x, argExp;
-            double normConst = sqrt(2 * M_PI) * pow(sigma_,
-                                                    3.0);
+            const size_t numBins = histogram_.size();
+            double normConst = sqrt(2*M_PI)*sigma_*sigma_*sigma_;
 
             for (size_t n = 0; n < numBins; n++)
             {
-                x = n * binWidth_ - R;
-                argExp = -0.5 * pow(x / sigma_,
-                                    2.0);
-                f_scal += histogram_.at(n) * x / normConst * exp(argExp);
+                const double x{n*binWidth_ - R};
+                const double argExp{-0.5*x*x/(sigma_*sigma_)};
+                f_scal += histogram_.at(n)*exp(argExp)*x/normConst;
             }
             f = -k_ * f_scal;
         }
