@@ -14,7 +14,8 @@ namespace plugin
 // Explicit instantiation.
 template class ::plugin::Matrix<double>;
 
-void EnsembleResourceHandle::reduce(const ::plugin::Matrix<double>& send, ::plugin::Matrix<double>* receive) const
+void EnsembleResourceHandle::reduce(const Matrix<double> &send,
+                                    Matrix<double> *receive) const
 {
     assert(_reduce);
     (*_reduce)(send, receive);
