@@ -80,7 +80,8 @@ class EnsembleResourceHandle
          * \param send Matrices to be summed across the ensemble using Context resources.
          * \param receive destination of reduced data instead of updating internal Matrix.
          */
-        void reduce(const Matrix<double>& send, Matrix<double>* receive) const;
+        void reduce(const Matrix<double> &send,
+                    Matrix<double> *receive) const;
 
         /*!
          * \brief Apply a function to each input and accumulate the output.
@@ -130,21 +131,24 @@ class RestraintModule : public gmxapi::MDModule // consider names
     public:
         using param_t = typename R::input_param_type;
 
-        RestraintModule(const std::vector<unsigned long int>& sites,
+        RestraintModule(std::string name,
+                        std::vector<unsigned long int> sites,
                         const typename R::input_param_type& params,
                         std::shared_ptr<EnsembleResources> resources) :
-            sites_{sites},
+            sites_{std::move(sites)},
             params_{params},
-            resources_{std::move(resources)}
+            resources_{std::move(resources)},
+            name_{std::move(name)}
         {
 
         };
 
         ~RestraintModule() override = default;
 
+        // \todo make member function const
         const char *name() override
         {
-                return "RestraintModule";
+                return name_.c_str();
         }
 
         std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
@@ -159,6 +163,8 @@ class RestraintModule : public gmxapi::MDModule // consider names
 
         // Need to figure out if this is copyable or who owns it.
         std::shared_ptr<EnsembleResources> resources_;
+
+        const std::string name_;
 };
 
 
