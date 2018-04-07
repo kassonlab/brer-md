@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Run restrained-ensemble sampling and biasing workflow."""
 
+# Restrained-ensemble formalism is a variant of that defined by Roux et al., 2013
+
 import os
 import sys
 # Of course, the location of the Python plugin module is user-specific and could be
