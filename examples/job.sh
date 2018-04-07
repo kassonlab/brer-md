@@ -10,4 +10,4 @@
 module load gcc
 module load openmpi
 
-srun python -m mpi4py roux.py 12
+srun python -m mpi4py restrained.py 12

@@ -229,7 +229,7 @@ makeEnsembleParams(size_t nbins,
 };
 
 /*!
- * \brief a Roux-like pair restraint calculator for application across an ensemble of trajectories.
+ * \brief an ensemble pair restraint calculator for application across an ensemble of trajectories.
  *
  * Applies a force between two sites according to the difference between an experimentally observed
  * site pair distance distribution and the distance distribution observed earlier in the simulation
