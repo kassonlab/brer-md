@@ -64,7 +64,7 @@ set_tests_properties(HarmonicPotentialPlugin PROPERTIES
                      COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
                      COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
 
-# Test the C++ force evaluation for the Roux-like biasing potential.
+# Test the C++ force evaluation for the restrained-ensemble biasing potential.
 add_executable(histogram-test test_histogram.cpp)
 add_test(EnsembleHistogramPotentialPlugin histogram-test)
 
