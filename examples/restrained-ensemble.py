@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Run Roux sampling and biasing workflow."""
+"""Run restrained-ensemble sampling and biasing workflow."""
 
 import os
 import sys
