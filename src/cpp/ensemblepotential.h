@@ -223,7 +223,7 @@ makeEnsembleParams(size_t nbins,
 };
 
 /*!
- * \brief an ensemble pair restraint calculator for application across an ensemble of trajectories.
+ * \brief a residue-pair bias calculator for use in restrained-ensemble simulations.
  *
  * Applies a force between two sites according to the difference between an experimentally observed
  * site pair distance distribution and the distance distribution observed earlier in the simulation
