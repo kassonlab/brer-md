@@ -52,7 +52,7 @@ Python tests
 ============
 
 For the Python-level testing, you will need ``pytest`` and ``gmxapi``. We recommend setting up a Python virtual environment as described at
-`https://github.com/kassonlab/gmxapi `<https://github.com/kassonlab/gmxapi>`_
+`https://github.com/kassonlab/gmxapi <https://github.com/kassonlab/gmxapi>`_
 
 You will also need a functioning MPI installation and the ``mpi4py`` package.
 
