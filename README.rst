@@ -2,33 +2,64 @@
 Sample MD restraint plugin
 ==========================
 
-This repository provides a complete and working implementation of a GROMACS restraint potential. It is intended as both
-a tutorial and a template for implementing new custom restraint potentials.
+This repository provides a complete and working implementation of a few GROMACS restraint potentials. It is intended as both
+a tutorial and as a template for implementing new custom restraint potentials.
+
+Restraint potentials are implemented as "plugins" to GROMACS. The required GROMACS modifications are available at this
+`GitHub repository <https://github.com/kassonlab/gromacs-gmxapi>`_
+
+The plugin potentials are loaded and configured via Python and are compatible with the `gmxapi <https://github.com/kassonlab/gmxapi>`_
+Python package for MD simulation workflows.
 
 The basics
 ==========
 
-We use CMake to configure and build a C++ library and a Python module for interacting with it.
+To download, build, and install, you may need to first install ``wget``, ``git``, and/or ``cmake``.
 
-This sample project builds a C++ library named ``harmonicpotential``.
+We use CMake to configure and build a C++ library and a Python module for interacting with it.
+After installing the modified GROMACS (see above), either source GMXRC or provide the install location
+to CMake with the ``gmxapi_DIR`` environment variable.
+::
+
+    $ # install GROMACS
+    $ wget https://github.com/kassonlab/gromacs-gmxapi/archive/master.zip
+    $ unzip master.zip
+    $ cd gromacs-gmxapi-master
+    $ mkdir build
+    $ cd mkdir build
+    $ cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/gromacs -DGMX_THREAD_MPI=ON
+    $ make install # use -j10 to build in parallel with 10 cores (or however many you have)
+    $ # build sample restraint
+    $ cd ../..
+    $ git clone https://github.com/kassonlab/sample_restraint.git
+    $ mkdir build
+    $ cd build
+    $ gmxapi_DIR=$HOME/gromacs cmake ..
+    $ make
+    $ # run C++ tests
+    $ make test
+
+This sample project builds several C++ library with names such as ``harmonicpotential``.
 The actual filename will be something like ``libharmonicpotential.so`` or ``harmonicpotential.dll``
 or something depending on your operating system.
-This library is used to build a Python module named ``myplugin``.
+These libraries is used to build a Python module named ``myplugin``.
 
-The plugin requires `libgmxapi` to build.
+The plugin requires `libgmxapi` to build. See `gromacs-gmxapi <https://github.com/kassonlab/gromacs-gmxapi>`_
 
-The Python module `gmx` is required for testing.
+The Python module `gmx` is required for testing. See `gmxapi <https://github.com/kassonlab/gmxapi>`_
 
-Building and running the tests
-==============================
+Python tests
+============
 
-C++ and Python tests.
+For the Python-level testing, you will need ``pytest`` and ``gmxapi``. We recommend setting up a Python virtual environment as described at
+`https://github.com/kassonlab/gmxapi `<https://github.com/kassonlab/gmxapi>`_
 
+You will also need a functioning MPI installation and the ``mpi4py`` package.
 
-Python
-------
+Python tests can be run from the root directory of the repository after building.
+Assuming you built in a subdirecory of the repository named ``build`` (as above)::
 
-Python tests can be run from the root directory of the repository with ``pytest tests``.
+    PYTHONPATH=build/src/pythonmodule/ python -m pytest tests
 
 This command causes the directory named ``tests`` to be explored for Python files with names like ``test_*.py`` or
 ``*_test.py``.
