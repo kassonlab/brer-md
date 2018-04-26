@@ -37,7 +37,7 @@ print("Input directory list: {}".format(input_dir_list))
 tpr_list = [os.path.abspath(os.path.join(directory, 'mRMR.tpr')) for directory in input_dir_list]
 
 # dt = 0.002
-# First restratint applied between atoms 387 and 2569
+# First restraint applied between atoms 387 and 2569
 # Second restraint applied between atom 1330 and 2520
 # Restraint site coordinates relative to atom 1735
 # Gathers 50 distance samples over 10ps, then averages the histogram across the ensemble to
