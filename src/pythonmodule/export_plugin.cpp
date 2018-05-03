@@ -233,6 +233,9 @@ class EnsembleRestraintBuilder
     public:
         explicit EnsembleRestraintBuilder(py::object element)
         {
+            name_ = py::cast<std::string>(element.attr("name"));
+            assert(!name_.empty());
+
             // It looks like we need some boilerplate exceptions for plugins so we have something to
             // raise if the element is invalid.
             assert(py::hasattr(element, "params"));
@@ -298,16 +301,18 @@ class EnsembleRestraintBuilder
             // make a local copy of the Python object so we can capture it in the lambda
             auto update = context_.attr("ensemble_update");
             // Make a bindings-independent callable with standardizeable signature.
-            auto functor = [update](const plugin::Matrix<double>& send, plugin::Matrix<double>* receive)
+            auto name = py::str(name_);
+            auto functor = [update, name](const plugin::Matrix<double>& send,
+                                    plugin::Matrix<double>* receive)
             {
-                update(send, receive);
+                update(send, receive, name);
             };
 
             // To use a reduce function on the Python side, we need to provide it with a Python buffer-like object,
             // so we will create one here. Note: it looks like the SharedData element will be useful after all.
             auto resources = std::make_shared<plugin::EnsembleResources>(std::move(functor));
 
-            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(siteIndices_, params_, resources);
+            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(name_, siteIndices_, params_, resources);
 
             auto subscriber = subscriber_;
             py::list potentialList = subscriber.attr("potential");
@@ -334,6 +339,8 @@ class EnsembleRestraintBuilder
         std::vector<unsigned long int> siteIndices_;
 
         plugin::ensemble_input_param_type params_;
+
+        std::string name_;
 };
 
 std::unique_ptr<HarmonicRestraintBuilder> createHarmonicBuilder(const py::object element)
