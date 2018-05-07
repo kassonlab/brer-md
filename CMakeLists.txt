@@ -19,7 +19,7 @@ option(BUILD_TESTING "set ON to build testing framework" ON)
 # this will find the CMake configuration for the GROMACS libraries we need and define the CMake library objects
 # Gromacs::gmxapi
 find_package(gmxapi
-             0.0.5 REQUIRED CONFIG
+             0.0.6 REQUIRED CONFIG
              PATHS "$ENV{GROMACS_DIR}"
              )
 
