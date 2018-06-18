@@ -8,6 +8,10 @@ set_target_properties(sampleplugin PROPERTIES OUTPUT_NAME myplugin)
 # We can't easily/reliably let a debug build of a Python module have a "d" suffix and still be importable with the same name.
 set_target_properties(sampleplugin PROPERTIES DEBUG_POSTFIX "")
 
+# We expect to be building against an installed GROMACS that we will continue to dynamically link against at runtime.
+set_target_properties(sampleplugin PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+set_target_properties(sampleplugin PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # The Python module requires the new library we wrote as well as the gmxapi that we found in the top-level CMakeLists.txt
 target_link_libraries(sampleplugin PRIVATE Gromacs::gmxapi harmonicpotential ensemblepotential)
 
