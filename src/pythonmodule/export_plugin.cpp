@@ -300,12 +300,12 @@ class EnsembleRestraintBuilder
             assert(py::hasattr(context_, "ensemble_update"));
             // make a local copy of the Python object so we can capture it in the lambda
             auto update = context_.attr("ensemble_update");
-            // Make a bindings-independent callable with standardizeable signature.
-            auto name = py::str(name_);
+            // Make a callable with standardizeable signature.
+            const std::string name{name_};
             auto functor = [update, name](const plugin::Matrix<double>& send,
                                     plugin::Matrix<double>* receive)
             {
-                update(send, receive, name);
+                update(send, receive, py::str(name));
             };
 
             // To use a reduce function on the Python side, we need to provide it with a Python buffer-like object,
