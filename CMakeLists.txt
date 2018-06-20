@@ -62,6 +62,52 @@ if (CMAKE_GENERATOR MATCHES "Visual Studio")
 endif()
 ########################################################
 
+# Stuff for our plugin:
+#
+# If the user is not in a virtual environment and is not a privileged user and has not specified an install location
+# for the Python module (GMXPLUGIN_INSTALL_PATH), this option causes the automatic install location to query the user
+# site-packages directory instead of using the default site-packages directory for the interpreter.
+option(GMXPLUGIN_USER_INSTALL "Override the default site-packages directory with the user-specific Python packages directory. \
+       (Do not use with virtual environments.) \
+       Has no effect if GMXPLUGIN_INSTALL_PATH is defined or cached. \
+       Use -UGMXPLUGIN_INSTALL_PATH to force recalculation." OFF)
+
+# Since a user may have multiple virtual environments with different Python interpreters, it is generally confusing to
+# have a package for a virtual environment installed in the user's default user site-packages directory.
+
+unset(PYTHONINTERP_FOUND)
+unset(PYTHONLIBS_FOUND)
+find_package(PythonInterp)
+if (PYTHONINTERP_FOUND)
+    message(STATUS "Found Python interpreter: ${PYTHON_EXECUTABLE}")
+    find_package(PythonLibs)
+    if (PYTHONLIBS_FOUND)
+        if (GMXPLUGIN_USER_INSTALL)
+            execute_process(COMMAND ${PYTHON_EXECUTABLE} "-m" "site" "--user-site" OUTPUT_VARIABLE GMXPLUGIN_DEFAULT_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+            message(STATUS "Python user site-packages directory is ${GMXPLUGIN_DEFAULT_SITE_PACKAGES}")
+        else()
+            execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; import os; print(os.path.abspath(os.path.join(sys.prefix, 'lib', 'python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}', 'site-packages')))" OUTPUT_VARIABLE GMXPLUGIN_DEFAULT_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+            message(STATUS "Python site-packages directory is ${GMXPLUGIN_DEFAULT_SITE_PACKAGES}")
+        endif()
+    else()
+        message(FATAL "Found Python interpreter ${PYTHON_EXECUTABLE} but this Python installation does not have developer tools."
+                "Set PYTHON_EXECUTABLE to the Python interpreter that was installed with a working Python.h header file.")
+    endif()
+else()
+    message(FATAL "Could not find Python interpreter. Set CMake flag -DPYTHON_EXECUTABLE=/path/to/python to hint.")
+endif()
+
+# At some point this may be part of a CMake package with several components for which a single CMAKE_INSTALL_PREFIX does
+# not make sense, so let's manage the install path separately.
+set(GMXPLUGIN_INSTALL_PATH ${GMXPLUGIN_DEFAULT_SITE_PACKAGES} CACHE PATH
+    "Path to Python module install location (site-packages). For an automatically determined install location based on \
+    the Python installation, leave undefined or explicitly undefined with -UGMXPLUGIN_INSTALL_PATH and, optionally, set \
+    GMXPLUGIN_USER_INSTALL on or off to specify the installation's site-packages directory or the 'user' site-packages \
+    directory.")
+
+message(STATUS "Python module will be installed to GMXPLUGIN_INSTALL_PATH cache value ${GMXPLUGIN_INSTALL_PATH}")
+
+
 # Now move on to building the custom code.
 add_subdirectory(src)
 
