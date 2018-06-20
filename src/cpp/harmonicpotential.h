@@ -13,6 +13,19 @@
 #include "gromacs/restraint/restraintpotential.h"
 #include "gromacs/utility/real.h"
 
+/*! \file
+ * \brief Implement a harmonic pair force.
+ *
+ * Calculations and additional behavior is defined in harmonicpotential.cpp
+ *
+ * \todo This code has not been updated in a while...
+ * This needs to be updated and tested more rigorously.
+ *
+ * Ref. https://github.com/kassonlab/gmxapi/issues/55
+ *      https://github.com/kassonlab/gmxapi/issues/77
+ *      https://github.com/kassonlab/gmxapi/issues/78
+ */
+
 namespace plugin
 {
 
@@ -30,11 +43,8 @@ class Harmonic
 
         // Allow easier automatic generation of bindings.
         struct input_param_type {
-            float whateverIwant;
+//             not yet used
         };
-
-        struct output_type
-        {};
 
         /*!
          * \brief Calculate harmonic force on particle at position v in reference to position v0.
@@ -61,23 +71,15 @@ class Harmonic
                                           gmx::Vector v0,
                                           gmx_unused double t);
 
-        // Cache of historical distance data. Not thread safe
-//        std::vector<float> history{};
-
         // The class will either be inherited as a mix-in or inherit a CRTP base class. Either way, it probably needs proper virtual destructor management.
         virtual ~Harmonic() {
-//            for (auto&& distance: history)
-//            {
-//                std::cout << distance << "\n";
-//            }
-//            std::cout << std::endl;
         }
 
     private:
-        // set equilibrium separation distance
+        // set equilibrium separation distance in GROMACS units.
         // TODO: be clearer about units
         real R0;
-        // set spring constant
+        // set spring constant in native GROMACS units.
         // TODO: be clearer about units
         real k;
 };
@@ -87,6 +89,16 @@ class Harmonic
 class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
 {
     public:
+        /*!
+         * \brief Create an instance of the restraint (used in libgromacs)
+         *
+         * Each pair restraint instance operates on one pair of atomic sites.
+         *
+         * \param site1 first atomic site in the pair.
+         * \param site2 second atomic site in the pair.
+         * \param R0 targeted equilibrium pair separation.
+         * \param k spring constant.
+         */
         HarmonicRestraint(unsigned long int site1,
                           unsigned long int site2,
                           real R0,
@@ -96,9 +108,28 @@ class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
             site2_{site2}
         {};
 
+        /*!
+         * \brief Implement required interface of gmx::IRestraintPotential
+         *
+         * \return list of configured site indices.
+         *
+         * \todo remove to template header
+         * \todo abstraction of site references
+         */
         std::vector<unsigned long int> sites() const override;
 
-        // \todo provide this facility automatically
+        /*!
+         * \brief Implement the interface gmx::IRestraintPotential
+         *
+         * Dispatch to calculate() method.
+         *
+         * \param r1 coordinate of first site
+         * \param r2 reference coordinate (second site)
+         * \param t simulation time
+         * \return calculated force and energy
+         *
+         * \todo remove to template header.
+         */
         gmx::PotentialPointData evaluate(gmx::Vector r1,
                                          gmx::Vector r2,
                                          double t) override;
@@ -108,6 +139,11 @@ class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
         unsigned long int site2_{0};
 };
 
+/*!
+ * \brief Wraps HarmonicPotential with a gmxapi compatible "module".
+ *
+ * Objects of this type allow the potential class to be instantiated as the simulation is launched.
+ */
 class HarmonicModule : public gmxapi::MDModule
 {
     public:
