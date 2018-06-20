@@ -210,23 +210,7 @@ makeEnsembleParams(size_t nbins,
                    double samplePeriod,
                    unsigned int nWindows,
                    double k,
-                   double sigma)
-{
-    using gmx::compat::make_unique;
-    auto params = make_unique<ensemble_input_param_type>();
-    params->nBins = nbins;
-    params->binWidth = binWidth;
-    params->minDist = minDist;
-    params->maxDist = maxDist;
-    params->experimental = experimental;
-    params->nSamples = nSamples;
-    params->samplePeriod = samplePeriod;
-    params->nWindows = nWindows;
-    params->k = k;
-    params->sigma = sigma;
-
-    return params;
-};
+                   double sigma);
 
 /*!
  * \brief a residue-pair bias calculator for use in restrained-ensemble simulations.
