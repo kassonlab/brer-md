@@ -40,7 +40,6 @@ gmx::PotentialPointData Harmonic::calculate(gmx::Vector v,
         output.force = k * (double(R0)/R - 1.0)*rdiff;
     }
 
-//    history.emplace_back(magnitude - R0);
     return output;
 }
 
@@ -48,6 +47,7 @@ gmx::PotentialPointData HarmonicRestraint::evaluate(gmx::Vector r1,
                                                  gmx::Vector r2,
                                                  double t)
 {
+    // Use calculate() method inherited from HarmonicPotential
     return calculate(r1, r2, t);
 }
 

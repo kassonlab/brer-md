@@ -2,7 +2,7 @@
 Sample MD restraint plugin
 ==========================
 
-This repository provides a complete and working implementation of a few GROMACS restraint potentials. It is intended as both
+This `repository <https://github.com/kassonlab/sample_restraint>`_ provides a complete and working implementation of a few GROMACS restraint potentials. It is intended as both
 a tutorial and as a template for implementing new custom restraint potentials.
 
 Restraint potentials are implemented as "plugins" to GROMACS. The required GROMACS modifications are available at this
@@ -11,17 +11,65 @@ Restraint potentials are implemented as "plugins" to GROMACS. The required GROMA
 The plugin potentials are loaded and configured via Python and are compatible with the `gmxapi <https://github.com/kassonlab/gmxapi>`_
 Python package for MD simulation workflows.
 
+For a quick start, consider pulling a recent Docker image that has already been configured for gmxapi and this plug-in.
+
+Repository Contents
+===================
+This repository uses CMake to build and install a Python C++ extension package.
+
+* ``CMakeLists.txt``, ``cmake/FindGROMACS.cmake``, and ``src/CMakeLists.txt`` provide necessary CMake infrastructure. You should not need to edit these.
+* ``src/cpp`` contains a header and ``cpp`` file for each restraint potential built with this module. When adding new potentials, you will update ``CMakeLists.txt`` to create build targets. Use the existing potentials as examples.
+* ``src/pythonmodule/`` contains ``CMakeLists.txt``, ``export_plugin.h``, and ``export_plugin.cpp``. When you have written a new potential, you can add it to ``CMakeLists.txt`` and ``export_plugin.cpp``. This is the code that produces the C++ extension for Python. ``HarmonicRestraint`` is a simple example that applies a Hooke's Law spring between two atoms. ``EnsembleHarmonic`` applies a more complicated potential and uses additional facilities provided by gmxapi.
+* ``src/pybind11`` is just a copy of the Python bindings framework from the Pybind project (ref https://github.com/pybind/pybind11 ). It is used to wrap the C++ restraint code and give it a Python interface.
+* ``tests/`` contains C++ and Python tests for the provided code. Update ``CMakeLists.txt`` to add your own, based on these examples. C++ unit tests use `googletest<https://github.com/google/googletest>`_. Python tests use the `pytest <https://docs.pytest.org/en/latest/>`_. Refer to those respective projects for more about how they make test-writing easier.
+* ``examples`` contains a sample SLURM job script and ``restrained-ensemble.py`` gmxapi script that have been used to do restrained ensemble simulations. ``example.py`` and ``example.ipynb`` explore a toy alanine dipeptide system. ``strip_notebook.py`` is a helper script to remove extra output and state data from an iPython notebook before checking updates back into the repository.
+* ``Dockerfile`` is a recipe to build a Docker image from the root of the repository.
+
+Docker quick-start
+==================
+
+Pull the docker image and launch a container with port 8888 on the host mapped to port 8888 in the container.
+::
+
+    $ docker run --rm -ti -p 8888:8888 gmxapi/sample_restraint:devel
+
+Note that the ``--rm`` option tells docker not to save
+any changes you make after launching the container. You can, however, download any changes you make to the notebook through the web interface. Refer to the `Docker documentation <https://docs.docker.com>`_ for more options on managing containers.
+
+You should then see something like the following, but with a different ``token`` for the URL. Open the
+URL in a browser on the same (host) machine to access the notebook server. Browse to ``sample_restraint`` and ``examples`` and then launch the ``example`` notebook for an interactive walk-through. Example output::
+
+    Execute the command: jupyter notebook
+    [I 15:26:07.683 NotebookApp] Writing notebook server cookie secret to /home/jovyan/.local/share/jupyter/runtime/notebook_cookie_secret
+    [W 15:26:08.184 NotebookApp] WARNING: The notebook server is listening on all IP addresses and not using encryption. This is not recommended.
+    [I 15:26:08.223 NotebookApp] JupyterLab alpha preview extension loaded from /opt/conda/lib/python3.6/site-packages/jupyterlab
+    [I 15:26:08.230 NotebookApp] Serving notebooks from local directory: /home/jovyan
+    [I 15:26:08.230 NotebookApp] 0 active kernels
+    [I 15:26:08.230 NotebookApp] The Jupyter Notebook is running at:
+    [I 15:26:08.230 NotebookApp] http://[all ip addresses on your system]:8888/?token=948d611453ea3f03ad406dc375bfc186c4315fa68c50e23d
+    [I 15:26:08.230 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+    [C 15:26:08.231 NotebookApp]
+
+        Copy/paste this URL into your browser when you connect for the first time,
+        to login with a token:
+            http://localhost:8888/?token=948d611453ea3f03ad406dc375bfc186c4315fa68c50e23d
+
 The basics
 ==========
 
+This repository provides a potentially useful plugin, but also serves as documentation by example and
+as a template for developing GROMACS extension code in the gmxapi framework.
+
+Build and install
+-----------------
+
 To download, build, and install, you may need to first install ``wget``, ``git``, and/or ``cmake``.
 
-We use CMake to configure and build a C++ library and a Python module for interacting with it.
-After installing the modified GROMACS (see above), either source GMXRC or provide the install location
-to CMake with the ``gmxapi_DIR`` environment variable.
+
+The plugin requires `libgmxapi` to build. See `gromacs-gmxapi <https://github.com/kassonlab/gromacs-gmxapi>`_
 ::
 
-    $ # install GROMACS
+    $ # install GROMACS. Instead of `master`, you can choose a specific release or the `devel` branch.
     $ wget https://github.com/kassonlab/gromacs-gmxapi/archive/master.zip
     $ unzip master.zip
     $ cd gromacs-gmxapi-master
@@ -29,24 +77,96 @@ to CMake with the ``gmxapi_DIR`` environment variable.
     $ cd mkdir build
     $ cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/gromacs -DGMX_THREAD_MPI=ON
     $ make install # use -j10 to build in parallel with 10 cores (or however many you have)
-    $ # build sample restraint
     $ cd ../..
+
+We use CMake to configure and build a C++ library and a Python module for interacting with it.
+After installing the modified GROMACS (see above), either source the `GMXRC` file provided with the GROMACS installation
+or provide the install location to CMake with the ``gmxapi_DIR`` environment variable.
+
+As with `gmxapi <https://github.com/kassonlab/gromacs-gmxapi>`_, we recommend installing and using this code in a
+Python virtual environment. (See the documentation for your ``gmxapi`` distribution or http://gmxapi.readthedocs.io/en/latest/install.html
+) Accordingly, if you choose to _install_ the plugin rather than just to use it out of its build directory, consider whether you want to have to set your ``PYTHONPATH`` environment variable or where you can install it that Python will find it. You can explicitly set the installation location
+by setting ``-DGMXPLUGIN_INSTALL_PATH=/path/to/install/directory`` or you can let CMake determine an
+appropriate location automatically for your Python interpreter. If you have administrative privileges
+(such as when running on a desktop computer) or if you are using a Python virtual environment (recommended),
+you don't need to specify anything additional. If you are an unprivileged user (such as on a shared machine) and are not in a Python virtual environment, set `-DGMXPLUGIN_USER_INSTALL=ON` to install into
+the "user" Python packages directory in your home directory. (Equivalent to the ``--user`` option to ``pip``)
+
+If you have multiple Python installations or just want to be unambiguous, provide CMake with the Python
+interpreter you wish to use (the same as you are using for ``gmxapi``) with ``-DPYTHON_EXECUTABLE=/path/to/python``.
+For instance, if you have both Python 3.x and Python 2.7,
+but you plan to use Python 2.7, use ``-DPYTHON_EXECUTABLE=`which python2``` or ``-DPYTHON_EXECUTABLE=`which python``` (if ``python`` points to the Python 2 interpreter).
+::
+
+    $ # build sample restraint
     $ git clone https://github.com/kassonlab/sample_restraint.git
+    $ # optionally, check out the development branch
+    $ # pushd sample_restraint ; git checkout devel ; popd
+    $ # perform an out-of-source build
     $ mkdir build
     $ cd build
-    $ gmxapi_DIR=$HOME/gromacs cmake ..
+    $ # Get the GROMACS environment settings
+    $ source $HOME/gromacs/bin/GMXRC
+    $ # Configure the build environment with CMake
+    $ cmake ../sample_restraint
+    $ # or
+    $ # cmake ../sample_restraint -DGMXPLUGIN_INSTALL_PATH=/path/to/install/directory
+    $ # or
+    $ # cmake ../sample_restraint -DGMXPLUGIN_USER_INSTALL=ON -DPYTHON_EXECUTABLE=`which python`
     $ make
     $ # run C++ tests
     $ make test
+    $ # optionally, install
+    $ make install
 
-This sample project builds several C++ library with names such as ``harmonicpotential``.
+If you choose not to install the plugin module, you can tell Python where to find it by setting your PYTHONPATH
+environment variable. For instance, while still in the build directory::
+
+    $ export PYTHONPATH=`pwd`/src/pythonmodule
+
+The Python module ``gmx`` is required for testing. See `gmxapi <https://github.com/kassonlab/gmxapi>`_
+
+Running
+-------
+The ``examples`` directory contains some sample scripts for running ``gmxapi`` workflows using the restraint potential
+samples in this repository. You may also find ``tests/test_binding.py`` informative.
+
+For a basic walk-through with a toy system, launch a Jupyter notebook server and navigate to ``examples/example.py``
+
+What's going on
+---------------
+
+This sample project builds several C++ libraries with names such as ``harmonicpotential``.
 The actual filename will be something like ``libharmonicpotential.so`` or ``harmonicpotential.dll``
 or something depending on your operating system.
-These libraries is used to build a Python module named ``myplugin``.
+These libraries are used to build a Python module named ``myplugin``.
 
-The plugin requires `libgmxapi` to build. See `gromacs-gmxapi <https://github.com/kassonlab/gromacs-gmxapi>`_
+When setting up a workflow, a Python script provides gmxapi with parameters and a factory function
+for a plugin restraint potential. This Python interface is defined in ``src/pythonmodule/export_plugin.cpp``.
+When a Session is launched, an C++ object that performs restraint force calculations is created and
+given to the GROMACS library. During each MD step, part of the MD force evaluation includes a call
+to the calculations performed by the restraint. For the pair restraints demonstrated here, GROMACS
+provides relative coordinates of two atomic sites to the calculation code in the plugin. If multiple
+restrained pairs are needed, multiple restraints are attached to the simulation. Coordination across
+an ensemble of simulations is possible using resources provided by the Session.
 
-The Python module `gmx` is required for testing. See `gmxapi <https://github.com/kassonlab/gmxapi>`_
+Fundamentally, a new restraint potential is implemented by creating a class that provides a
+``calculate()`` method and using wrappers to give it interfaces to GROMACS and to Python.
+C++ wrappers allow the basic class implementing the potential to be presented to the GROMACS
+library in a way that can be used to evaluate forces during a simulation. Other C++ template
+ code wraps the potential in a portable way so that it can be passed to GROMACS through a Python
+ interface and to receive parameters from the Python interpreter. Pybind11 syntax in
+``export_plugin.cpp`` provides the code to actually expose the plugin as a class in a Python module
+that is compatible with the ``gmx`` package provided in the ``gmxapi`` project.
+
+By version
+0.1.0, additional wrappers and boilerplate code will be migrated out of the files that
+define the ``calculate()`` methods. Until then, some amount of copy-and-paste or editing is
+necessary to implement a new potential. Refer to ``src/cpp/harmonicpotential.h`` and to
+ ``src/cpp/harmonicpotential.cpp`` for a documented example of a simple pair restraint. A more
+complex example is found in the ``ensemblepotential`` files. The code in ``src/cpp`` is sufficient
+to produce testable object code, but the Python module is exported in ``src/pythonmodule/export_plugin.cpp``. If you add additional source files for a new potential,
+you will need to update ``src/cpp/CMakeLists.txt`` as well.
 
 Python tests
 ============
@@ -72,100 +192,16 @@ the ``PYTHONPATH`` environment variable).
 If you just run ``pytest`` with no arguments, it will discover and try to run tests from elsewhere in the repository
 that were not intended, and they will fail.
 
-Docker
-======
+To run the full set of tests for the ensemble workflow features, first make sure that you have an MPI-capable environment
+and ``mpi4py`` installed. Refer to http://mpi4py.readthedocs.io/en/stable/ and https://github.com/kassonlab/gmxapi for more
+information.
 
-For a quick start, consider these instructions to set up a docker image with the dependencies installed and the
-plugin ready to go.
+The ensemble tests assume that 2 ranks are available. After installing the plugin, run (for example)::
 
-Prepare to build the docker image
----------------------------------
+    $ mpiexec -n 2 python -m mpi4py -m pytest
 
-Refer to the Dockerfile in this repository:
+If you do not have MPI set up for your system, you could build a docker image using the Dockerfile in this
+repository and do::
 
-This Dockerfile is used to produce a working installation of gmxpy and libgmxapi
-against which to develop plugins. The sample plugin is also built, but not installed.
-These dependencies are currently in private repositories, so they should be
-retrieved before building the docker image so that the sources are available in
-the same directory as the Dockerfile as 'gromacs-gmxapi' and 'gmxpy'.
+    $ docker run --cpus 2 --rm -ti samplerestraint bash -c "cd /home/jovyan/samplerestraint/tests && mpiexec -n 2 python -m mpi4py -m pytest"
 
-    # Get this repository and this Dockerfile (if you haven't already)
-    mkdir docker-build-dir
-    cd docker-build-dir
-    git clone git@bitbucket.org:kassonlab/samplerestraint.git
-    cp -r samplerestraint/docker/* ./
-
-    # Get the dependencies
-    git clone git@bitbucket.org:kassonlab/gromacs_api.git gromacs-gmxapi
-    (cd gromacs-gmxapi && git checkout develop-0.0.3)
-    git clone git@bitbucket.org:kassonlab/gmxpy-dev.git gmxpy
-    (cd gmxpy && git checkout develop)
-
-Build an image, create a container, and run build scripts
----------------------------------------------------------
-
-Just build from these Dockerfiles
-
-    # '.' uses the Dockerfile in the current directory, '-t plugintest' names the image.
-    # First build gromacs in an image named gmxapi
-    docker build . -f Dockerfile.gmxapi -t gmxapi
-    # Then build an image named 'plugintest' with gmxpy installed.
-    docker build . -t plugintest
-
-Run a temporary container from the image, removing when done. Default command builds plugin.
-
-    docker run --rm --init -ti plugintest
-
-Run a shell in a temporary container from the image, removing when done.
-
-    docker run --rm --init -ti plugintest bash
-
-Create a container from which to run bash, then start it.
-
-    docker --init --name buildplugincontainer -ti plugintest bash
-    docker start buildplugincontainer
-
-Run provided scripts in the running container.
-
-    docker exec -ti buildplugincontainer bash /external/scripts/buildplugin.sh
-
-More
-----
-
-Stop the container and save a snapshot of it as a new image.
-
-    docker stop buildplugincontainer
-    docker commit buildplugincontainer plugintest:build20171027
-
-Start a fresh container from the checkpoint
-
-    # Remove any old container with the same name
-    docker rm buildplugincontainer
-
-    docker create --name buildplugincontainer --init -ti plugintest:build20171027 bash
-    docker start buildplugincontainer
-
-    # or
-
-    docker run --name buildplugincontainer --init -ti plugintest:build20171027 bash
-
-Update the image
-
-    # Update files without rebuilding image
-    docker create --name patch plugintest
-    docker cp $HOME/docker/plugintest-repo/scripts patch:/external/
-    docker commit patch plugintest:build20171028
-    docker rm patch
-
-Start a temporary container from the checkpoint
-
-    docker run --rm -v /Users/eric/develop/:/develop/ --init -ti plugintest:build20171028 bash -x scripts/setuptoolsinstall.sh
-
-Jupyter notebook
-================
-
-The docker image described above is based on the jupyter/scipy-notebook docker image.
-
-    docker run -it --rm -p 8888:8888 plugintest start-notebook.sh
-
-Open the suggested URL locally and look for the `examples` directory in the sample repository.

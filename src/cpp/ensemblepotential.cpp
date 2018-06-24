@@ -2,6 +2,16 @@
 // Created by Eric Irrgang on 2/26/18.
 //
 
+/*! \file
+ * \brief Code to implement the potential declared in ensemblepotential.h
+ *
+ * This file currently contains boilerplate that will not be necessary in future gmxapi releases, as
+ * well as additional code used in implementing the restrained ensemble example workflow.
+ *
+ * A simpler restraint potential would only update the calculate() function. If a callback function is
+ * not needed or desired, remove the callback() code from this file and from ensemblepotential.h
+ */
+
 #include "ensemblepotential.h"
 
 #include <cmath>
@@ -20,14 +30,6 @@ void EnsembleResourceHandle::reduce(const Matrix<double> &send,
     assert(_reduce);
     (*_reduce)(send, receive);
 }
-
-template<typename T_I, typename T_O>
-void EnsembleResourceHandle::map_reduce(const T_I &iterable,
-                                        T_O *output,
-                                        void (*function)(double, const PairHist & input,
-                                                 PairHist * output)
-                                        )
-{}
 
 /*!
  * \brief Apply a Gaussian blur when building a density grid for a list of values.
@@ -154,7 +156,13 @@ EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
 {
 }
 
-// Todo: reference coordinate for PBC problems.
+//
+//
+// HERE is the (optional) function that updates the state of the restraint periodically.
+// It is called before calculate() once per timestep per simulation (on the master rank of
+// a parallelized simulation).
+//
+//
 void EnsembleHarmonic::callback(gmx::Vector v,
                                 gmx::Vector v0,
                                 double t,
@@ -255,6 +263,12 @@ void EnsembleHarmonic::callback(gmx::Vector v,
 
 }
 
+
+//
+//
+// HERE is the function that does the calculation of the restraint force.
+//
+//
 gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                                                     gmx::Vector v0,
                                                     double t)
@@ -344,7 +358,8 @@ EnsembleResourceHandle EnsembleResources::getHandle() const
     return handle;
 }
 
-// Explicitly instantiate a definition.
+// Important: Explicitly instantiate a definition for the templated class declared in ensemblepotential.h.
+// Failing to do this will cause a linker error.
 template class ::plugin::RestraintModule<EnsembleRestraint>;
 
 } // end namespace plugin
