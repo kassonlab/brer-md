@@ -24,8 +24,6 @@ std::ostream& operator<<(std::ostream& stream, const gmx::Vector& vec)
     return stream;
 }
 
-const auto filename = plugin::testing::sample_tprfilename;
-
 TEST(EnsembleHistogramPotentialPlugin, ForceCalc)
 {
     constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);

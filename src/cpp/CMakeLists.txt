@@ -4,7 +4,8 @@
 # Create a shared object library for a simple restraint.
 add_library(harmonicpotential STATIC
             harmonicpotential.h
-            harmonicpotential.cpp)
+            harmonicpotential.cpp
+            sessionresources.cpp)
 set_target_properties(harmonicpotential PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(harmonicpotential PUBLIC
@@ -26,7 +27,8 @@ target_link_libraries(harmonicpotential PRIVATE Gromacs::gmxapi)
 # Create a shared object library for our restrained ensemble plugin.
 add_library(ensemblepotential STATIC
             ensemblepotential.h
-            ensemblepotential.cpp)
+            ensemblepotential.cpp
+            sessionresources.cpp)
 set_target_properties(ensemblepotential PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(ensemblepotential PUBLIC

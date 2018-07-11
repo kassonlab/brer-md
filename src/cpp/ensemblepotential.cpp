@@ -18,18 +18,14 @@
 
 #include <vector>
 
+#include "gmxapi/context.h"
+#include "gmxapi/session.h"
+#include "gmxapi/md/mdsignals.h"
+
+#include "sessionresources.h"
+
 namespace plugin
 {
-
-// Explicit instantiation.
-template class ::plugin::Matrix<double>;
-
-void EnsembleResourceHandle::reduce(const Matrix<double> &send,
-                                    Matrix<double> *receive) const
-{
-    assert(_reduce);
-    (*_reduce)(send, receive);
-}
 
 /*!
  * \brief Apply a Gaussian blur when building a density grid for a list of values.
@@ -349,14 +345,6 @@ makeEnsembleParams(size_t nbins,
 
     return params;
 };
-
-EnsembleResourceHandle EnsembleResources::getHandle() const
-{
-    auto handle = EnsembleResourceHandle();
-    assert(bool(reduce_));
-    handle._reduce = &reduce_;
-    return handle;
-}
 
 // Important: Explicitly instantiate a definition for the templated class declared in ensemblepotential.h.
 // Failing to do this will cause a linker error.
