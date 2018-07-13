@@ -24,6 +24,7 @@
 #include <mutex>
 
 #include "gmxapi/gromacsfwd.h"
+#include "gmxapi/session.h"
 #include "gmxapi/md/mdmodule.h"
 
 #include "gromacs/restraint/restraintpotential.h"
@@ -31,6 +32,7 @@
 
 // We do not require C++14, so we have a back-ported C++14 feature for C++11 code.
 #include "make_unique.h"
+#include "sessionresources.h"
 
 namespace plugin
 {
@@ -38,212 +40,6 @@ namespace plugin
 // Histogram for a single restrained pair.
 using PairHist = std::vector<double>;
 
-// Stop-gap for cross-language data exchange pending SharedData implementation and inclusion of Eigen.
-// Adapted from pybind docs.
-template<class T>
-class Matrix {
-    public:
-        Matrix(size_t rows, size_t cols) :
-            rows_(rows),
-            cols_(cols),
-            data_(rows_*cols_, 0)
-        {
-        }
-
-        explicit Matrix(std::vector<T>&& captured_data) :
-            rows_{1},
-            cols_{captured_data.size()},
-            data_{std::move(captured_data)}
-        {
-        }
-
-        std::vector<T> *vector() { return &data_; }
-        T* data() { return data_.data(); };
-        size_t rows() const { return rows_; }
-        size_t cols() const { return cols_; }
-    private:
-        size_t rows_;
-        size_t cols_;
-        std::vector<T> data_;
-};
-
-// Defer implicit instantiation to ensemblepotential.cpp
-extern template class Matrix<double>;
-
-/*!
- * \brief An active handle to ensemble resources provided by the Context.
- *
- * gmxapi version 0.1.0 will provide this functionality through SessionResources.
- *
- * The semantics of holding this handle aren't determined yet, but it should be held as briefly as possible since it
- * may involve locking global resources or preventing the simulation from advancing. Basically, though, it allows the
- * Context implementation flexibility in how or where it provides services.
- */
-class EnsembleResourceHandle
-{
-    public:
-        /*!
-         * \brief Ensemble reduce.
-         *
-         * \param send Matrices to be summed across the ensemble using Context resources.
-         * \param receive destination of reduced data instead of updating internal Matrix.
-         */
-        void reduce(const Matrix<double> &send,
-                    Matrix<double> *receive) const;
-
-        // to be abstracted and hidden in an upcoming version...
-        const std::function<void(const Matrix<double>&, Matrix<double>*)>* _reduce;
-};
-
-/*!
- * \brief Reference to workflow-level resources managed by the Context.
- *
- * Provides a connection to the higher-level workflow management with which to access resources and operations. The
- * reference provides no resources directly and we may find that it should not extend the life of a Session or Context.
- * Resources are accessed through Handle objects returned by member functions.
- *
- * gmxapi version 0.1.0 will provide this functionality through SessionResources.
- */
-class EnsembleResources
-{
-    public:
-        /*!
-         * \brief Create a new resources object.
-         *
-         * This constructor is called by the framework during Session launch to provide the plugin
-         * potential with external resources.
-         *
-         * \param reduce ownership of a function object providing ensemble averaging of a 2D matrix.
-         */
-        explicit EnsembleResources(std::function<void(const Matrix<double>&, Matrix<double>*)>&& reduce) :
-            reduce_(reduce)
-        {};
-
-        /*!
-         * \brief Get a handle to the resources for the current timestep.
-         *
-         * Objects should not keep resource handles open for longer than a single block of code.
-         * calculate() and callback() functions get a handle to the resources for the current time step
-         * by calling getHandle().
-         *
-         * \return resource handle
-         *
-         * In this release, the only facility provided by the resources is a function object for
-         * the ensemble averaging function provided by the Context.
-         */
-        EnsembleResourceHandle getHandle() const;
-
-    private:
-//        std::shared_ptr<Matrix> _matrix;
-        std::function<void(const Matrix<double>&, Matrix<double>*)> reduce_;
-};
-
-/*!
- * \brief Template for MDModules from restraints.
- *
- * Allows a GROMACS module to be produced easily from the provided class. Refer to
- * src/pythonmodule/export_plugin.cpp for how this template is used.
- *
- * \tparam R a class implementing the gmx::IRestraintPotential interface.
- *
- * The template type parameter should define a ``input_param_type`` member type.
- *
- * \todo move this to a template header in gmxapi
- */
-template<class R>
-class RestraintModule : public gmxapi::MDModule
-{
-    public:
-        using param_t = typename R::input_param_type;
-
-        /*!
-         * \brief Construct a named restraint module.
-         *
-         * Objects of this type are created during Session launch, so this code really doesn't belong
-         * here. The Director / Builder for the restraint uses a generic interface to pass standard
-         * parameters for pair restraints: a list of sites, a (custom) parameters structure, and
-         * resources provided by the Session.
-         *
-         * \param name
-         * \param sites
-         * \param params
-         * \param resources
-         */
-        RestraintModule(std::string name,
-                        std::vector<unsigned long int> sites,
-                        const typename R::input_param_type& params,
-                        std::shared_ptr<EnsembleResources> resources) :
-            sites_{std::move(sites)},
-            params_{params},
-            resources_{std::move(resources)},
-            name_{std::move(name)}
-        {
-
-        };
-
-        ~RestraintModule() override = default;
-
-        /*!
-         * \brief Implement gmxapi::MDModule interface to get module name.
-         *
-         * name is provided during the building stage.
-         * \return
-         */
-        // \todo make member function const
-        const char *name() override
-        {
-                return name_.c_str();
-        }
-
-        /*!
-         * \brief Implement gmxapi::MDModule interface to create a restraint for libgromacs.
-         *
-         * \return Ownership of a new restraint instance
-         *
-         * Note this interface is not stable but requires other GROMACS and gmxapi infrastructure
-         * to mature before it is clear whether we will be creating a new instance or sharing ownership
-         * of the object. A future version may use a std::unique_ptr.
-         */
-        std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
-        {
-                auto restraint = std::make_shared<R>(sites_, params_, resources_);
-                return restraint;
-        }
-
-    private:
-        std::vector<unsigned long int> sites_;
-        param_t params_;
-
-        // Need to figure out if this is copyable or who owns it.
-        std::shared_ptr<EnsembleResources> resources_;
-
-        const std::string name_;
-};
-
-/*!
- * \brief A simple plain-old-data structure to hold input parameters to the potential calculations.
- *
- * This structure will be initialized when the Session is launched. It is currently populated by
- * keyword arguments processed in ``export_plugin.cpp`` in the EnsembleRestraintBuilder using the
- * helper function makeEnsembleParams() defined below.
- *
- * Restraint potentials will express their (const) input parameters by defining a structure like this and
- * providing a type alias for ``input_param_type``.
- *
- * Example:
- *
- *      class EnsembleHarmonic
- * {
- *    public:
- *        using input_param_type = ensemble_input_param_type;
- *        // ...
- * }
- *
- * In future versions, a developer will continue to define a custom structure to hold their input
- * parameters, but the meaning of the parameters and the key words with which they are expressed in
- * Python will be specified with syntax similar to the pybind11 syntax in ``export_plugin.cpp``.
- *
- */
 struct ensemble_input_param_type
 {
     /// distance histogram parameters
@@ -270,6 +66,11 @@ struct ensemble_input_param_type
     double sigma{0};
 
 };
+
+// \todo We should be able to automate a lot of the parameter setting stuff
+// by having the developer specify a map of parameter names and the corresponding type, but that could get tricky.
+// The statically compiled fast parameter structure would be generated with a recursive variadic template
+// the way a tuple is. ref https://eli.thegreenplace.net/2014/variadic-templates-in-c/
 
 std::unique_ptr<ensemble_input_param_type>
 makeEnsembleParams(size_t nbins,
@@ -403,7 +204,7 @@ class EnsembleHarmonic
         double windowStartTime_;
         double nextWindowUpdateTime_;
         /// The history of nwindows histograms for this restraint.
-        std::vector<std::unique_ptr<Matrix<double>>> windows_;
+        std::vector<std::unique_ptr<plugin::Matrix<double>>> windows_;
 
         /// Harmonic force coefficient
         double k_;
@@ -481,10 +282,18 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
         };
 
         /*!
-         * \brief Allow the Session to provide a resource object.
+         * \brief Implement the binding protocol that allows access to Session resources.
          *
-         * \param resources object to take ownership of.
+         * The client receives a non-owning pointer to the session and cannot extent the life of the session. In
+         * the future we can use a more formal handle mechanism.
+         *
+         * \param session pointer to the current session
          */
+        void bindSession(gmxapi::SessionResources* session) override
+        {
+            resources_->setSession(session);
+        }
+
         void setResources(std::unique_ptr<EnsembleResources>&& resources)
         {
             resources_ = std::move(resources);
