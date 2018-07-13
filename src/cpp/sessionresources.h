@@ -249,19 +249,24 @@ class RestraintModule : public gmxapi::MDModule // consider names
         /*!
          * \brief Implement gmxapi::MDModule interface to create a restraint for libgromacs.
          *
-         * \return Ownership of a new restraint instance
+         * \return (Possibly shared) Ownership of a restraint instance
          *
+         * Creates the restraint instance if it does not already exist. Only creates one restraint
+         * instance in the lifetime of the RestraintModule.
+         * 
          * Note this interface is not stable but requires other GROMACS and gmxapi infrastructure
          * to mature before it is clear whether we will be creating a new instance or sharing ownership
          * of the object. A future version may use a std::unique_ptr.
          */
         std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
         {
-            restraint = std::make_shared<R>(sites_, params_, resources_);
-            return restraint;
+            std::lock_guard<std::mutex> lock(restraintInstantiation_);
+            if (!restraint_)
+            {
+                restraint_ = std::make_shared<R>(sites_, params_, resources_);
+            }
+            return restraint_;
         }
-
-        std::shared_ptr<R> restraint;
 
     private:
         std::vector<unsigned long int> sites_;
@@ -271,6 +276,8 @@ class RestraintModule : public gmxapi::MDModule // consider names
         std::shared_ptr<EnsembleResources> resources_;
 
         const std::string name_;
+        std::shared_ptr<R> restraint_{nullptr};
+        std::mutex restraintInstantiation_;
 };
 
 /*!
