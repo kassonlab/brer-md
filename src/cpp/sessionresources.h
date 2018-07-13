@@ -5,8 +5,9 @@
 #ifndef RESTRAINT_SESSIONRESOURCES_H
 #define RESTRAINT_SESSIONRESOURCES_H
 
-#include <memory>
 #include <functional>
+#include <memory>
+#include <mutex>
 #include <vector>
 
 #include "gmxapi/gromacsfwd.h"
