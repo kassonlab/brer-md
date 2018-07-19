@@ -2,7 +2,11 @@
 Sample MD restraint plugin
 ==========================
 
-This `repository <https://github.com/kassonlab/sample_restraint>`_ provides a complete and working implementation of a few GROMACS restraint potentials. It is intended as both
+.. image:: https://travis-ci.org/eirrgang/sample_restraint.svg?branch=devel
+:target: https://travis-ci.org/eirrgang/sample_restraint
+
+This `repository <https://github.com/kassonlab/sample_restraint>`_ provides a complete and working implementation of a
+few GROMACS restraint potentials. It is intended as both
 a tutorial and as a template for implementing new custom restraint potentials.
 
 Restraint potentials are implemented as "plugins" to GROMACS. The required GROMACS modifications are available at this
@@ -17,12 +21,24 @@ Repository Contents
 ===================
 This repository uses CMake to build and install a Python C++ extension package.
 
-* ``CMakeLists.txt``, ``cmake/FindGROMACS.cmake``, and ``src/CMakeLists.txt`` provide necessary CMake infrastructure. You should not need to edit these.
-* ``src/cpp`` contains a header and ``cpp`` file for each restraint potential built with this module. When adding new potentials, you will update ``CMakeLists.txt`` to create build targets. Use the existing potentials as examples.
-* ``src/pythonmodule/`` contains ``CMakeLists.txt``, ``export_plugin.h``, and ``export_plugin.cpp``. When you have written a new potential, you can add it to ``CMakeLists.txt`` and ``export_plugin.cpp``. This is the code that produces the C++ extension for Python. ``HarmonicRestraint`` is a simple example that applies a Hooke's Law spring between two atoms. ``EnsembleHarmonic`` applies a more complicated potential and uses additional facilities provided by gmxapi.
-* ``src/pybind11`` is just a copy of the Python bindings framework from the Pybind project (ref https://github.com/pybind/pybind11 ). It is used to wrap the C++ restraint code and give it a Python interface.
-* ``tests/`` contains C++ and Python tests for the provided code. Update ``CMakeLists.txt`` to add your own, based on these examples. C++ unit tests use `googletest<https://github.com/google/googletest>`_. Python tests use the `pytest <https://docs.pytest.org/en/latest/>`_. Refer to those respective projects for more about how they make test-writing easier.
-* ``examples`` contains a sample SLURM job script and ``restrained-ensemble.py`` gmxapi script that have been used to do restrained ensemble simulations. ``example.py`` and ``example.ipynb`` explore a toy alanine dipeptide system. ``strip_notebook.py`` is a helper script to remove extra output and state data from an iPython notebook before checking updates back into the repository.
+* ``CMakeLists.txt``, ``cmake/FindGROMACS.cmake``, and ``src/CMakeLists.txt`` provide necessary CMake infrastructure.
+You should not need to edit these.
+* ``src/cpp`` contains a header and ``cpp`` file for each restraint potential built with this module. When adding new
+potentials, you will update ``CMakeLists.txt`` to create build targets. Use the existing potentials as examples.
+* ``src/pythonmodule/`` contains ``CMakeLists.txt``, ``export_plugin.h``, and ``export_plugin.cpp``. When you have
+written a new potential, you can add it to ``CMakeLists.txt`` and ``export_plugin.cpp``. This is the code that produces
+the C++ extension for Python. ``HarmonicRestraint`` is a simple example that applies a Hooke's Law spring between two
+atoms. ``EnsembleHarmonic`` applies a more complicated potential and uses additional facilities provided by gmxapi.
+* ``src/pybind11`` is just a copy of the Python bindings framework from the Pybind project (ref
+https://github.com/pybind/pybind11 ). It is used to wrap the C++ restraint code and give it a Python interface.
+* ``tests/`` contains C++ and Python tests for the provided code. Update ``CMakeLists.txt`` to add your own, based on
+these examples. C++ unit tests use `googletest<https://github.com/google/googletest>`_. Python tests use the
+`pytest <https://docs.pytest.org/en/latest/>`_. Refer to those respective projects for more about how they make
+test-writing easier.
+* ``examples`` contains a sample SLURM job script and ``restrained-ensemble.py`` gmxapi script that have been used to do
+restrained ensemble simulations. ``example.py`` and ``example.ipynb`` explore a toy alanine dipeptide system.
+``strip_notebook.py`` is a helper script to remove extra output and state data from an iPython notebook before checking
+updates back into the repository.
 * ``Dockerfile`` is a recipe to build a Docker image from the root of the repository.
 
 Docker quick-start
@@ -34,10 +50,13 @@ Pull the docker image and launch a container with port 8888 on the host mapped t
     $ docker run --rm -ti -p 8888:8888 gmxapi/sample_restraint:devel
 
 Note that the ``--rm`` option tells docker not to save
-any changes you make after launching the container. You can, however, download any changes you make to the notebook through the web interface. Refer to the `Docker documentation <https://docs.docker.com>`_ for more options on managing containers.
+any changes you make after launching the container. You can, however, download any changes you make to the notebook
+through the web interface. Refer to the `Docker documentation <https://docs.docker.com>`_ for more options on managing
+containers.
 
 You should then see something like the following, but with a different ``token`` for the URL. Open the
-URL in a browser on the same (host) machine to access the notebook server. Browse to ``sample_restraint`` and ``examples`` and then launch the ``example`` notebook for an interactive walk-through. Example output::
+URL in a browser on the same (host) machine to access the notebook server. Browse to ``sample_restraint`` and
+``examples`` and then launch the ``example`` notebook for an interactive walk-through. Example output::
 
     Execute the command: jupyter notebook
     [I 15:26:07.683 NotebookApp] Writing notebook server cookie secret to /home/jovyan/.local/share/jupyter/runtime/notebook_cookie_secret
@@ -84,18 +103,22 @@ After installing the modified GROMACS (see above), either source the `GMXRC` fil
 or provide the install location to CMake with the ``gmxapi_DIR`` environment variable.
 
 As with `gmxapi <https://github.com/kassonlab/gromacs-gmxapi>`_, we recommend installing and using this code in a
-Python virtual environment. (See the documentation for your ``gmxapi`` distribution or http://gmxapi.readthedocs.io/en/latest/install.html
-) Accordingly, if you choose to _install_ the plugin rather than just to use it out of its build directory, consider whether you want to have to set your ``PYTHONPATH`` environment variable or where you can install it that Python will find it. You can explicitly set the installation location
+Python virtual environment. (See the documentation for your ``gmxapi`` distribution or
+http://gmxapi.readthedocs.io/en/latest/install.html ) Accordingly, if you choose to _install_ the plugin rather than
+just to use it out of its build directory, consider whether you want to have to set your ``PYTHONPATH`` environment
+variable or where you can install it that Python will find it. You can explicitly set the installation location
 by setting ``-DGMXPLUGIN_INSTALL_PATH=/path/to/install/directory`` or you can let CMake determine an
 appropriate location automatically for your Python interpreter. If you have administrative privileges
 (such as when running on a desktop computer) or if you are using a Python virtual environment (recommended),
-you don't need to specify anything additional. If you are an unprivileged user (such as on a shared machine) and are not in a Python virtual environment, set `-DGMXPLUGIN_USER_INSTALL=ON` to install into
+you don't need to specify anything additional. If you are an unprivileged user (such as on a shared machine) and are not
+in a Python virtual environment, set `-DGMXPLUGIN_USER_INSTALL=ON` to install into
 the "user" Python packages directory in your home directory. (Equivalent to the ``--user`` option to ``pip``)
 
 If you have multiple Python installations or just want to be unambiguous, provide CMake with the Python
 interpreter you wish to use (the same as you are using for ``gmxapi``) with ``-DPYTHON_EXECUTABLE=/path/to/python``.
 For instance, if you have both Python 3.x and Python 2.7,
-but you plan to use Python 2.7, use ``-DPYTHON_EXECUTABLE=`which python2``` or ``-DPYTHON_EXECUTABLE=`which python``` (if ``python`` points to the Python 2 interpreter).
+but you plan to use Python 2.7, use ``-DPYTHON_EXECUTABLE=`which python2``` or ``-DPYTHON_EXECUTABLE=`which python```
+(if ``python`` points to the Python 2 interpreter).
 ::
 
     $ # build sample restraint
@@ -165,13 +188,15 @@ define the ``calculate()`` methods. Until then, some amount of copy-and-paste or
 necessary to implement a new potential. Refer to ``src/cpp/harmonicpotential.h`` and to
  ``src/cpp/harmonicpotential.cpp`` for a documented example of a simple pair restraint. A more
 complex example is found in the ``ensemblepotential`` files. The code in ``src/cpp`` is sufficient
-to produce testable object code, but the Python module is exported in ``src/pythonmodule/export_plugin.cpp``. If you add additional source files for a new potential,
+to produce testable object code, but the Python module is exported in ``src/pythonmodule/export_plugin.cpp``. If you add
+additional source files for a new potential,
 you will need to update ``src/cpp/CMakeLists.txt`` as well.
 
 Python tests
 ============
 
-For the Python-level testing, you will need ``pytest`` and ``gmxapi``. We recommend setting up a Python virtual environment as described at
+For the Python-level testing, you will need ``pytest`` and ``gmxapi``. We recommend setting up a Python virtual
+environment as described at
 `https://github.com/kassonlab/gmxapi <https://github.com/kassonlab/gmxapi>`_
 
 You will also need a functioning MPI installation and the ``mpi4py`` package.
@@ -203,5 +228,5 @@ The ensemble tests assume that 2 ranks are available. After installing the plugi
 If you do not have MPI set up for your system, you could build a docker image using the Dockerfile in this
 repository and do::
 
-    $ docker run --cpus 2 --rm -ti samplerestraint bash -c "cd /home/jovyan/samplerestraint/tests && mpiexec -n 2 python -m mpi4py -m pytest"
+    $ docker run --cpus 2 --rm -ti samplerestraint bash -c "cd /home/jovyan/sample_restraint/tests && mpiexec -n 2 python -m mpi4py -m pytest"
 
