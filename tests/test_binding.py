@@ -116,8 +116,6 @@ SOL         4055
 
     context = gmx.context.ParallelArrayContext(md)
     with context as session:
-        if context.rank == 0:
-            print(context.work)
         session.run()
 
     # Create a WorkElement for the potential
@@ -145,12 +143,14 @@ SOL         4055
 
     context = gmx.context.ParallelArrayContext(md)
     with context as session:
-        if context.rank == 0:
-            print(context.work)
         session.run()
 
 @pytest.mark.usefixtures("cleandir")
 def test_ensemble_potential_nompi():
+    """Test ensemble potential without an ensemble.
+
+    Still requires ParallelArrayContext.
+    """
     import gmx
     import os
     import myplugin
