@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.3)
-project(harmonicRestraint CXX)
+project(sample_restraint CXX)
 
 # This project requires GROMACS to build. It should be sufficient to source the GMXRC, but you can also set the
 # GROMACS_DIR environment variable to help CMake find the GROMACS installation.
@@ -73,7 +73,10 @@ option(GMXPLUGIN_USER_INSTALL "Override the default site-packages directory with
        Use -UGMXPLUGIN_INSTALL_PATH to force recalculation." OFF)
 
 # Since a user may have multiple virtual environments with different Python interpreters, it is generally confusing to
-# have a package for a virtual environment installed in the user's default user site-packages directory.
+# have a package for a virtual environment installed in the user's default user site-packages directory. If virtual
+# environments are in use at all, we recommend you do _not_ perform a "user" install in or out of a virtual env. If you do
+# not use any Python virtual environments, we recommend you _do_ perform "user" installs exclusively. Overall, we
+# we recommend you use Python virtual environments and activate one before performing a regular (non-"user") install.
 
 unset(PYTHONINTERP_FOUND)
 unset(PYTHONLIBS_FOUND)

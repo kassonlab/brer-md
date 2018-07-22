@@ -18,7 +18,7 @@
 
 
 # The base image is available on DockerHub, but you can also build your own from the gmxapi repository.
-FROM gmxapi/gmxapi:devel
+FROM gmxapi/gmxapi
 
 # Hot fix: clean out accidental cruft from an upstream base image.
 RUN rm -rf /home/jovyan/sample_restraint /home/jovyan/plugin-build
