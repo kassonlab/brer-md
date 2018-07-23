@@ -62,7 +62,11 @@ TEST(EnsembleBoundingPotentialPlugin, ForceCalc)
                                        1.0 // sigma
     };
 
-    auto calculateForce = [&restraint](const vec3<real>& a, const vec3<real>& b, double t) { return restraint.calculate(a,b,t).force; };
+    auto calculateForce =
+        [&restraint](const vec3<real>& a, const vec3<real>& b, double t)
+        {
+            return restraint.calculate(a,b,t).force;
+        };
 
     // Atoms should be driven towards each other when above maxDist and and away under minDist.
     force = calculateForce(e1, 3*e1, 0.001);

@@ -24,8 +24,6 @@ std::ostream& operator<<(std::ostream& stream, const gmx::Vector& vec)
     return stream;
 }
 
-const auto filename = plugin::testing::sample_tprfilename;
-
 TEST(EnsembleHistogramPotentialPlugin, ForceCalc)
 {
     constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);
@@ -62,7 +60,11 @@ TEST(EnsembleHistogramPotentialPlugin, ForceCalc)
                                     1.0 // sigma
                                     };
 
-    auto calculateForce = [&restraint](const vec3<real>& a, const vec3<real>& b, double t) { return restraint.calculate(a,b,t).force; };
+    auto calculateForce =
+        [&restraint](const vec3<real>& a, const vec3<real>& b, double t)
+        {
+            return restraint.calculate(a,b,t).force;
+        };
 
     // With the initial histogram (all zeros) the force should be zero no matter where the particles are.
     ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1, 0.)));

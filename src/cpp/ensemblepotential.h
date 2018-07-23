@@ -5,168 +5,40 @@
 #ifndef HARMONICRESTRAINT_ENSEMBLEPOTENTIAL_H
 #define HARMONICRESTRAINT_ENSEMBLEPOTENTIAL_H
 
+/*! \file
+ * \brief Provide restrained ensemble MD potential for GROMACS plugin.
+ *
+ * The restraint implemented here uses a facility provided by gmxapi to perform averaging of some
+ * array data across an ensemble of simulations. Simpler pair restraints can use less of this
+ * example code.
+ *
+ * Contains a lot of boiler plate that is being generalized and migrate out of this file, but other
+ * pair restraints can be implemented by following the example in this and ``ensemblepotential.cpp``.
+ * The ``CMakeLists.txt`` file will need to be updated if you add additional source files, and
+ * ``src/pythonmodule/export_plugin.cpp`` will need to be updated if you add or change the name of
+ * potentials.
+ */
+
 #include <vector>
 #include <array>
 #include <mutex>
 
 #include "gmxapi/gromacsfwd.h"
+#include "gmxapi/session.h"
 #include "gmxapi/md/mdmodule.h"
 
 #include "gromacs/restraint/restraintpotential.h"
 #include "gromacs/utility/real.h"
 
+// We do not require C++14, so we have a back-ported C++14 feature for C++11 code.
 #include "make_unique.h"
+#include "sessionresources.h"
 
 namespace plugin
 {
 
 // Histogram for a single restrained pair.
 using PairHist = std::vector<double>;
-
-
-// Stop-gap for cross-language data exchange pending SharedData implementation and inclusion of Eigen.
-// Adapted from pybind docs.
-template<class T>
-class Matrix {
-    public:
-        Matrix(size_t rows, size_t cols) :
-            rows_(rows),
-            cols_(cols),
-            data_(rows_*cols_, 0)
-        {
-        }
-
-        explicit Matrix(std::vector<T>&& captured_data) :
-            rows_{1},
-            cols_{captured_data.size()},
-            data_{std::move(captured_data)}
-        {
-        }
-
-        std::vector<T> *vector() { return &data_; }
-        T* data() { return data_.data(); };
-        size_t rows() const { return rows_; }
-        size_t cols() const { return cols_; }
-    private:
-        size_t rows_;
-        size_t cols_;
-        std::vector<T> data_;
-};
-
-// Defer implicit instantiation to ensemblepotential.cpp
-extern template class Matrix<double>;
-
-/*!
- * \brief An active handle to ensemble resources provided by the Context.
- *
- * The semantics of holding this handle aren't determined yet, but it should be held as briefly as possible since it
- * may involve locking global resources or preventing the simulation from advancing. Basically, though, it allows the
- * Context implementation flexibility in how or where it provides services.
- */
-class EnsembleResourceHandle
-{
-    public:
-        /*!
-         * \brief Ensemble reduce.
-         *
-         * For first draft, assume an all-to-all sum. Reduce the input into the stored Matrix.
-         * // Template later... \tparam T
-         * \param data
-         */
-//        void reduce(const Matrix<double>& input);
-
-        /*!
-         * \brief Ensemble reduce.
-         * \param send Matrices to be summed across the ensemble using Context resources.
-         * \param receive destination of reduced data instead of updating internal Matrix.
-         */
-        void reduce(const Matrix<double> &send,
-                    Matrix<double> *receive) const;
-
-        /*!
-         * \brief Apply a function to each input and accumulate the output.
-         *
-         * \tparam I Iterable.
-         * \tparam T Output type.
-         * \param iterable iterable object to produce inputs to function
-         * \param output structure that should be present and up-to-date on all ranks.
-         * \param function map each input in iterable through this function to accumulate output.
-         */
-        template<typename I, typename T>
-        void map_reduce(const I& iterable, T* output, void (*function)(double, const PairHist&, PairHist*));
-
-        // to be abstracted and hidden...
-        const std::function<void(const Matrix<double>&, Matrix<double>*)>* _reduce;
-};
-
-/*!
- * \brief Reference to workflow-level resources managed by the Context.
- *
- * Provides a connection to the higher-level workflow management with which to access resources and operations. The
- * reference provides no resources directly and we may find that it should not extend the life of a Session or Context.
- * Resources are accessed through Handle objects returned by member functions.
- */
-class EnsembleResources
-{
-    public:
-        explicit EnsembleResources(std::function<void(const Matrix<double>&, Matrix<double>*)>&& reduce) :
-            reduce_(reduce)
-        {};
-
-        EnsembleResourceHandle getHandle() const;
-
-    private:
-//        std::shared_ptr<Matrix> _matrix;
-        std::function<void(const Matrix<double>&, Matrix<double>*)> reduce_;
-};
-
-/*!
- * \brief Template for MDModules from restraints.
- *
- * \tparam R a class implementing the gmx::IRestraintPotential interface.
- */
-template<class R>
-class RestraintModule : public gmxapi::MDModule // consider names
-{
-    public:
-        using param_t = typename R::input_param_type;
-
-        RestraintModule(std::string name,
-                        std::vector<unsigned long int> sites,
-                        const typename R::input_param_type& params,
-                        std::shared_ptr<EnsembleResources> resources) :
-            sites_{std::move(sites)},
-            params_{params},
-            resources_{std::move(resources)},
-            name_{std::move(name)}
-        {
-
-        };
-
-        ~RestraintModule() override = default;
-
-        // \todo make member function const
-        const char *name() override
-        {
-                return name_.c_str();
-        }
-
-        std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
-        {
-                auto restraint = std::make_shared<R>(sites_, params_, resources_);
-                return restraint;
-        }
-
-    private:
-        std::vector<unsigned long int> sites_;
-        param_t params_;
-
-        // Need to figure out if this is copyable or who owns it.
-        std::shared_ptr<EnsembleResources> resources_;
-
-        const std::string name_;
-};
-
 
 struct ensemble_input_param_type
 {
@@ -205,28 +77,12 @@ makeEnsembleParams(size_t nbins,
                    double binWidth,
                    double minDist,
                    double maxDist,
-                   const std::vector<double> &experimental,
+                   const std::vector<double>& experimental,
                    unsigned int nSamples,
                    double samplePeriod,
                    unsigned int nWindows,
                    double k,
-                   double sigma)
-{
-    using gmx::compat::make_unique;
-    auto params = make_unique<ensemble_input_param_type>();
-    params->nBins = nbins;
-    params->binWidth = binWidth;
-    params->minDist = minDist;
-    params->maxDist = maxDist;
-    params->experimental = experimental;
-    params->nSamples = nSamples;
-    params->samplePeriod = samplePeriod;
-    params->nWindows = nWindows;
-    params->k = k;
-    params->sigma = sigma;
-
-    return params;
-};
+                   double sigma);
 
 /*!
  * \brief a residue-pair bias calculator for use in restrained-ensemble simulations.
@@ -247,10 +103,33 @@ class EnsembleHarmonic
     public:
         using input_param_type = ensemble_input_param_type;
 
+        /* No default constructor. Parameters must be provided. */
 //        EnsembleHarmonic();
 
-        explicit EnsembleHarmonic(const input_param_type &params);
+        /*!
+         * \brief Constructor called by the wrapper code to produce a new instance.
+         *
+         * This constructor is called once per simulation per GROMACS process. Note that until
+         * gmxapi 0.0.8 there is only one instance per simulation in a thread-MPI simulation.
+         *
+         * \param params
+         */
+        explicit EnsembleHarmonic(const input_param_type& params);
 
+        /*!
+         * \brief Deprecated constructor taking a parameter list.
+         *
+         * \param nbins
+         * \param binWidth
+         * \param minDist
+         * \param maxDist
+         * \param experimental
+         * \param nSamples
+         * \param samplePeriod
+         * \param nWindows
+         * \param k
+         * \param sigma
+         */
         EnsembleHarmonic(size_t nbins,
                          double binWidth,
                          double minDist,
@@ -262,17 +141,41 @@ class EnsembleHarmonic
                          double k,
                          double sigma);
 
-        // If dispatching this virtual function is not fast enough, the compiler may be able to better optimize a free
+        /*!
+         * \brief Evaluates the pair restraint potential.
+         *
+         * In parallel simulations, the gmxapi framework does not make guarantees about where or
+         * how many times this function is called. It should be simple and stateless; it should not
+         * update class member data (see ``ensemblepotential.cpp``. For a more controlled API hook
+         * and to manage state in the object, use ``callback()``.
+         *
+         * \param v position of the site for which force is being calculated.
+         * \param v0 reference site (other member of the pair).
+         * \param t current simulation time (ps).
+         * \return container for force and potential energy data.
+         */
+        // Implementation note for the future: If dispatching this virtual function is not fast
+        // enough, the compiler may be able to better optimize a free
         // function that receives the current restraint as an argument.
         gmx::PotentialPointData calculate(gmx::Vector v,
                                           gmx::Vector v0,
                                           gmx_unused double t);
 
-        // An update function to be called on the simulation master rank/thread periodically by the Restraint framework.
+        /*!
+         * \brief An update function to be called on the simulation master rank/thread periodically by the Restraint framework.
+         *
+         * Defining this function in a plugin potential is optional. If the function is defined,
+         * the restraint framework calls this function (on the first rank only in a parallel simulation) before calling calculate().
+         *
+         * The callback may use resources provided by the Session in the callback to perform updates
+         * to the local or global state of an ensemble of simulations. Future gmxapi releases will
+         * include additional optimizations, allowing call-back frequency to be expressed, and more
+         * general Session resources, as well as more flexible call signatures.
+         */
         void callback(gmx::Vector v,
                       gmx::Vector v0,
                       double t,
-                      const EnsembleResources &resources);
+                      const EnsembleResources& resources);
 
     private:
         /// Width of bins (distance) in histogram
@@ -301,7 +204,7 @@ class EnsembleHarmonic
         double windowStartTime_;
         double nextWindowUpdateTime_;
         /// The history of nwindows histograms for this restraint.
-        std::vector<std::unique_ptr<Matrix<double>>> windows_;
+        std::vector<std::unique_ptr<plugin::Matrix<double>>> windows_;
 
         /// Harmonic force coefficient
         double k_;
@@ -319,29 +222,56 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
     public:
         using EnsembleHarmonic::input_param_type;
 
-        EnsembleRestraint(const std::vector<unsigned long> &sites,
-                          const input_param_type &params,
+        EnsembleRestraint(std::vector<unsigned long> sites,
+                          const input_param_type& params,
                           std::shared_ptr<EnsembleResources> resources
         ) :
-                EnsembleHarmonic(params),
-                sites_{sites},
-                resources_{std::move(resources)}
+            EnsembleHarmonic(params),
+            sites_{std::move(sites)},
+            resources_{std::move(resources)}
         {}
 
+        /*!
+         * \brief Implement required interface of gmx::IRestraintPotential
+         *
+         * \return list of configured site indices.
+         *
+         * \todo remove to template header
+         * \todo abstraction of site references
+         */
         std::vector<unsigned long int> sites() const override
         {
-                return sites_;
+            return sites_;
         }
 
+        /*!
+         * \brief Implement the interface gmx::IRestraintPotential
+         *
+         * Dispatch to calculate() method.
+         *
+         * \param r1 coordinate of first site
+         * \param r2 reference coordinate (second site)
+         * \param t simulation time
+         * \return calculated force and energy
+         *
+         * \todo remove to template header.
+         */
         gmx::PotentialPointData evaluate(gmx::Vector r1,
                                          gmx::Vector r2,
                                          double t) override
         {
-                return calculate(r1, r2, t);
+            return calculate(r1,
+                             r2,
+                             t);
         };
 
-
-        // An update function to be called on the simulation master rank/thread periodically by the Restraint framework.
+        /*!
+         * \brief An update function to be called on the simulation master rank/thread periodically by the Restraint framework.
+         *
+         * Implements optional override of gmx::IRestraintPotential::update
+         *
+         * This boilerplate will disappear into the Restraint template in an upcoming gmxapi release.
+         */
         void update(gmx::Vector v,
                     gmx::Vector v0,
                     double t) override
@@ -352,6 +282,19 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
                      t,
                      *resources_);
         };
+
+        /*!
+         * \brief Implement the binding protocol that allows access to Session resources.
+         *
+         * The client receives a non-owning pointer to the session and cannot extent the life of the session. In
+         * the future we can use a more formal handle mechanism.
+         *
+         * \param session pointer to the current session
+         */
+        void bindSession(gmxapi::SessionResources* session) override
+        {
+            resources_->setSession(session);
+        }
 
         void setResources(std::unique_ptr<EnsembleResources>&& resources)
         {
@@ -366,9 +309,10 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
 };
 
 
-// Just declare the template instantiation here for client code.
+// Important: Just declare the template instantiation here for client code.
 // We will explicitly instantiate a definition in the .cpp file where the input_param_type is defined.
-extern template class RestraintModule<EnsembleRestraint>;
+extern template
+class RestraintModule<EnsembleRestraint>;
 
 } // end namespace plugin
 

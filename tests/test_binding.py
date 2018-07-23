@@ -111,13 +111,11 @@ SOL         4055
     with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
 
-    assert gmx.__version__ == '0.0.5'
+    assert gmx.version.api_is_at_least(0,0,5)
     md = gmx.workflow.from_tpr(tpr_filename)
 
     context = gmx.context.ParallelArrayContext(md)
     with context as session:
-        if context.rank == 0:
-            print(context.work)
         session.run()
 
     # Create a WorkElement for the potential
@@ -145,12 +143,14 @@ SOL         4055
 
     context = gmx.context.ParallelArrayContext(md)
     with context as session:
-        if context.rank == 0:
-            print(context.work)
         session.run()
 
 @pytest.mark.usefixtures("cleandir")
 def test_ensemble_potential_nompi():
+    """Test ensemble potential without an ensemble.
+
+    Still requires ParallelArrayContext.
+    """
     import gmx
     import os
     import myplugin
@@ -199,7 +199,7 @@ SOL         4055
         from gmx.data import tpr_filename
     print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
 
-    assert gmx.__version__ == '0.0.5'
+    assert gmx.version.api_is_at_least(0,0,5)
     md = gmx.workflow.from_tpr([tpr_filename])
 
     # Create a WorkElement for the potential
@@ -292,7 +292,7 @@ SOL         4055
         from gmx.data import tpr_filename
     logger.info("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
 
-    assert gmx.__version__ == '0.0.5'
+    assert gmx.version.api_is_at_least(0,0,5)
     md = gmx.workflow.from_tpr([tpr_filename, tpr_filename])
 
     # Create a WorkElement for the potential

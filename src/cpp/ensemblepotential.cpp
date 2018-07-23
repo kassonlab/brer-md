@@ -2,32 +2,30 @@
 // Created by Eric Irrgang on 2/26/18.
 //
 
+/*! \file
+ * \brief Code to implement the potential declared in ensemblepotential.h
+ *
+ * This file currently contains boilerplate that will not be necessary in future gmxapi releases, as
+ * well as additional code used in implementing the restrained ensemble example workflow.
+ *
+ * A simpler restraint potential would only update the calculate() function. If a callback function is
+ * not needed or desired, remove the callback() code from this file and from ensemblepotential.h
+ */
+
 #include "ensemblepotential.h"
 
 #include <cmath>
 
 #include <vector>
 
+#include "gmxapi/context.h"
+#include "gmxapi/session.h"
+#include "gmxapi/md/mdsignals.h"
+
+#include "sessionresources.h"
+
 namespace plugin
 {
-
-// Explicit instantiation.
-template class ::plugin::Matrix<double>;
-
-void EnsembleResourceHandle::reduce(const Matrix<double> &send,
-                                    Matrix<double> *receive) const
-{
-    assert(_reduce);
-    (*_reduce)(send, receive);
-}
-
-template<typename T_I, typename T_O>
-void EnsembleResourceHandle::map_reduce(const T_I &iterable,
-                                        T_O *output,
-                                        void (*function)(double, const PairHist & input,
-                                                 PairHist * output)
-                                        )
-{}
 
 /*!
  * \brief Apply a Gaussian blur when building a density grid for a list of values.
@@ -74,25 +72,26 @@ class BlurToGrid
          *     blur(someData, &histogram);
          *
          */
-        void operator() (const std::vector<double>& samples, std::vector<double>* grid)
+        void operator()(const std::vector<double>& samples,
+                        std::vector<double>* grid)
         {
             const auto nbins = grid->size();
             const double& dx{binWidth_};
             const auto num_samples = samples.size();
 
-            const double denominator = 1.0/(2*sigma_*sigma_);
-            const double normalization = 1.0/(num_samples*sqrt(2.0*M_PI*sigma_*sigma_));
+            const double denominator = 1.0 / (2 * sigma_ * sigma_);
+            const double normalization = 1.0 / (num_samples * sqrt(2.0 * M_PI * sigma_ * sigma_));
             // We aren't doing any filtering of values too far away to contribute meaningfully, which
             // is admittedly wasteful for large sigma...
-            for (size_t i = 0; i < nbins; ++i)
+            for (size_t i = 0;i < nbins;++i)
             {
                 double bin_value{0};
-                const double bin_x{low_ + i*dx};
-                for(const auto distance : samples)
+                const double bin_x{low_ + i * dx};
+                for (const auto distance : samples)
                 {
                     const double relative_distance{bin_x - distance};
-                    const auto numerator = -relative_distance*relative_distance;
-                    bin_value += normalization*exp(numerator*denominator);
+                    const auto numerator = -relative_distance * relative_distance;
+                    bin_value += normalization * exp(numerator * denominator);
                 }
                 grid->at(i) = bin_value;
             }
@@ -123,7 +122,8 @@ EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
     binWidth_{binWidth},
     minDist_{minDist},
     maxDist_{maxDist},
-    histogram_(nbins, 0),
+    histogram_(nbins,
+               0),
     experimental_{std::move(experimental)},
     nSamples_{nSamples},
     currentSample_{0},
@@ -134,13 +134,13 @@ EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
     nWindows_{nWindows},
     currentWindow_{0},
     windowStartTime_{0},
-    nextWindowUpdateTime_{nSamples*samplePeriod},
+    nextWindowUpdateTime_{nSamples * samplePeriod},
     windows_{},
     k_{k},
     sigma_{sigma}
 {}
 
-EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
+EnsembleHarmonic::EnsembleHarmonic(const input_param_type& params) :
     EnsembleHarmonic(params.nBins,
                      params.binWidth,
                      params.minDist,
@@ -154,11 +154,17 @@ EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
 {
 }
 
-// Todo: reference coordinate for PBC problems.
+//
+//
+// HERE is the (optional) function that updates the state of the restraint periodically.
+// It is called before calculate() once per timestep per simulation (on the master rank of
+// a parallelized simulation).
+//
+//
 void EnsembleHarmonic::callback(gmx::Vector v,
                                 gmx::Vector v0,
                                 double t,
-                                const EnsembleResources &resources)
+                                const EnsembleResources& resources)
 {
     auto rdiff = v - v0;
     const auto Rsquared = dot(rdiff,
@@ -169,7 +175,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
     if (t >= nextSampleTime_)
     {
         distanceSamples_[currentSample_++] = R;
-        nextSampleTime_ = (currentSample_ + 1)*samplePeriod_ + windowStartTime_;
+        nextSampleTime_ = (currentSample_ + 1) * samplePeriod_ + windowStartTime_;
     };
 
     // Every nsteps:
@@ -226,15 +232,15 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         windows_.emplace_back(std::move(new_window));
 
         // Get new histogram difference. Subtract the experimental distribution to get the values to use in our potential.
-        for (auto &bin : histogram_)
+        for (auto& bin : histogram_)
         {
             bin = 0;
         }
-        for (const auto &window : windows_)
+        for (const auto& window : windows_)
         {
-            for (size_t i = 0; i < window->cols(); ++i)
+            for (size_t i = 0;i < window->cols();++i)
             {
-                histogram_.at(i) += (window->vector()->at(i) - experimental_.at(i))/windows_.size();
+                histogram_.at(i) += (window->vector()->at(i) - experimental_.at(i)) / windows_.size();
             }
         }
 
@@ -244,7 +250,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
         // to a facility, we can look for a part of the code with access to the current timestep.
         windowStartTime_ = t;
-        nextWindowUpdateTime_ = nSamples_*samplePeriod_ + windowStartTime_;
+        nextWindowUpdateTime_ = nSamples_ * samplePeriod_ + windowStartTime_;
         ++currentWindow_; // This is currently never used. I'm not sure it will be, either...
 
         // Reset sample bufering.
@@ -255,6 +261,12 @@ void EnsembleHarmonic::callback(gmx::Vector v,
 
 }
 
+
+//
+//
+// HERE is the function that does the calculation of the restraint force.
+//
+//
 gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
                                                     gmx::Vector v0,
                                                     double t)
@@ -292,13 +304,13 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
             double f_scal{0};
 
             const size_t numBins = histogram_.size();
-            double normConst = sqrt(2*M_PI)*sigma_*sigma_*sigma_;
+            double normConst = sqrt(2 * M_PI) * sigma_ * sigma_ * sigma_;
 
-            for (size_t n = 0; n < numBins; n++)
+            for (size_t n = 0;n < numBins;n++)
             {
-                const double x{n*binWidth_ - R};
-                const double argExp{-0.5*x*x/(sigma_*sigma_)};
-                f_scal += histogram_.at(n)*exp(argExp)*x/normConst;
+                const double x{n * binWidth_ - R};
+                const double argExp{-0.5 * x * x / (sigma_ * sigma_)};
+                f_scal += histogram_.at(n) * exp(argExp) * x / normConst;
             }
             f = -k_ * f_scal;
         }
@@ -308,15 +320,37 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
     return output;
 }
 
-EnsembleResourceHandle EnsembleResources::getHandle() const
+std::unique_ptr<ensemble_input_param_type>
+makeEnsembleParams(size_t nbins,
+                   double binWidth,
+                   double minDist,
+                   double maxDist,
+                   const std::vector<double>& experimental,
+                   unsigned int nSamples,
+                   double samplePeriod,
+                   unsigned int nWindows,
+                   double k,
+                   double sigma)
 {
-    auto handle = EnsembleResourceHandle();
-    assert(bool(reduce_));
-    handle._reduce = &reduce_;
-    return handle;
-}
+    using gmx::compat::make_unique;
+    auto params = make_unique<ensemble_input_param_type>();
+    params->nBins = nbins;
+    params->binWidth = binWidth;
+    params->minDist = minDist;
+    params->maxDist = maxDist;
+    params->experimental = experimental;
+    params->nSamples = nSamples;
+    params->samplePeriod = samplePeriod;
+    params->nWindows = nWindows;
+    params->k = k;
+    params->sigma = sigma;
 
-// Explicitly instantiate a definition.
-template class ::plugin::RestraintModule<EnsembleRestraint>;
+    return params;
+};
+
+// Important: Explicitly instantiate a definition for the templated class declared in ensemblepotential.h.
+// Failing to do this will cause a linker error.
+template
+class ::plugin::RestraintModule<EnsembleRestraint>;
 
 } // end namespace plugin
