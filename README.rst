@@ -3,7 +3,7 @@ Sample MD restraint plugin
 ==========================
 
 .. image:: https://travis-ci.org/kassonlab/sample_restraint.svg?branch=master
-:target: https://travis-ci.org/kassonlab/sample_restraint
+   :target: https://travis-ci.org/kassonlab/sample_restraint
 
 This `repository <https://github.com/kassonlab/sample_restraint>`_ provides a complete and working implementation of a
 few GROMACS restraint potentials. It is intended as both
