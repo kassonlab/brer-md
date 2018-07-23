@@ -18,6 +18,13 @@ Python package for MD simulation workflows.
 
 For a quick start, consider pulling a recent Docker image that has already been configured for gmxapi and this plug-in.
 
+Reference:
+
+Irrgang, M. E., Hays, J. M., & Kasson, P. M.
+gmxapi: a high-level interface for advanced control and extension of molecular dynamics simulations.
+*Bioinformatics* 2018.
+DOI: `10.1093/bioinformatics/bty484 <https://doi.org/10.1093/bioinformatics/bty484>`_
+
 Repository Contents
 ===================
 This repository uses CMake to build and install a Python C++ extension package.

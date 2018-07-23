@@ -1,5 +1,11 @@
 #!/usr/bin/env python
-"""Run restrained-ensemble sampling and biasing workflow."""
+"""Run restrained-ensemble sampling and biasing workflow.
+
+Irrgang, M. E., Hays, J. M., & Kasson, P. M.
+gmxapi: a high-level interface for advanced control and extension of molecular dynamics simulations.
+*Bioinformatics* 2018.
+DOI: `10.1093/bioinformatics/bty484 <https://doi.org/10.1093/bioinformatics/bty484>`_
+"""
 
 # Restrained-ensemble formalism is a variant of that defined by Roux et al., 2013
 
