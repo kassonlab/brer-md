@@ -60,7 +60,11 @@ TEST(EnsembleHistogramPotentialPlugin, ForceCalc)
                                     1.0 // sigma
                                     };
 
-    auto calculateForce = [&restraint](const vec3<real>& a, const vec3<real>& b, double t) { return restraint.calculate(a,b,t).force; };
+    auto calculateForce =
+        [&restraint](const vec3<real>& a, const vec3<real>& b, double t)
+        {
+            return restraint.calculate(a,b,t).force;
+        };
 
     // With the initial histogram (all zeros) the force should be zero no matter where the particles are.
     ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1, 0.)));

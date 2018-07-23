@@ -90,10 +90,12 @@ class PyRestraint : public T, public std::enable_shared_from_this<PyRestraint<T>
 template<class T>
 void PyRestraint<T>::bind(py::object object)
 {
-    PyObject* capsule = object.ptr();
-    if (PyCapsule_IsValid(capsule, gmxapi::MDHolder::api_name))
+    PyObject * capsule = object.ptr();
+    if (PyCapsule_IsValid(capsule,
+                          gmxapi::MDHolder::api_name))
     {
-        auto holder = static_cast<gmxapi::MDHolder*>(PyCapsule_GetPointer(capsule, gmxapi::MDHolder::api_name));
+        auto holder = static_cast<gmxapi::MDHolder*>(PyCapsule_GetPointer(capsule,
+                                                                          gmxapi::MDHolder::api_name));
         auto workSpec = holder->getSpec();
         std::cout << this->name() << " received " << holder->name();
         std::cout << " containing spec of size ";
@@ -158,7 +160,8 @@ class MyRestraint
     public:
         static const char* docstring;
 
-        static std::string name() { return "MyRestraint"; };
+        static std::string name()
+        { return "MyRestraint"; };
 };
 
 template<>
@@ -171,7 +174,7 @@ std::shared_ptr<gmxapi::MDModule> PyRestraint<MyRestraint>::getModule()
 
 // Raw string will have line breaks and indentation as written between the delimiters.
 const char* MyRestraint::docstring =
-R"rawdelimiter(Some sort of custom potential.
+    R"rawdelimiter(Some sort of custom potential.
 )rawdelimiter";
 // end MyRestraint
 //////////////////
@@ -222,7 +225,10 @@ class HarmonicRestraintBuilder
          */
         void build(py::object graph)
         {
-            auto potential = PyRestraint<plugin::HarmonicModule>::create(site1Index_, site2Index_, equilibriumPosition_, springConstant_);
+            auto potential = PyRestraint<plugin::HarmonicModule>::create(site1Index_,
+                                                                         site2Index_,
+                                                                         equilibriumPosition_,
+                                                                         springConstant_);
 
             auto subscriber = subscriber_;
             py::list potential_list = subscriber.attr("potential");
@@ -242,7 +248,8 @@ class HarmonicRestraintBuilder
          */
         void add_subscriber(py::object subscriber)
         {
-            assert(py::hasattr(subscriber, "potential"));
+            assert(py::hasattr(subscriber,
+                               "potential"));
             subscriber_ = subscriber;
         };
 
@@ -252,9 +259,6 @@ class HarmonicRestraintBuilder
         real equilibriumPosition_;
         real springConstant_;
 };
-
-
-
 
 
 class EnsembleRestraintBuilder
@@ -267,7 +271,8 @@ class EnsembleRestraintBuilder
 
             // It looks like we need some boilerplate exceptions for plugins so we have something to
             // raise if the element is invalid.
-            assert(py::hasattr(element, "params"));
+            assert(py::hasattr(element,
+                               "params"));
 
             // Params attribute should be a Python list
             py::dict parameter_dict = element.attr("params");
@@ -306,9 +311,11 @@ class EnsembleRestraintBuilder
             // Note that if we want to grab a reference to the Context or its communicator, we can get it
             // here through element.workspec._context. We need a more general API solution, but this code is
             // in the Python bindings code, so we know we are in a Python Context.
-            assert(py::hasattr(element, "workspec"));
+            assert(py::hasattr(element,
+                               "workspec"));
             auto workspec = element.attr("workspec");
-            assert(py::hasattr(workspec, "_context"));
+            assert(py::hasattr(workspec,
+                               "_context"));
             context_ = workspec.attr("_context");
         }
 
@@ -326,22 +333,27 @@ class EnsembleRestraintBuilder
             // can just call with matrix arguments.
 
             // This can be replaced with a subscription and delayed until launch, if necessary.
-            assert(py::hasattr(context_, "ensemble_update"));
+            assert(py::hasattr(context_,
+                               "ensemble_update"));
             // make a local copy of the Python object so we can capture it in the lambda
             auto update = context_.attr("ensemble_update");
             // Make a callable with standardizeable signature.
             const std::string name{name_};
             auto functor = [update, name](const plugin::Matrix<double>& send,
-                                    plugin::Matrix<double>* receive)
-            {
-                update(send, receive, py::str(name));
+                                          plugin::Matrix<double>* receive) {
+                update(send,
+                       receive,
+                       py::str(name));
             };
 
             // To use a reduce function on the Python side, we need to provide it with a Python buffer-like object,
             // so we will create one here. Note: it looks like the SharedData element will be useful after all.
             auto resources = std::make_shared<plugin::EnsembleResources>(std::move(functor));
 
-            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(name_, siteIndices_, params_, resources);
+            auto potential = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>::create(name_,
+                                                                                                     siteIndices_,
+                                                                                                     params_,
+                                                                                                     resources);
 
             auto subscriber = subscriber_;
             py::list potentialList = subscriber.attr("potential");
@@ -359,7 +371,8 @@ class EnsembleRestraintBuilder
          */
         void addSubscriber(py::object subscriber)
         {
-            assert(py::hasattr(subscriber, "potential"));
+            assert(py::hasattr(subscriber,
+                               "potential"));
             subscriber_ = subscriber;
         };
 
@@ -424,16 +437,18 @@ PYBIND11_MODULE(myplugin, m) {
     m.doc() = "sample plugin"; // This will be the text of the module's docstring.
 
     // Matrix utility class (temporary). Borrowed from http://pybind11.readthedocs.io/en/master/advanced/pycpp/numpy.html#arrays
-    py::class_<plugin::Matrix<double>, std::shared_ptr<plugin::Matrix<double>>>(m, "Matrix", py::buffer_protocol())
-        .def_buffer([](plugin::Matrix<double> &matrix) -> py::buffer_info {
+    py::class_<plugin::Matrix<double>, std::shared_ptr<plugin::Matrix<double>>>(m,
+                                                                                "Matrix",
+                                                                                py::buffer_protocol())
+        .def_buffer([](plugin::Matrix<double>& matrix) -> py::buffer_info {
             return py::buffer_info(
                 matrix.data(),                               /* Pointer to buffer */
                 sizeof(double),                          /* Size of one scalar */
                 py::format_descriptor<double>::format(), /* Python struct-style format descriptor */
                 2,                                      /* Number of dimensions */
-                { matrix.rows(), matrix.cols() },                 /* Buffer dimensions */
-                { sizeof(double) * matrix.cols(),             /* Strides (in bytes) for each index */
-                  sizeof(double) }
+                {matrix.rows(), matrix.cols()},                 /* Buffer dimensions */
+                {sizeof(double) * matrix.cols(),             /* Strides (in bytes) for each index */
+                 sizeof(double)}
             );
         });
 
@@ -445,7 +460,8 @@ PYBIND11_MODULE(myplugin, m) {
     // on libgmxapi as long as they provide the required function name. This is in line with
     // the Pythonic idiom of designing interfaces around functions instead of classes.
     //
-    // Example: calling md.add_potential(mypotential) in Python causes to be called mypotential.bind(api_object), where api_object is a member of `md` that is a type exposed directly from gmxapi with
+    // Example: calling md.add_potential(mypotential) in Python causes to be called mypotential.bind(api_object), where
+    // api_object is a member of `md` that is a type exposed directly from gmxapi with
     // module_local bindings. To interact properly, then, mypotential just has to be something with a
     // bind() method that takes the same sort of gmxapi object, such as is defined locally. For simplicity
     // and safety, this gmxapi object will be something like
@@ -460,15 +476,16 @@ PYBIND11_MODULE(myplugin, m) {
     // function that provides pybind11 bindings.
 
     // Make a null restraint for testing.
-    py::class_<PyRestraint<MyRestraint>, std::shared_ptr<PyRestraint<MyRestraint>>> md_module(m, "MyRestraint");
-    md_module.def(py::init<>(
-        []()
-        {
-            return PyRestraint<MyRestraint>::create();
-        }),
-        "Create default MyRestraint"
-    );
-    md_module.def("bind", &PyRestraint<MyRestraint>::bind);
+    py::class_<PyRestraint<MyRestraint>, std::shared_ptr<PyRestraint<MyRestraint>>> md_module(m,
+                                                                                              "MyRestraint");
+    md_module.def(
+        py::init<>(
+                []() { return PyRestraint<MyRestraint>::create(); }
+            ),
+            "Create default MyRestraint"
+        );
+    md_module.def("bind",
+                  &PyRestraint<MyRestraint>::bind);
     // This bindings specification could actually be done in a templated function to automatically
     // generate parameter setters/getters
 
@@ -477,28 +494,36 @@ PYBIND11_MODULE(myplugin, m) {
     // Begin HarmonicRestraint
     //
     // Builder to be returned from create_restraint,
-    py::class_<HarmonicRestraintBuilder> harmonicBuilder(m, "HarmonicBuilder");
-    harmonicBuilder.def("add_subscriber", &HarmonicRestraintBuilder::add_subscriber);
-    harmonicBuilder.def("build", &HarmonicRestraintBuilder::build);
+    py::class_<HarmonicRestraintBuilder> harmonicBuilder(m,
+                                                         "HarmonicBuilder");
+    harmonicBuilder.def("add_subscriber",
+                        &HarmonicRestraintBuilder::add_subscriber);
+    harmonicBuilder.def("build",
+                        &HarmonicRestraintBuilder::build);
 
     // API object to build.
     // We use a shared_ptr handle because both the Python interpreter and libgromacs may need to extend
     // the lifetime of the object.
-    py::class_<PyRestraint<plugin::HarmonicModule>, std::shared_ptr<PyRestraint<plugin::HarmonicModule>>> harmonic(m, "HarmonicRestraint");
+    py::class_<PyRestraint<plugin::HarmonicModule>, std::shared_ptr<PyRestraint<plugin::HarmonicModule>>>
+    harmonic(m, "HarmonicRestraint");
+
     // Deprecated constructor directly taking restraint paramaters.
     harmonic.def(
         py::init(
             [](unsigned long int site1,
                unsigned long int site2,
                real R0,
-               real k)
-            {
-                return PyRestraint<plugin::HarmonicModule>::create(site1, site2, R0, k);
+               real k) {
+                return PyRestraint<plugin::HarmonicModule>::create(site1,
+                                                                   site2,
+                                                                   R0,
+                                                                   k);
             }
         ),
         "Construct HarmonicRestraint"
     );
-    harmonic.def("bind", &PyRestraint<plugin::HarmonicModule>::bind);
+    harmonic.def("bind",
+                 &PyRestraint<plugin::HarmonicModule>::bind);
     /*
      * To implement gmxapi_workspec_1_0, the module needs a function that a Context can import that
      * produces a builder that translates workspec elements for session launching. The object returned
@@ -506,7 +531,8 @@ PYBIND11_MODULE(myplugin, m) {
      * The build() method returns None or a launcher. A launcher has a signature like launch(rank) and
      * returns None or a runner.
      */
-    m.def("create_restraint", [](const py::object element){ return createHarmonicBuilder(element); });
+    m.def("create_restraint",
+          [](const py::object element) { return createHarmonicBuilder(element); });
     //
     // End HarmonicRestraint
     ///////////////////////////////////////////////////////
@@ -516,10 +542,12 @@ PYBIND11_MODULE(myplugin, m) {
     // Begin EnsembleRestraint
     //
     // Define Builder to be returned from ensemble_restraint Python function defined further down.
-    pybind11::class_<EnsembleRestraintBuilder> ensembleBuilder(m, "EnsembleBuilder");
+    pybind11::class_<EnsembleRestraintBuilder> ensembleBuilder(m,
+                                                               "EnsembleBuilder");
     ensembleBuilder.def("add_subscriber",
-                         &EnsembleRestraintBuilder::addSubscriber);
-    ensembleBuilder.def("build", &EnsembleRestraintBuilder::build);
+                        &EnsembleRestraintBuilder::addSubscriber);
+    ensembleBuilder.def("build",
+                        &EnsembleRestraintBuilder::build);
 
     // Get more concise name for the template instantiation...
     using PyEnsemble = PyRestraint<plugin::RestraintModule<plugin::EnsembleRestraint>>;
@@ -532,7 +560,9 @@ PYBIND11_MODULE(myplugin, m) {
     // API object to build.
     py::class_<PyEnsemble, std::shared_ptr<PyEnsemble>> ensemble(m, "EnsembleRestraint");
     // EnsembleRestraint can only be created via builder for now.
-    ensemble.def("bind", &PyEnsemble::bind, "Implement binding protocol");
+    ensemble.def("bind",
+                 &PyEnsemble::bind,
+                 "Implement binding protocol");
     /*
      * To implement gmxapi_workspec_1_0, the module needs a function that a Context can import that
      * produces a builder that translates workspec elements for session launching. The object returned
@@ -543,7 +573,8 @@ PYBIND11_MODULE(myplugin, m) {
 
     // Generate the name operation that will be used to specify elements of Work in gmxapi workflows.
     // WorkElements will then have namespace: "myplugin" and operation: "ensemble_restraint"
-    m.def("ensemble_restraint", [](const py::object element){ return createEnsembleBuilder(element); });
+    m.def("ensemble_restraint",
+          [](const py::object element) { return createEnsembleBuilder(element); });
     //
     // End EnsembleRestraint
     ///////////////////////////////////////////////////////////////////////////

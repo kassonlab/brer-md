@@ -32,7 +32,8 @@ namespace plugin
 class Harmonic
 {
     public:
-        Harmonic(real equilibrium, real springconstant) :
+        Harmonic(real equilibrium,
+                 real springconstant) :
             R0{equilibrium},
             k{springconstant}
         {};
@@ -42,7 +43,8 @@ class Harmonic
         {};
 
         // Allow easier automatic generation of bindings.
-        struct input_param_type {
+        struct input_param_type
+        {
 //             not yet used
         };
 
@@ -71,8 +73,10 @@ class Harmonic
                                           gmx::Vector v0,
                                           gmx_unused double t);
 
-        // The class will either be inherited as a mix-in or inherit a CRTP base class. Either way, it probably needs proper virtual destructor management.
-        virtual ~Harmonic() {
+        // The class will either be inherited as a mix-in or inherit a CRTP base class. Either way, it probably needs
+        // proper virtual destructor management.
+        virtual ~Harmonic()
+        {
         }
 
     private:
@@ -161,7 +165,7 @@ class HarmonicModule : public gmxapi::MDModule
         }
 
 
-        const char *name() override
+        const char* name() override
         {
             return "HarmonicModule";
         }
@@ -173,7 +177,10 @@ class HarmonicModule : public gmxapi::MDModule
          */
         std::shared_ptr<gmx::IRestraintPotential> getRestraint() override
         {
-            auto restraint = std::make_shared<HarmonicRestraint>(site1_, site2_, R0_, k_);
+            auto restraint = std::make_shared<HarmonicRestraint>(site1_,
+                                                                 site2_,
+                                                                 R0_,
+                                                                 k_);
             return restraint;
         }
 
@@ -187,9 +194,9 @@ class HarmonicModule : public gmxapi::MDModule
          * \param R0
          */
         void setParams(unsigned long int site1,
-                        unsigned long int site2,
-                        real R0,
-                        real k)
+                       unsigned long int site2,
+                       real R0,
+                       real k)
         {
             site1_ = site1;
             site2_ = site2;

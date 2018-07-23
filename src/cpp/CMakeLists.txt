@@ -23,7 +23,6 @@ set_target_properties(harmonicpotential PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE
 target_link_libraries(harmonicpotential PRIVATE Gromacs::gmxapi)
 
 
-
 # Create a shared object library for our restrained ensemble plugin.
 add_library(ensemblepotential STATIC
             ensemblepotential.h

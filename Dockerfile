@@ -13,7 +13,8 @@
 #     docker run -ti --name restraint_test sample_restraint
 #
 # Test with
-#     docker run --cpus 2 --rm -ti gmxapi/sample_restraint:devel bash -c "cd /home/jovyan/sample_restraint/tests && mpiexec -n 2 python -m mpi4py -m pytest"
+#     docker run --cpus 2 --rm -ti gmxapi/sample_restraint:devel bash -c \
+#         "cd /home/jovyan/sample_restraint/tests && mpiexec -n 2 python -m mpi4py -m pytest"
 # or replace `gmxapi/sample_restraint:devel` with your local image name
 
 
@@ -36,11 +37,13 @@ RUN find /home/jovyan -name __pycache__ -exec rm -rf \{\} \; -prune
 # Build and install the plugin in the Conda virtual environment from the scipy-jupyter base image.
 RUN mkdir /home/jovyan/plugin-build && \
     (cd /home/jovyan/plugin-build && \
-    GROMACS_DIR=/home/jovyan/install/gromacs gmxapi_DIR=/home/jovyan/install/gromacs cmake ../sample_restraint -DPYTHON_EXECUTABLE=/opt/conda/bin/python && \
+    GROMACS_DIR=/home/jovyan/install/gromacs gmxapi_DIR=/home/jovyan/install/gromacs \
+        cmake ../sample_restraint -DPYTHON_EXECUTABLE=/opt/conda/bin/python && \
     LD_LIBRARY_PATH=/opt/conda/lib make && \
     make test && \
     make install) && \
-    PYTHONPATH=plugin-build/src/pythonmodule CONDA_DIR=/opt/conda /opt/conda/bin/python -m pytest sample_restraint/tests --verbose
+    PYTHONPATH=plugin-build/src/pythonmodule CONDA_DIR=/opt/conda \
+        /opt/conda/bin/python -m pytest sample_restraint/tests --verbose
 
 # The jupyter notebook server might not pick this up, but we can make it a little easier to find the
 # `gmx` binary from the default user shell.

@@ -12,7 +12,8 @@ a tutorial and as a template for implementing new custom restraint potentials.
 Restraint potentials are implemented as "plugins" to GROMACS. The required GROMACS modifications are available at this
 `GitHub repository <https://github.com/kassonlab/gromacs-gmxapi>`_
 
-The plugin potentials are loaded and configured via Python and are compatible with the `gmxapi <https://github.com/kassonlab/gmxapi>`_
+The plugin potentials are loaded and configured via Python and are compatible with the
+`gmxapi <https://github.com/kassonlab/gmxapi>`_
 Python package for MD simulation workflows.
 
 For a quick start, consider pulling a recent Docker image that has already been configured for gmxapi and this plug-in.
@@ -217,9 +218,9 @@ the ``PYTHONPATH`` environment variable).
 If you just run ``pytest`` with no arguments, it will discover and try to run tests from elsewhere in the repository
 that were not intended, and they will fail.
 
-To run the full set of tests for the ensemble workflow features, first make sure that you have an MPI-capable environment
-and ``mpi4py`` installed. Refer to http://mpi4py.readthedocs.io/en/stable/ and https://github.com/kassonlab/gmxapi for more
-information.
+To run the full set of tests for the ensemble workflow features, first make sure that you have an MPI-capable
+environment and ``mpi4py`` installed. Refer to http://mpi4py.readthedocs.io/en/stable/ and
+https://github.com/kassonlab/gmxapi for more information.
 
 The ensemble tests assume that 2 ranks are available. After installing the plugin, run (for example)::
 
@@ -228,5 +229,6 @@ The ensemble tests assume that 2 ranks are available. After installing the plugi
 If you do not have MPI set up for your system, you could build a docker image using the Dockerfile in this
 repository and do::
 
-    $ docker run --cpus 2 --rm -ti samplerestraint bash -c "cd /home/jovyan/sample_restraint/tests && mpiexec -n 2 python -m mpi4py -m pytest"
+    $ docker run --cpus 2 --rm -ti samplerestraint bash -c \
+        "cd /home/jovyan/sample_restraint/tests && mpiexec -n 2 python -m mpi4py -m pytest"
 

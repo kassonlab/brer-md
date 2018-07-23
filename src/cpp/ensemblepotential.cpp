@@ -72,25 +72,26 @@ class BlurToGrid
          *     blur(someData, &histogram);
          *
          */
-        void operator() (const std::vector<double>& samples, std::vector<double>* grid)
+        void operator()(const std::vector<double>& samples,
+                        std::vector<double>* grid)
         {
             const auto nbins = grid->size();
             const double& dx{binWidth_};
             const auto num_samples = samples.size();
 
-            const double denominator = 1.0/(2*sigma_*sigma_);
-            const double normalization = 1.0/(num_samples*sqrt(2.0*M_PI*sigma_*sigma_));
+            const double denominator = 1.0 / (2 * sigma_ * sigma_);
+            const double normalization = 1.0 / (num_samples * sqrt(2.0 * M_PI * sigma_ * sigma_));
             // We aren't doing any filtering of values too far away to contribute meaningfully, which
             // is admittedly wasteful for large sigma...
-            for (size_t i = 0; i < nbins; ++i)
+            for (size_t i = 0;i < nbins;++i)
             {
                 double bin_value{0};
-                const double bin_x{low_ + i*dx};
-                for(const auto distance : samples)
+                const double bin_x{low_ + i * dx};
+                for (const auto distance : samples)
                 {
                     const double relative_distance{bin_x - distance};
-                    const auto numerator = -relative_distance*relative_distance;
-                    bin_value += normalization*exp(numerator*denominator);
+                    const auto numerator = -relative_distance * relative_distance;
+                    bin_value += normalization * exp(numerator * denominator);
                 }
                 grid->at(i) = bin_value;
             }
@@ -121,7 +122,8 @@ EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
     binWidth_{binWidth},
     minDist_{minDist},
     maxDist_{maxDist},
-    histogram_(nbins, 0),
+    histogram_(nbins,
+               0),
     experimental_{std::move(experimental)},
     nSamples_{nSamples},
     currentSample_{0},
@@ -132,13 +134,13 @@ EnsembleHarmonic::EnsembleHarmonic(size_t nbins,
     nWindows_{nWindows},
     currentWindow_{0},
     windowStartTime_{0},
-    nextWindowUpdateTime_{nSamples*samplePeriod},
+    nextWindowUpdateTime_{nSamples * samplePeriod},
     windows_{},
     k_{k},
     sigma_{sigma}
 {}
 
-EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
+EnsembleHarmonic::EnsembleHarmonic(const input_param_type& params) :
     EnsembleHarmonic(params.nBins,
                      params.binWidth,
                      params.minDist,
@@ -162,7 +164,7 @@ EnsembleHarmonic::EnsembleHarmonic(const input_param_type &params) :
 void EnsembleHarmonic::callback(gmx::Vector v,
                                 gmx::Vector v0,
                                 double t,
-                                const EnsembleResources &resources)
+                                const EnsembleResources& resources)
 {
     auto rdiff = v - v0;
     const auto Rsquared = dot(rdiff,
@@ -173,7 +175,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
     if (t >= nextSampleTime_)
     {
         distanceSamples_[currentSample_++] = R;
-        nextSampleTime_ = (currentSample_ + 1)*samplePeriod_ + windowStartTime_;
+        nextSampleTime_ = (currentSample_ + 1) * samplePeriod_ + windowStartTime_;
     };
 
     // Every nsteps:
@@ -230,15 +232,15 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         windows_.emplace_back(std::move(new_window));
 
         // Get new histogram difference. Subtract the experimental distribution to get the values to use in our potential.
-        for (auto &bin : histogram_)
+        for (auto& bin : histogram_)
         {
             bin = 0;
         }
-        for (const auto &window : windows_)
+        for (const auto& window : windows_)
         {
-            for (size_t i = 0; i < window->cols(); ++i)
+            for (size_t i = 0;i < window->cols();++i)
             {
-                histogram_.at(i) += (window->vector()->at(i) - experimental_.at(i))/windows_.size();
+                histogram_.at(i) += (window->vector()->at(i) - experimental_.at(i)) / windows_.size();
             }
         }
 
@@ -248,7 +250,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         // simulation progresses, so _update_period should be cleanly representable in binary. When we extract this
         // to a facility, we can look for a part of the code with access to the current timestep.
         windowStartTime_ = t;
-        nextWindowUpdateTime_ = nSamples_*samplePeriod_ + windowStartTime_;
+        nextWindowUpdateTime_ = nSamples_ * samplePeriod_ + windowStartTime_;
         ++currentWindow_; // This is currently never used. I'm not sure it will be, either...
 
         // Reset sample bufering.
@@ -302,13 +304,13 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
             double f_scal{0};
 
             const size_t numBins = histogram_.size();
-            double normConst = sqrt(2*M_PI)*sigma_*sigma_*sigma_;
+            double normConst = sqrt(2 * M_PI) * sigma_ * sigma_ * sigma_;
 
-            for (size_t n = 0; n < numBins; n++)
+            for (size_t n = 0;n < numBins;n++)
             {
-                const double x{n*binWidth_ - R};
-                const double argExp{-0.5*x*x/(sigma_*sigma_)};
-                f_scal += histogram_.at(n)*exp(argExp)*x/normConst;
+                const double x{n * binWidth_ - R};
+                const double argExp{-0.5 * x * x / (sigma_ * sigma_)};
+                f_scal += histogram_.at(n) * exp(argExp) * x / normConst;
             }
             f = -k_ * f_scal;
         }
@@ -323,7 +325,7 @@ makeEnsembleParams(size_t nbins,
                    double binWidth,
                    double minDist,
                    double maxDist,
-                   const std::vector<double> &experimental,
+                   const std::vector<double>& experimental,
                    unsigned int nSamples,
                    double samplePeriod,
                    unsigned int nWindows,
@@ -348,6 +350,7 @@ makeEnsembleParams(size_t nbins,
 
 // Important: Explicitly instantiate a definition for the templated class declared in ensemblepotential.h.
 // Failing to do this will cause a linker error.
-template class ::plugin::RestraintModule<EnsembleRestraint>;
+template
+class ::plugin::RestraintModule<EnsembleRestraint>;
 
 } // end namespace plugin

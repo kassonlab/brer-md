@@ -77,7 +77,7 @@ makeEnsembleParams(size_t nbins,
                    double binWidth,
                    double minDist,
                    double maxDist,
-                   const std::vector<double> &experimental,
+                   const std::vector<double>& experimental,
                    unsigned int nSamples,
                    double samplePeriod,
                    unsigned int nWindows,
@@ -114,7 +114,7 @@ class EnsembleHarmonic
          *
          * \param params
          */
-        explicit EnsembleHarmonic(const input_param_type &params);
+        explicit EnsembleHarmonic(const input_param_type& params);
 
         /*!
          * \brief Deprecated constructor taking a parameter list.
@@ -175,7 +175,7 @@ class EnsembleHarmonic
         void callback(gmx::Vector v,
                       gmx::Vector v0,
                       double t,
-                      const EnsembleResources &resources);
+                      const EnsembleResources& resources);
 
     private:
         /// Width of bins (distance) in histogram
@@ -222,13 +222,13 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
     public:
         using EnsembleHarmonic::input_param_type;
 
-        EnsembleRestraint(const std::vector<unsigned long> &sites,
-                          const input_param_type &params,
+        EnsembleRestraint(std::vector<unsigned long> sites,
+                          const input_param_type& params,
                           std::shared_ptr<EnsembleResources> resources
         ) :
-                EnsembleHarmonic(params),
-                sites_{sites},
-                resources_{std::move(resources)}
+            EnsembleHarmonic(params),
+            sites_{std::move(sites)},
+            resources_{std::move(resources)}
         {}
 
         /*!
@@ -241,7 +241,7 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
          */
         std::vector<unsigned long int> sites() const override
         {
-                return sites_;
+            return sites_;
         }
 
         /*!
@@ -260,7 +260,9 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
                                          gmx::Vector r2,
                                          double t) override
         {
-                return calculate(r1, r2, t);
+            return calculate(r1,
+                             r2,
+                             t);
         };
 
         /*!
@@ -309,7 +311,8 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
 
 // Important: Just declare the template instantiation here for client code.
 // We will explicitly instantiate a definition in the .cpp file where the input_param_type is defined.
-extern template class RestraintModule<EnsembleRestraint>;
+extern template
+class RestraintModule<EnsembleRestraint>;
 
 } // end namespace plugin
 

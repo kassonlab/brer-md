@@ -21,17 +21,21 @@
 
 #include "make_unique.h"
 
-namespace plugin {
+namespace plugin
+{
 
 // Stop-gap for cross-language data exchange pending SharedData implementation and inclusion of Eigen.
 // Adapted from pybind docs.
 template<class T>
-class Matrix {
+class Matrix
+{
     public:
-        Matrix(size_t rows, size_t cols) :
+        Matrix(size_t rows,
+               size_t cols) :
             rows_(rows),
             cols_(cols),
-            data_(rows_*cols_, 0)
+            data_(rows_ * cols_,
+                  0)
         {
         }
 
@@ -42,10 +46,18 @@ class Matrix {
         {
         }
 
-        std::vector<T> *vector() { return &data_; }
-        T* data() { return data_.data(); };
-        size_t rows() const { return rows_; }
-        size_t cols() const { return cols_; }
+        std::vector<T>* vector()
+        { return &data_; }
+
+        T* data()
+        { return data_.data(); };
+
+        size_t rows() const
+        { return rows_; }
+
+        size_t cols() const
+        { return cols_; }
+
     private:
         size_t rows_;
         size_t cols_;
@@ -53,7 +65,8 @@ class Matrix {
 };
 
 // Defer implicit instantiation to ensemblepotential.cpp
-extern template class Matrix<double>;
+extern template
+class Matrix<double>;
 
 /*!
  * \brief An active handle to ensemble resources provided by the Context.
@@ -100,8 +113,8 @@ class EnsembleResourceHandle
          * \param send Matrices to be summed across the ensemble using Context resources.
          * \param receive destination of reduced data instead of updating internal Matrix.
          */
-        void reduce(const Matrix<double> &send,
-                    Matrix<double> *receive) const;
+        void reduce(const Matrix<double>& send,
+                    Matrix<double>* receive) const;
 
         /*!
          * \brief Issue a stop condition event.
@@ -112,7 +125,8 @@ class EnsembleResourceHandle
         void stop();
 
         // to be abstracted and hidden...
-        const std::function<void(const Matrix<double>&, Matrix<double>*)>* reduce_;
+        const std::function<void(const Matrix<double>&,
+                                 Matrix<double>*)>* reduce_;
 
         gmxapi::SessionResources* session_;
 
@@ -124,6 +138,7 @@ class EnsembleResourceHandle
          * data and call it with `true`.
          */
         gmxapi::session::OutputStream* ostream();
+
     private:
         std::shared_ptr<gmxapi::session::OutputStream> ostream_;
 };
@@ -148,7 +163,8 @@ class EnsembleResources
          *
          * \param reduce ownership of a function object providing ensemble averaging of a 2D matrix.
          */
-        explicit EnsembleResources(std::function<void(const Matrix<double>&, Matrix<double>*)>&& reduce) :
+        explicit EnsembleResources(std::function<void(const Matrix<double>&,
+                                                      Matrix<double>*)>&& reduce) :
             reduce_(reduce)
         {};
 
@@ -171,7 +187,7 @@ class EnsembleResources
          *
          * \param session non-owning pointer to Session resources.
          */
-        void setSession(gmxapi::SessionResources *session);
+        void setSession(gmxapi::SessionResources* session);
 
         /*!
          * \brief Sets the OutputStream manager for this set of resources.
@@ -182,7 +198,8 @@ class EnsembleResources
 
     private:
         //! bound function object to provide ensemble reduce facility.
-        std::function<void(const Matrix<double>&, Matrix<double>*)> reduce_;
+        std::function<void(const Matrix<double>&,
+                           Matrix<double>*)> reduce_;
 
         // Raw pointer to the session in which these resources live.
         gmxapi::SessionResources* session_;
@@ -242,7 +259,7 @@ class RestraintModule : public gmxapi::MDModule // consider names
          * \return
          */
         // \todo make member function const
-        const char *name() override
+        const char* name() override
         {
             return name_.c_str();
         }
@@ -264,7 +281,9 @@ class RestraintModule : public gmxapi::MDModule // consider names
             std::lock_guard<std::mutex> lock(restraintInstantiation_);
             if (!restraint_)
             {
-                restraint_ = std::make_shared<R>(sites_, params_, resources_);
+                restraint_ = std::make_shared<R>(sites_,
+                                                 params_,
+                                                 resources_);
             }
             return restraint_;
         }
@@ -294,85 +313,91 @@ class RestraintModule : public gmxapi::MDModule // consider names
  */
 class RAIIFile
 {
-public:
+    public:
 
-    /*!
-     * \brief Open a file in the chosen access mode.
-     *
-     * \param filename Name of file to be opened.
-     * \param mode access mode as described for the fopen C library call.
-     */
-    RAIIFile(const char* filename, const char* mode) :
-            fh_{fopen(filename, mode)}
-    {}
+        /*!
+         * \brief Open a file in the chosen access mode.
+         *
+         * \param filename Name of file to be opened.
+         * \param mode access mode as described for the fopen C library call.
+         */
+        RAIIFile(const char* filename,
+                 const char* mode) :
+            fh_{fopen(filename,
+                      mode)}
+        {}
 
-    /*!
-     * \brief Open a file for writing.
-     *
-     * \param filename Name of file to be opened.
-     *
-     * File is opened in mode "w", which truncates data if the file already exists.
-     * For other file access modes, use RAIIFile(const char* filename, const char* mode)
-     */
-    explicit RAIIFile(const char* filename) :
-            RAIIFile(filename, "w")
-    {}
+        /*!
+         * \brief Open a file for writing.
+         *
+         * \param filename Name of file to be opened.
+         *
+         * File is opened in mode "w", which truncates data if the file already exists.
+         * For other file access modes, use RAIIFile(const char* filename, const char* mode)
+         */
+        explicit RAIIFile(const char* filename) :
+            RAIIFile(filename,
+                     "w")
+        {}
 
-    /*!
-     * \brief Explicitly close the associated filehandle.
-     *
-     * It is good practice to explicitly close the file at a known point in the client code, though
-     * it is not strictly necessary. If the filehandle is still open when the RAIIFile object is
-     * destroyed, the fclose will be called then.
-     *
-     * Calling close() additional times on the same RAIIFile object is fine and has no effect in
-     * single-threaded code. However, the destructor and close() routines are not thread-safe, so
-     * the client code should make sure that close() is not called at the same time by multiple threads.
-     * Standard reference-counting constructs, like std::shared_ptr, can be used to make sure the
-     * object destructor is called exactly once if it needs to be shared.
-     *
-     * Refer to documentation on fclose() on checking for and interpreting `errno`.
-     */
-    void close()
-    {
-        if (fh_ != nullptr)
+        /*!
+         * \brief Explicitly close the associated filehandle.
+         *
+         * It is good practice to explicitly close the file at a known point in the client code, though
+         * it is not strictly necessary. If the filehandle is still open when the RAIIFile object is
+         * destroyed, the fclose will be called then.
+         *
+         * Calling close() additional times on the same RAIIFile object is fine and has no effect in
+         * single-threaded code. However, the destructor and close() routines are not thread-safe, so
+         * the client code should make sure that close() is not called at the same time by multiple threads.
+         * Standard reference-counting constructs, like std::shared_ptr, can be used to make sure the
+         * object destructor is called exactly once if it needs to be shared.
+         *
+         * Refer to documentation on fclose() on checking for and interpreting `errno`.
+         */
+        void close()
         {
-            fclose(fh_);
+            if (fh_ != nullptr)
+            {
+                fclose(fh_);
+            }
+            fh_ = nullptr;
         }
-        fh_ = nullptr;
-    }
 
-    /*!
-     * \brief RAII destructor.
-     *
-     * Make sure the filehandle gets closed exactly once.
-     */
-    ~RAIIFile()
-    {
-        if (fh_ != nullptr)
+        /*!
+         * \brief RAII destructor.
+         *
+         * Make sure the filehandle gets closed exactly once.
+         */
+        ~RAIIFile()
         {
-            fclose(fh_);
+            if (fh_ != nullptr)
+            {
+                fclose(fh_);
+            }
         }
-    }
 
-    RAIIFile(const RAIIFile&) = delete;
-    RAIIFile& operator=(const RAIIFile&) = delete;
-    RAIIFile(RAIIFile&&) = default;
-    RAIIFile& operator=(RAIIFile&&) = default;
+        RAIIFile(const RAIIFile&) = delete;
 
-    /*!
-     * \brief Get the managed filehandle.
-     *
-     * \return raw pointer to the underlying filehandle.
-     */
-    FILE* fh() const noexcept
-    {
-        return fh_;
-    }
+        RAIIFile& operator=(const RAIIFile&) = delete;
 
-private:
-    /// file handle
-    FILE* fh_{nullptr};
+        RAIIFile(RAIIFile&&) = default;
+
+        RAIIFile& operator=(RAIIFile&&) = default;
+
+        /*!
+         * \brief Get the managed filehandle.
+         *
+         * \return raw pointer to the underlying filehandle.
+         */
+        FILE* fh() const noexcept
+        {
+            return fh_;
+        }
+
+    private:
+        /// file handle
+        FILE* fh_{nullptr};
 };
 
 } // end namespace plugin

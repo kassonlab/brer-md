@@ -10,29 +10,33 @@
 #include "gmxapi/md/mdsignals.h"
 #include "gmxapi/session/outputstream.h"
 
-namespace plugin {
+namespace plugin
+{
 
 // Explicit instantiation.
-template class ::plugin::Matrix<double>;
+template
+class ::plugin::Matrix<double>;
 
-void EnsembleResourceHandle::reduce(const Matrix<double> &send,
-                                    Matrix<double> *receive) const
+void EnsembleResourceHandle::reduce(const Matrix<double>& send,
+                                    Matrix<double>* receive) const
 {
     assert(reduce_);
     // Should probably check that the function object has been initialized...
-    (*reduce_)(send, receive);
+    (*reduce_)(send,
+               receive);
 }
 
 void EnsembleResourceHandle::stop()
 {
     assert(session_);
-    auto signaller = gmxapi::getMdrunnerSignal(session_, gmxapi::md::signals::STOP);
+    auto signaller = gmxapi::getMdrunnerSignal(session_,
+                                               gmxapi::md::signals::STOP);
 
     // Should probably check that the function object has been initialized...
     signaller();
 }
 
-gmxapi::session::OutputStream *EnsembleResourceHandle::ostream()
+gmxapi::session::OutputStream* EnsembleResourceHandle::ostream()
 {
     return ostream_.get();
 }
@@ -56,7 +60,7 @@ EnsembleResourceHandle EnsembleResources::getHandle() const
     return handle;
 }
 
-void EnsembleResources::setSession(gmxapi::SessionResources *session)
+void EnsembleResources::setSession(gmxapi::SessionResources* session)
 {
     if (!session)
     {
