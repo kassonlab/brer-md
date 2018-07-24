@@ -30,23 +30,23 @@ Repository Contents
 This repository uses CMake to build and install a Python C++ extension package.
 
 * ``CMakeLists.txt``, ``cmake/FindGROMACS.cmake``, and ``src/CMakeLists.txt`` provide necessary CMake infrastructure.
-You should not need to edit these.
+  You should not need to edit these.
 * ``src/cpp`` contains a header and ``cpp`` file for each restraint potential built with this module. When adding new
-potentials, you will update ``CMakeLists.txt`` to create build targets. Use the existing potentials as examples.
+  potentials, you will update ``CMakeLists.txt`` to create build targets. Use the existing potentials as examples.
 * ``src/pythonmodule/`` contains ``CMakeLists.txt``, ``export_plugin.h``, and ``export_plugin.cpp``. When you have
-written a new potential, you can add it to ``CMakeLists.txt`` and ``export_plugin.cpp``. This is the code that produces
-the C++ extension for Python. ``HarmonicRestraint`` is a simple example that applies a Hooke's Law spring between two
-atoms. ``EnsembleHarmonic`` applies a more complicated potential and uses additional facilities provided by gmxapi.
+  written a new potential, you can add it to ``CMakeLists.txt`` and ``export_plugin.cpp``. This is the code that produces
+  the C++ extension for Python. ``HarmonicRestraint`` is a simple example that applies a Hooke's Law spring between two
+  atoms. ``EnsembleHarmonic`` applies a more complicated potential and uses additional facilities provided by gmxapi.
 * ``src/pybind11`` is just a copy of the Python bindings framework from the Pybind project (ref
-https://github.com/pybind/pybind11 ). It is used to wrap the C++ restraint code and give it a Python interface.
+  https://github.com/pybind/pybind11 ). It is used to wrap the C++ restraint code and give it a Python interface.
 * ``tests/`` contains C++ and Python tests for the provided code. Update ``CMakeLists.txt`` to add your own, based on
-these examples. C++ unit tests use `googletest<https://github.com/google/googletest>`_. Python tests use the
-`pytest <https://docs.pytest.org/en/latest/>`_. Refer to those respective projects for more about how they make
-test-writing easier.
+  these examples. C++ unit tests use `googletest<https://github.com/google/googletest>`_. Python tests use the
+  `pytest <https://docs.pytest.org/en/latest/>`_. Refer to those respective projects for more about how they make
+  test-writing easier.
 * ``examples`` contains a sample SLURM job script and ``restrained-ensemble.py`` gmxapi script that have been used to do
-restrained ensemble simulations. ``example.py`` and ``example.ipynb`` explore a toy alanine dipeptide system.
-``strip_notebook.py`` is a helper script to remove extra output and state data from an iPython notebook before checking
-updates back into the repository.
+  restrained ensemble simulations. ``example.py`` and ``example.ipynb`` explore a toy alanine dipeptide system.
+  ``strip_notebook.py`` is a helper script to remove extra output and state data from an iPython notebook before checking
+  updates back into the repository.
 * ``Dockerfile`` is a recipe to build a Docker image from the root of the repository.
 
 Docker quick-start
@@ -185,8 +185,8 @@ Fundamentally, a new restraint potential is implemented by creating a class that
 ``calculate()`` method and using wrappers to give it interfaces to GROMACS and to Python.
 C++ wrappers allow the basic class implementing the potential to be presented to the GROMACS
 library in a way that can be used to evaluate forces during a simulation. Other C++ template
- code wraps the potential in a portable way so that it can be passed to GROMACS through a Python
- interface and to receive parameters from the Python interpreter. Pybind11 syntax in
+code wraps the potential in a portable way so that it can be passed to GROMACS through a Python
+interface and to receive parameters from the Python interpreter. Pybind11 syntax in
 ``export_plugin.cpp`` provides the code to actually expose the plugin as a class in a Python module
 that is compatible with the ``gmx`` package provided in the ``gmxapi`` project.
 
@@ -194,7 +194,7 @@ By version
 0.1.0, additional wrappers and boilerplate code will be migrated out of the files that
 define the ``calculate()`` methods. Until then, some amount of copy-and-paste or editing is
 necessary to implement a new potential. Refer to ``src/cpp/harmonicpotential.h`` and to
- ``src/cpp/harmonicpotential.cpp`` for a documented example of a simple pair restraint. A more
+``src/cpp/harmonicpotential.cpp`` for a documented example of a simple pair restraint. A more
 complex example is found in the ``ensemblepotential`` files. The code in ``src/cpp`` is sufficient
 to produce testable object code, but the Python module is exported in ``src/pythonmodule/export_plugin.cpp``. If you add
 additional source files for a new potential,
