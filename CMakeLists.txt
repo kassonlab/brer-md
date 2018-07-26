@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.4.3)
-project(sample_restraint CXX)
+project(sample_restraint VERSION 0.0.7)
 
 # This project requires GROMACS to build. It should be sufficient to source the GMXRC, but you can also set the
 # GROMACS_DIR environment variable to help CMake find the GROMACS installation.
