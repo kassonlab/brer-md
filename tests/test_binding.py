@@ -54,6 +54,7 @@ def test_add_potential():
     with gmx.context.DefaultContext(system.workflow) as session:
         session.run()
 
+
 @pytest.mark.usefixtures("cleandir")
 def test_harmonic_potential():
     import gmx

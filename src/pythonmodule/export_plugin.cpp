@@ -333,8 +333,10 @@ class EnsembleRestraintBuilder
             // can just call with matrix arguments.
 
             // This can be replaced with a subscription and delayed until launch, if necessary.
-            assert(py::hasattr(context_,
-                               "ensemble_update"));
+            if (!py::hasattr(context_, "ensemble_update"))
+            {
+                throw gmxapi::ProtocolError("context does not have 'ensemble_update'.");
+            }
             // make a local copy of the Python object so we can capture it in the lambda
             auto update = context_.attr("ensemble_update");
             // Make a callable with standardizeable signature.

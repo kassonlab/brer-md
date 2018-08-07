@@ -21,9 +21,15 @@ void EnsembleResourceHandle::reduce(const Matrix<double>& send,
                                     Matrix<double>* receive) const
 {
     assert(reduce_);
-    // Should probably check that the function object has been initialized...
-    (*reduce_)(send,
+    if (*reduce_)
+    {
+        (*reduce_)(send,
                receive);
+    }
+    else
+    {
+        throw gmxapi::ProtocolError("'reduce' functor was not initialized before use.");
+    }
 }
 
 void EnsembleResourceHandle::stop()
