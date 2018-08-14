@@ -29,12 +29,16 @@ class State(object):
             self._state = {}
         else:
             self._state = initial_state
+
         self._required_keys = [
             'iteration', 'phase', 'alpha', 'target', 'gmx_cpt'
         ]
 
     def state(self):
         return self._state
+
+    def get(self, key):
+        return self._state[key]
 
     def set(self, key, value):
         """

@@ -14,14 +14,17 @@ class PairData:
         self._distribution = []
         self._bins = []
         self._bin_width = 0.1
+        self._atom_idx = []
         self._metadata = {
             'distribution': self._distribution,
             'bins': self._bins,
-            'bin_width': self._bin_width
+            'bin_width': self._bin_width,
+            'atom_idx': self._atom_idx
         }
 
         print("Pair data for {} has been initialized".format(self.__name))
 
+    # Set a name for the particular pair. Helps keep all the distributions and indices clear during run.
     @property
     def name(self):
         return self.__name
@@ -34,14 +37,6 @@ class PairData:
     def distribution(self):
         return self._distribution
 
-    @property
-    def bins(self):
-        return self._bins
-
-    @property
-    def bin_width(self):
-        return self._bin_width
-
     @distribution.setter
     def distribution(self, distribution):
         self._distribution = distribution
@@ -51,15 +46,36 @@ class PairData:
     def distribution(self):
         return self._distribution
 
+    @property
+    def bins(self):
+        return self._bins
+
     @bins.setter
     def bins(self, bins):
         self._bins = bins
         self._metadata['bins'] = bins
 
+    @property
+    def bin_width(self):
+        return self._bin_width
+
     @bin_width.setter
     def bin_width(self, bin_width):
         self._bin_width = bin_width
         self._metadata['bin_width'] = bin_width
+
+    @property
+    def atom_idx(self):
+        return self._atom_idx
+
+    @atom_idx.getter
+    def atom_idx(self):
+        return self._atom_idx
+
+    @atom_idx.setter
+    def atom_idx(self, atom_idx):
+        self._atom_idx = atom_idx
+        self._metadata['atom_idx'] = atom_idx
 
     def save_metadata(self, filename):
         if "json" in filename:
@@ -87,6 +103,9 @@ class ReSampler:
         """
         self._pairs.append(pair_data)
 
+    def get_names(self):
+        return [pair.name for pair in self._pairs]
+
     def get_distributions(self):
         """
         Gets the all the distributions stored in _pairs as a list
@@ -95,7 +114,16 @@ class ReSampler:
         if not self.is_empty():
             return [pair_data.distribution for pair_data in self._pairs]
         else:
-            raise IndexError("No pairs stored in this Resampler")
+            raise IndexError("This ReSampler is empty!")
+
+    def get_pair_data(self, name):
+        if not self.is_empty():
+            try:
+                return self.get_names().index(name)
+            except ValueError:
+                print("No matching pair data for name {}!".format(name))
+        else:
+            raise IndexError("This ReSampler is empty!")
 
     def resample(self):
         """
