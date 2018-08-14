@@ -4,6 +4,8 @@ BRER State class
 This records the current state of a BRER simulation:
 1. Iteration number.
 2. Whether the simulation has finished training, convergence, or production phase.
+3. Some other items for restarts like the coupling constant and the name of the checkpoint file (used for extracting
+time information)
 """
 
 import json
@@ -51,6 +53,9 @@ class State(object):
         return self._required_keys
 
     def is_complete_record(self):
+        """
+        Have we set all the required keys?
+        """
         return set(self.keys) == set(self.required_keys)
 
     def restart(self):
@@ -63,9 +68,12 @@ class State(object):
         self._state['target'] = 0
         self._state['gmx_cpt'] = 'state.cpt'
 
+    def read_from_json(self, json_filename='state.json'):
+        self._state = json.load(open(json_filename, 'r'))
+
     def write_to_json(self, json_filename='state.json'):
         """
         Writes metadata on BRER state
         :param json_filename:
         """
-        json.dump(self.state, open(json_filename, 'w'))
+        json.dump(self._state, open(json_filename, 'w'))
