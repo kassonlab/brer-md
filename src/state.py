@@ -31,7 +31,7 @@ class State(object):
             self._state = initial_state
 
         self._required_keys = [
-            'iteration', 'phase', 'alpha', 'target', 'gmx_cpt'
+            'iteration', 'phase', 'alphas', 'targets', 'gmx_cpt'
         ]
 
     def state(self):
@@ -68,8 +68,8 @@ class State(object):
         """
         self._state['iteration'] = 0
         self._state['phase'] = 'training'
-        self._state['alpha'] = 0
-        self._state['target'] = 0
+        self._state['alphas'] = {}
+        self._state['targets'] = {}
         self._state['gmx_cpt'] = 'state.cpt'
 
     def read_from_json(self, json_filename='state.json'):
