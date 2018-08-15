@@ -13,13 +13,11 @@ class PairData:
         self.__name = name
         self._distribution = []
         self._bins = []
-        self._bin_width = 0.1
-        self._atom_idx = []
+        self._sites = []
         self._metadata = {
             'distribution': self._distribution,
             'bins': self._bins,
-            'bin_width': self._bin_width,
-            'atom_idx': self._atom_idx
+            'sites': self._sites
         }
 
         print("Pair data for {} has been initialized".format(self.__name))
@@ -56,26 +54,27 @@ class PairData:
         self._metadata['bins'] = bins
 
     @property
-    def bin_width(self):
-        return self._bin_width
+    def sites(self):
+        return self._sites
 
-    @bin_width.setter
-    def bin_width(self, bin_width):
-        self._bin_width = bin_width
-        self._metadata['bin_width'] = bin_width
+    @sites.getter
+    def sites(self):
+        return self._sites
+
+    @sites.setter
+    def sites(self, sites):
+        self._sites = sites
+        self._metadata['sites'] = sites
 
     @property
-    def atom_idx(self):
-        return self._atom_idx
+    def metadata(self):
+        return self._metadata
 
-    @atom_idx.getter
-    def atom_idx(self):
-        return self._atom_idx
-
-    @atom_idx.setter
-    def atom_idx(self, atom_idx):
-        self._atom_idx = atom_idx
-        self._metadata['atom_idx'] = atom_idx
+    @metadata.setter
+    def metadata(self, metadata):
+        self.__setattr__('distribution', metadata['distribution'])
+        self.__setattr__('bins', metadata['bins'])
+        self.__setattr__('sites', metadata['sites'])
 
     def save_metadata(self, filename):
         if "json" in filename:

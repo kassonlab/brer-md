@@ -21,25 +21,24 @@ else:
     state.write_to_json(state_filename)
 
 # Initialize the pair data
-# For now, I will read from a json that contains distributions labeled by residue numbers.
-# The keys from the json will be used as the names of each individual PairData object.
+# For now, I will read from jsons that contain the metadata for each pair.
+# The name from the json will be used as the names of each individual PairData object.
 # This could certainly be done differently.
 
-data = json.load(
-    open('/home/jennifer/Git/run_brer/tests/distributions.json', 'r'))
-names = list(data.keys())
-print(names)
-num_pairs = len(names)
+test_dir = '/home/jennifer/Git/run_brer/tests/'
+my_file_names = ['{}/052_210.json'.format(test_dir), '{}/105_216.json'.format(test_dir)]
+
+data = [json.load(open(my_file_name, 'r')) for my_file_name in my_file_names]
 
 re_sampler = ReSampler()
 
-for i in range(num_pairs):
-    name = names[i]
+for single_pair_data in data:
+    name = single_pair_data['name']
     pair_data = PairData(name=name)
-    pair_data.__setattr__('distribution', data[name])
+    pair_data.__setattr__('metadata', single_pair_data)
     re_sampler.add_pair(pair_data)
 
 """ Get a new set of distributions if you are at the beginning of a simulation """
 
 if state.get('iteration') == 0 and state.get('phase') == 'training':
-    pass
+    print(re_sampler.get_names())
