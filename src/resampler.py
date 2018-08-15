@@ -20,8 +20,6 @@ class PairData:
             'sites': self._sites
         }
 
-        print("Pair data for {} has been initialized".format(self.__name))
-
     # Set a name for the particular pair. Helps keep all the distributions and indices clear during run.
     @property
     def name(self):
@@ -66,12 +64,7 @@ class PairData:
         self._sites = sites
         self._metadata['sites'] = sites
 
-    @property
-    def metadata(self):
-        return self._metadata
-
-    @metadata.setter
-    def metadata(self, metadata):
+    def load_metadata(self, metadata):
         self.__setattr__('distribution', metadata['distribution'])
         self.__setattr__('bins', metadata['bins'])
         self.__setattr__('sites', metadata['sites'])
