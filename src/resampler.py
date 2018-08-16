@@ -99,7 +99,8 @@ class ReSampler:
             for pd in pair_data:
                 self._pairs.append(pd)
         else:
-            raise ValueError('{} is not of type list or PairData'.format(type(pair_data)))
+            raise ValueError('{} is not of type list or PairData'.format(
+                type(pair_data)))
 
     def get_names(self):
         return [pair.name for pair in self._pairs]
