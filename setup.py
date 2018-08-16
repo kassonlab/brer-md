@@ -1,5 +1,4 @@
 import setuptools
-# Notice there are no shebangs!! This avoids issues with the python environment
 
 if __name__ == "__main__":
     setuptools.setup(
@@ -11,8 +10,7 @@ if __name__ == "__main__":
         url="https://github.com/jmhays/run_brer",
         license='LGPL-2.1',
         packages=setuptools.find_packages(),
-        install_requires=[
-        ],
+        install_requires=[],
         extras_require={
             'docs': [
                 'sphinx',
@@ -27,14 +25,12 @@ if __name__ == "__main__":
                 'tox',
             ],
         },
-
         tests_require=[
             'pytest',
             'pytest-cov',
             'pytest-pep8',
             'tox',
         ],
-
         classifiers=[
             'Development Status :: 4 - Beta',
             'Intended Audience :: Science/Research',
