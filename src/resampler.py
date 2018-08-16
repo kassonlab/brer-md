@@ -88,12 +88,18 @@ class ReSampler:
     def is_empty(self):
         return not self._pairs
 
-    def add_pair(self, pair_data: PairData):
+    def add_pair(self, pair_data):
         """
         Adds a collection of single-pair data to the list
-        :param pair_data: a PairData obj
+        :param pair_data: a PairData obj or list of PairData obj
         """
-        self._pairs.append(pair_data)
+        if isinstance(pair_data, PairData):
+            self._pairs.append(pair_data)
+        elif isinstance(pair_data, list):
+            for pd in pair_data:
+                self._pairs.append(pd)
+        else:
+            raise ValueError('{} is not of type list or PairData'.format(type(pair_data)))
 
     def get_names(self):
         return [pair.name for pair in self._pairs]
