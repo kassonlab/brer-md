@@ -2,10 +2,10 @@
 Run script for performing multiple BRER iterations.
 """
 
-import os
 from glob import glob
 from src.state import State
 from src.resampler import *
+from src.directory_helper import *
 from src.auxil_logger import Auxiliary
 
 # import gmx
@@ -15,6 +15,7 @@ from src.auxil_logger import Auxiliary
 logger = Auxiliary()
 
 # Initialize the state
+ensemble_num = 1
 state_filename = "../tests/state.json"  # Where you want to store metadata
 state = State()
 logger.initialized('BRER state')
@@ -52,13 +53,47 @@ for x in data:
     re_sampler.add_pair(pair_data)
 
 logger.initialized('restraint metadata')
-# Get a new set of distributions if you are at the beginning of a simulation
-# Otherwise, grab the old targets.
-if state.get('phase') == 'training':
-    targets = re_sampler.resample()
-# else:
-#     targets = state.get('targets')
-if state.get('phase') == 'convergence':
-    pass
-else:
-    pass
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"""
+    How the directory structure is organized:
+    - This script should be run from your "top" directory (where 
+      you are planning to run all your ensemble members)
+    - The top directory contains ensemble member subdirectories 
+      This script is intended to handle just ONE ensemble member, 
+      so we'll only be concerned with a single member subdirectory.
+    - The example below is for the first iteration (iter 0) of one 
+      of the members. Future iterations would go in directories 
+      1,2,...y
+.   
+├── 0
+│   ├── converge_dist
+│   │   ├── state.cpt
+│   │   ├── state_prev.cpt
+│   │   └── traj_comp.part0001.xtc
+│   ├── production
+│   │   ├── confout.part0005.gro
+│   │   ├── state.cpt
+│   │   ├── state_prev.cpt
+│   │   ├── state_step4622560.cpt
+│   │   ├── traj_comp.part0002.xtc
+│   └── training_alpha
+│       ├── state.cpt
+│       ├── state_prev.cpt
+│       └── traj_comp.part0001.xtc
+├── state.json 
+├── submit.slurm
+└── syx.tpr
+
+
+"""
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+my_dir_struct = {
+    'top_dir': test_dir,
+    'ensemble_num': ensemble_num,
+    'iteration': state.get('iteration'),
+    'phase': state.get('phase')
+}
+
+set_working_dir(my_dir_struct)
