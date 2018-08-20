@@ -118,7 +118,7 @@ class ReSampler:
     def get_pair_data(self, name):
         if not self.is_empty():
             try:
-                return self.get_names().index(name)
+                return self._pairs[self.get_names().index(name)]
             except ValueError:
                 print("No matching pair data for name {}!".format(name))
         else:
