@@ -31,7 +31,7 @@ class State(object):
             self._state = initial_state
 
         self._required_keys = [
-            'iteration', 'phase', 'alphas', 'targets', 'gmx_cpt'
+            'ensemble_num', 'iteration', 'phase', 'alphas', 'targets', 'gmx_cpt'
         ]
 
     def state(self):
@@ -66,6 +66,7 @@ class State(object):
         """
         Resets the BRER state to iteration zero, beginning of training phase
         """
+        self._state['ensemble_num'] = 0
         self._state['iteration'] = 0
         self._state['phase'] = 'training'
         self._state['alphas'] = {}
