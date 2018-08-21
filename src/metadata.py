@@ -70,7 +70,7 @@ class MultiMetaData(ABC):
         return self._data[name]
 
     def write_to_json(self, filename='state.json'):
-        json.dump(self._states, open(filename, 'w'))
+        json.dump(self._data, open(filename, 'w'))
 
     def read_from_json(self, filename='state.json'):
         self._data = json.load(open(filename, 'r'))
