@@ -1,3 +1,38 @@
+"""
+Organizes the directory structure for BRER runs.
+Creates directories on the fly.
+
+How the directory structure is organized:
+    - This script should be run from your "top" directory (where
+      you are planning to run all your ensemble members)
+    - The top directory contains ensemble member subdirectories
+      This script is intended to handle just ONE ensemble member,
+      so we'll only be concerned with a single member subdirectory.
+    - The example below is for the first iteration (iter 0) of one
+      of the members. Future iterations would go in directories
+      1,2,...y
+.
+├── 0
+│   ├── converge_dist
+│   │   ├── state.cpt
+│   │   ├── state_prev.cpt
+│   │   └── traj_comp.part0001.xtc
+│   ├── production
+│   │   ├── confout.part0005.gro
+│   │   ├── state.cpt
+│   │   ├── state_prev.cpt
+│   │   ├── state_step4622560.cpt
+│   │   ├── traj_comp.part0002.xtc
+│   └── training_alpha
+│       ├── state.cpt
+│       ├── state_prev.cpt
+│       └── traj_comp.part0001.xtc
+├── state.json
+├── submit.slurm
+└── syx.tpr
+
+"""
+
 import os
 from src.state import State
 
@@ -40,4 +75,3 @@ class DirectoryHelper:
 
     def change_dir(self, dirtype):
         os.chdir(self._get_dir(dirtype))
-    # os.chdir(working_dir)
