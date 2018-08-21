@@ -8,77 +8,36 @@ This records the current state of a BRER simulation:
 time information)
 """
 
-import json
+from src.metadata import MetaData, MultiMetaData
 
 
-class State(object):
+class State(MetaData):
     """
     Stores five critical parameters for BRER restarts:
     1. The iteration number
     2. The phase of the simulation ('training', 'convergence', 'production')
     3. The coupling constant 'alpha'
     4. The target distance 'target'
-    5. The gmx checkpoint file 'gmx_cpt'
+    5. The name of the State object. This allows us to check that pair data and state data match when we combine the
+    data from each.
     """
 
-    def __init__(self, initial_state=None):
-        """
-        All parameters are stored in dictionary for easy storage of these metadata.
-        """
-        if not initial_state:
-            self._state = {}
-        else:
-            self._state = initial_state
+    def __init__(self, name):
+        super().__init__(name=name)
+        self.set_requirements(['iteration', 'phase', 'alpha', 'target'])
 
-        self._required_keys = [
-            'ensemble_num', 'iteration', 'phase', 'alphas', 'targets', 'gmx_cpt'
-        ]
-
-    def state(self):
-        return self._state
-
-    def get(self, key):
-        return self._state[key]
-
-    def set(self, key, value):
-        """
-        Update a parameter 'key' of the BRER state.
-        :param key: Any of 'iteration', 'phase', or 'gmx_cpt'
-        :param value: Sets BRER state to this 'value'
-        """
-        self._state[key] = value
-
-    @property
-    def keys(self):
-        return list(self._state.keys())
-
-    @property
-    def required_keys(self):
-        return self._required_keys
-
-    def is_complete_record(self):
-        """
-        Have we set all the required keys?
-        """
-        return set(self.keys) == set(self.required_keys)
-
-    def restart(self):
+    def restart(self, **kwargs):
         """
         Resets the BRER state to iteration zero, beginning of training phase
+        Can specify any of the parameters in the function call
         """
-        self._state['ensemble_num'] = 0
-        self._state['iteration'] = 0
-        self._state['phase'] = 'training'
-        self._state['alphas'] = {}
-        self._state['targets'] = {}
-        self._state['gmx_cpt'] = 'state.cpt'
+        defaults = {'iteration': 0, 'phase': 'training', 'alpha': 0, 'target': 0}
+        for key, value in kwargs.items():
+            defaults[key] = value
+        self.set_metadata(defaults)
 
-    def read_from_json(self, json_filename='state.json'):
-        self._state = json.load(open(json_filename, 'r'))
 
-    def write_to_json(self, json_filename='state.json'):
-        """
-        Writes metadata on BRER state
-        :param json_filename:
-        """
-        json.dump(self._state, open(json_filename, 'w'))
+class MultiState(MultiMetaData):
+
+    def __init__(self):
+        super().__init__()
