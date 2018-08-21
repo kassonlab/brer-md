@@ -34,7 +34,7 @@ class State(MetaData):
         defaults = {'iteration': 0, 'phase': 'training', 'alpha': 0, 'target': 0}
         for key, value in kwargs.items():
             defaults[key] = value
-        self.set_metadata(defaults)
+        self.set_from_dictionary(defaults)
 
 
 class MultiState(MultiMetaData):
