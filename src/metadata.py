@@ -10,7 +10,7 @@ class MetaData(ABC):
     def __init__(self, name):
         """
         Construct metadata object and give it a name
-        :param name:
+        :param name: All metadata classes should have names that associate them with a particular pair.
         """
         self.__name = name
         self.__required_parameters = []
