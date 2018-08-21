@@ -1,8 +1,24 @@
 from src.pair_data import *
+from src.state import *
 import pytest
 import json
 
 my_path = './tests'
+
+
+@pytest.fixture()
+def first_state():
+    state = State(name='state1')
+    state.restart(target=1.0)
+    return state
+
+
+@pytest.fixture()
+def second_state():
+    state = State(name='state2')
+    state.restart(target=4.0)
+    return state
+
 @pytest.fixture()
 def first_dataset():
     return json.load(open('{}/052_210.json'.format(my_path)))
@@ -11,6 +27,12 @@ def first_dataset():
 @pytest.fixture()
 def secon_dataset():
     return json.load(open('{}/105_216.json'.format(my_path)))
+
+
+def test_multi_state_data(first_state, second_state):
+    states = MultiState()
+    states.ingest_data([first_state, second_state])
+    states.write_to_json('test.json')
 
 
 def test_multi_pair_data(first_dataset, secon_dataset):
