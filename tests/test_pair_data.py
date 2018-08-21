@@ -1,29 +1,38 @@
-from src.resampler import *
+from src.pair_data import *
 import pytest
+import json
+
+my_path = './tests'
+@pytest.fixture()
+def first_dataset():
+    return json.load(open('{}/052_210.json'.format(my_path)))
 
 
 @pytest.fixture()
-def first_distribution():
-    return [1, 2, 3, 4]
+def secon_dataset():
+    return json.load(open('{}/105_216.json'.format(my_path)))
 
 
-@pytest.fixture()
-def secon_distribution():
-    return [5, 6, 7, 8]
-
-
-def test_resample(first_distribution, secon_distribution):
+def test_multi_pair_data(first_dataset, secon_dataset):
     """ Initializing pair data """
-    pd1 = PairData(name='pd1')
-    pd1.__setattr__('distribution', first_distribution)
-    pd2 = PairData(name='pd2')
-    pd2.__setattr__('distribution', secon_distribution)
+    pd1 = PairData(name=first_dataset['name'])
+    pd1.set_from_dictionary(first_dataset)
+    pd2 = PairData(name=secon_dataset['name'])
+    pd2.set_from_dictionary(secon_dataset)
 
-    resampler = ReSampler()
-    resampler.add_pair(pd1)
-    resampler.add_pair(pd2)
-    if resampler.is_empty():
-        raise IndexError("PairData is empty")
+    multi = MultiPair()
+    multi.ingest_data([pd1, pd2])
 
-    if not resampler.get_distributions()[0]:
+
+def test_resample(first_dataset, secon_dataset):
+    """ Initializing pair data """
+
+    pd1 = PairData(name=first_dataset['name'])
+    pd1.set_from_dictionary(first_dataset)
+    pd2 = PairData(name=secon_dataset['name'])
+    pd2.set_from_dictionary(secon_dataset)
+
+    multi = MultiPair()
+    multi.ingest_data([pd1, pd2])
+    if not multi.re_sample():
         raise IndexError("Distributions are empty")
