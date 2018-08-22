@@ -38,24 +38,33 @@ from src.state import State
 
 
 class DirectoryHelper:
-    def __init__(self, top_dir, state: State):
+    def __init__(self, top_dir, param_dict):
         self._top_dir = top_dir
-        self._ensemble_num = state.get('ensemble_num')
-        self._iteration = state.get('iteration')
-        self._phase = state.get('phase')
+        self._required_parameters = ['ensemble_num', 'iteration', 'phase']
+        for required in self._required_parameters:
+            if required not in param_dict:
+                raise ValueError('Must define {}'.format(required))
+        self._param_dict = param_dict
 
-    def _get_dir(self, dirtype):
+    def get_dir(self, level):
         """ Get the directory for however far you want to go down the directory tree"""
-        if dirtype == 'top':
+        pdict = self._param_dict
+        if level == 'top':
             return_dir = self._top_dir
-        elif dirtype == 'ensemble_num':
-            return_dir = '{}/mem_{}'.format(self._top_dir, self._ensemble_num)
-        elif dirtype == 'iteration':
-            return_dir = '{}/mem_{}/{}'
-        elif dirtype == 'phase':
-            return_dir = '{}/mem_{}/{}/{}'.format(self._top_dir, self._ensemble_num, self._iteration, self._phase)
+        elif level == 'ensemble_num':
+            return_dir = '{}/mem_{}'.format(self._top_dir,
+                                            pdict['ensemble_num'])
+        elif level == 'iteration':
+            return_dir = '{}/mem_{}/{}'.format(
+                self._top_dir, pdict['ensemble_num'], pdict['iteration'])
+        elif level == 'phase':
+            return_dir = '{}/mem_{}/{}/{}'.format(
+                self._top_dir, pdict['ensemble_num'], pdict['iteration'],
+                pdict['phase'])
         else:
-            raise ValueError('{} is not a valid directory type for BRER simulations'.format('type'))
+            raise ValueError(
+                '{} is not a valid directory type for BRER simulations'.format(
+                    'type'))
         return return_dir
 
     def build_working_dir(self):
@@ -66,12 +75,12 @@ class DirectoryHelper:
         :return:
         """
 
-        if not os.path.exists(self._get_dir('phase')):
-            tree = [self._get_dir('ensemble_num'), self._get_dir('iteration')]
+        if not os.path.exists(self.get_dir('phase')):
+            tree = [self.get_dir('ensemble_num'), self.get_dir('iteration')]
             for leaf in tree:
                 if not os.path.exists(leaf):
                     os.mkdir(leaf)
-            os.mkdir(self._get_dir('phase'))
+            os.mkdir(self.get_dir('phase'))
 
-    def change_dir(self, dirtype):
-        os.chdir(self._get_dir(dirtype))
+    def change_dir(self, level):
+        os.chdir(self.get_dir(level))

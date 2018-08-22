@@ -24,10 +24,10 @@ class MultiPair(MultiMetaData):
         :return: dictionary of targets, drawn from DEER distributions.
         """
         answer = {}
-        for name in self.get_names():
-
-            distribution = self.get(name, 'distribution')
-            bins = self.get(name, 'bins')
+        for pair_data in self._metadata_list:
+            name = pair_data.__getattribute__('name')
+            distribution = pair_data.get('distribution')
+            bins = pair_data.get('bins')
 
             normalized = np.divide(distribution, np.sum(distribution))
             answer[name] = np.random.choice(bins, p=normalized)

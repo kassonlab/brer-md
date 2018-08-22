@@ -39,7 +39,7 @@ class MetaData(ABC):
     def set_from_dictionary(self, data):
         self._metadata = data
 
-    def get_dictionary(self):
+    def get_as_dictionary(self):
         return self._metadata
 
     def get_missing_keys(self):
@@ -53,24 +53,50 @@ class MetaData(ABC):
 class MultiMetaData(ABC):
 
     def __init__(self):
-        self._data = {}
-
-    def ingest_data(self, list_metadata):
-        for metadata in list_metadata:
-            name = metadata.__getattribute__('name')
-            self._data[name] = metadata.get_dictionary()
-
-    def get(self, name, key):
-        return self._data[name][key]
+        self._metadata_list = []
+        self._names = []
 
     def get_names(self):
-        return list(self._data.keys())
+        if not self._names:
+            if not self._metadata_list:
+                raise IndexError('Must import a list of metadata before retrieving names')
+            self._names = [metadata.name for metadata in self._metadata_list]
+        return self._names
 
-    def get_single_dataset(self, name):
-        return self._data[name]
+    def _name_to_id(self, name):
+        if not self._names:
+            _ = self._get_names()
+        return self._names.index(name)
+
+    def __getitem__(self, item):
+        return self._metadata_list[item]
+
+    def __setitem__(self, key, value):
+        self._metadata_list[key]=value
+
+    def __delitem__(self, key):
+        self._metadata_list.__delitem__(key)
+
+    def __sizeof__(self):
+        return len(self._metadata_list)
+
+    def get_as_single_dataset(self):
+        single_dataset = {}
+        for metadata in self._metadata_list:
+            single_dataset[metadata.name] = metadata.get_as_dictionary()
+        return single_dataset
 
     def write_to_json(self, filename='state.json'):
-        json.dump(self._data, open(filename, 'w'))
+        json.dump(self.get_as_single_dataset(), open(filename, 'w'))
 
     def read_from_json(self, filename='state.json'):
-        self._data = json.load(open(filename, 'r'))
+        # TODO: decide on expected behavior here if there's a pre-existing list of data.
+        # For now, overwrite
+        self._metadata_list = []
+        self._names = []
+        data = json.load(open(filename, 'r'))
+        for name, metadata in data.items():
+            self._names.append(name)
+            metadata_obj = MetaData(name=name)
+            metadata_obj.set_from_dictionary(metadata)
+            self._metadata_list.append(metadata_obj)
