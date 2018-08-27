@@ -8,7 +8,7 @@ This records the current state of a BRER simulation:
 time information)
 """
 
-from src.metadata import MetaData, MultiMetaData
+from run_brer.metadata import MetaData, MultiMetaData
 
 
 class State(MetaData):

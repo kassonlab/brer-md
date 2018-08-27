@@ -1,12 +1,13 @@
+#!/usr/bin/env python
 """
 Run script for BRER simulations
 """
 
 import argparse
-from src.state import *
-from src.pair_data import *
-from src.run_configs import *
-from src.directory_helper import DirectoryHelper
+from run_brer.state import *
+from run_brer.pair_data import *
+from run_brer.run_configs import *
+from run_brer.directory_helper import DirectoryHelper
 import os
 import copy
 import gmx
@@ -33,7 +34,7 @@ run_parameters = {
 }
 
 
-def set_multiple_configurations(run_config, states: MultiState, pairs_data: MultiPair):
+def set_multiple_configurations(run_config: RunConfig, states: MultiState, pairs_data: MultiPair):
     # You will need one run configuration per restraint
     size = states.__sizeof__()
     all_restraints = []
@@ -133,6 +134,8 @@ if __name__ == "__main__":
         print(potential.params)
 
     print(os.getcwd())
-    context = gmx.context.ParallelArrayContext(md, workdir_list=os.getcwd())
+    context = gmx.context.ParallelArrayContext(md, workdir_list=[os.getcwd()])
     with context as session:
         session.run()
+
+    states.write_to_json(state_json)

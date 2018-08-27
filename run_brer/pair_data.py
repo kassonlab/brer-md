@@ -5,7 +5,7 @@ Classes to handle
 """
 
 import numpy as np
-from src.metadata import MetaData, MultiMetaData
+from run_brer.metadata import MetaData, MultiMetaData
 
 
 class PairData(MetaData):

@@ -1,7 +1,7 @@
 """
 Abstract class for handling all BRER metadata. State and PairData classes inherit from this class.
 """
-from abc import ABC, abstractmethod
+from abc import ABC
 import json
 
 

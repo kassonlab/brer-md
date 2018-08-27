@@ -1,4 +1,4 @@
-from src.metadata import MetaData
+from run_brer.metadata import MetaData
 from abc import abstractmethod
 import gmx
 import sys
