@@ -68,6 +68,9 @@ class MultiMetaData(ABC):
             _ = self._get_names()
         return self._names.index(name)
 
+    def _id_to_name(self, id):
+        return self._names[id]
+
     def __getitem__(self, item):
         return self._metadata_list[item]
 
