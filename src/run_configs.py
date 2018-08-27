@@ -45,7 +45,7 @@ class TrainingRunConfig(RunConfig):
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = gmx.workflow.WorkElement(
             namespace="myplugin",
-            operation="brmc_restraint",
+            operation="BRER_restraint",
             depends=[],
             params=self.get_as_dictionary()
         )
