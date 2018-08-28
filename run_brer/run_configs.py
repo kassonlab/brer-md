@@ -12,18 +12,19 @@ class RunConfig:
     def __init__(self,
                  tpr,
                  working_dir,
-                 state_json='state.json',
+                 ensemble_num,
                  pairs_json='pair_data.json',
                  **kwargs):
 
         self.tpr = tpr
         self.working_dir = working_dir
-        self.state_json = state_json
+        self.state_json = '{}/mem_{}/state.json'.format(
+            working_dir, ensemble_num)
         self.pairs_json = pairs_json
         self.states = MultiState()
         self.pairs = MultiPair()
         self.run_params = {
-            'ensemble_num': 0,
+            'ensemble_num': ensemble_num,
             'iteration': 0,
             'phase': 'training',
             'start_time': 0,
@@ -50,11 +51,11 @@ class RunConfig:
         self.names = self.pairs.get_names()
         self.n_pairs = len(self.names)
 
-        if os.path.exists(state_json):
-            self.states.read_from_json(filename=state_json)
+        if os.path.exists(self.state_json):
+            self.states.read_from_json(filename=self.state_json)
         else:
             self.states.restart(names=self.pairs.get_names())
-            self.states.write_to_json(filename=state_json)
+            self.states.write_to_json(filename=self.state_json)
 
         # Check to make sure the pair data and state data match up
         if set(self.names) != set(self.states.get_names()):
@@ -185,8 +186,5 @@ class RunConfig:
             self.__production()
             self.run_params['iteration'] += 1
             self.run_params['phase'] = 'training'
-        else:
-            raise ValueError(
-                '{} is not a valid phase of BRER simulation'.format(phase))
 
         self.states.write_to_json(self.state_json)
