@@ -24,8 +24,8 @@ class State(MetaData):
 
     def __init__(self, name):
         super().__init__(name=name)
-        self.set_requirements(['iteration', 'phase', 'alpha', 'target'])
-        self.__defaults = {'iteration': 0, 'phase': 'training', 'alpha': 0, 'target': 0}
+        self.set_requirements(['iteration', 'phase', 'alpha', 'target', 'start_time'])
+        self.__defaults = {'iteration': 0, 'phase': 'training', 'alpha': 0, 'target': 0, 'start_time': 0}
 
     def restart(self, **kwargs):
         """
