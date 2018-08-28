@@ -1,8 +1,6 @@
 from run_brer.metadata import MetaData
 from abc import abstractmethod
 import gmx
-import sys
-sys.path.append('/home/jennifer/Git/brer/build/src/pythonmodule')
 
 
 class PluginConfig(MetaData):
