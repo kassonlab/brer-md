@@ -135,6 +135,10 @@ class RunConfig:
         with context as session:
             session.run()
 
+        # In the future runs (convergence, production) we need the ABSOLUTE VALUE of alpha.
+        for state in self.states:
+            state.set('alpha', abs(state.get('alpha')))
+
     def __converge(self):
         md = gmx.workflow.from_tpr(self.tpr, append_output=False)
         self.__build_plugins(ConvergencePluginConfig())
