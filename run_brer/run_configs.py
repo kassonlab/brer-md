@@ -112,7 +112,7 @@ class RunConfig:
         self._logger.info('New targets: {}'.format(targets))
         for state in self.states:
             state.set('target', targets[state.name])
-        self.states.write_to_json()
+        self.states.write_to_json(filename=self.state_json)
 
         # Backup existing checkpoint. TODO: Don't backup the cpt, actually use it!!
         cpt = '{}/state.cpt'.format(os.getcwd())
@@ -187,4 +187,4 @@ class RunConfig:
             self.run_params['iteration'] += 1
             self.run_params['phase'] = 'training'
 
-        self.states.write_to_json(self.state_json)
+        self.states.write_to_json(filename=self.state_json)
