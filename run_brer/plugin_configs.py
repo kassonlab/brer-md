@@ -35,7 +35,8 @@ class TrainingPluginConfig(PluginConfig):
     def __init__(self):
         super(PluginConfig, self).__init__(name='training')
         self.set_requirements([
-            'sites', 'target', 'A', 'tau', 'tolerance', 'nSamples', 'parameter_filename'
+            'sites', 'target', 'A', 'tau', 'tolerance', 'nSamples',
+            'logging_filename'
         ])
 
     def build_plugin(self):
@@ -45,8 +46,7 @@ class TrainingPluginConfig(PluginConfig):
             namespace="myplugin",
             operation="BRER_restraint",
             depends=[],
-            params=self.get_as_dictionary()
-        )
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential
 
@@ -66,8 +66,7 @@ class ConvergencePluginConfig(PluginConfig):
             namespace="myplugin",
             operation="linearstop_restraint",
             depends=[],
-            params=self.get_as_dictionary()
-        )
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential
 
@@ -75,7 +74,7 @@ class ConvergencePluginConfig(PluginConfig):
 class ProductionPluginConfig(PluginConfig):
     def __init__(self):
         super(PluginConfig, self).__init__(name='production')
-        self.set_requirements(['sites', 'R0', 'k'])
+        self.set_requirements(['sites', 'target', 'alpha'])
 
     def build_plugin(self):
         if self.get_missing_keys():
@@ -84,7 +83,6 @@ class ProductionPluginConfig(PluginConfig):
             namespace="myplugin",
             operation="linear_restraint",
             depends=[],
-            params=self.get_as_dictionary()
-        )
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential
