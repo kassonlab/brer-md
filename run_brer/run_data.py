@@ -79,6 +79,7 @@ class RunData:
     def from_dictionary(self, data):
         self.general_params.set_from_dictionary(data['general parameters'])
         for name in data['pair parameters'].keys():
+            self.pair_params[name] = PairParams(name)
             self.pair_params[name].set_from_dictionary(
                 data['pair parameters'][name])
 

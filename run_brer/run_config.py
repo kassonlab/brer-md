@@ -7,6 +7,7 @@ import os
 import shutil
 import logging
 import gmx
+import json
 
 
 class RunConfig:
@@ -29,13 +30,17 @@ class RunConfig:
         self.__names = self.pairs.get_names()
 
         self.run_data = RunData()
-        for pd in self.pairs:
-            self.run_data.from_pair_data(pd)
-
         self.run_data.set(ensemble_num=ensemble_num)
 
         self.state_json = '{}/mem_{}/state.json'.format(
             ensemble_dir, self.run_data.get('ensemble_num'))
+
+        if os.path.exists(self.state_json):
+            self.run_data.from_dictionary(json.load(open(self.state_json)))
+        else:
+            for pd in self.pairs:
+                self.run_data.from_pair_data(pd)
+            self.run_data.save_config(self.state_json)
 
         # List of plugins
         self.__plugins = []
