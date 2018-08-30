@@ -34,7 +34,6 @@ How the directory structure is organized:
 """
 
 import os
-from run_brer.state import State
 
 
 class DirectoryHelper:

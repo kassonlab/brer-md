@@ -3,18 +3,20 @@
 Example run script for BRER simulations
 """
 
-from run_brer import RunConfig as config
+import run_brer.run_config as rc
 import sys
 
 sys.path.append('/home/jennifer/Git/brer/build/src/pythonmodule')
 
 init = {
     'tpr': '/home/jennifer/Git/run_brer/tests/syx.tpr',
-    'working_dir': '/home/jennifer/test-brer',
-    'ensemble_num': 0,
+    'ensemble_dir': '/home/jennifer/test-brer',
+    'ensemble_num': 5,
     'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
 }
 
-my_config = config(**init)
+config = rc.RunConfig(**init)
 
-my_config.run()
+config.run_data.set(phase='production', tolerance=100, start_time=5.0)
+
+config.run()
