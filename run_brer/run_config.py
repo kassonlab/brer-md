@@ -49,7 +49,7 @@ class RunConfig:
         self._logger = logging.getLogger('BRER')
         self._logger.setLevel(logging.DEBUG)
         # create file handler which logs even debug messages
-        fh = logging.FileHandler('brer.log')
+        fh = logging.FileHandler('brer{}.log'.format(ensemble_num))
         fh.setLevel(logging.DEBUG)
         # create console handler with a higher log level
         ch = logging.StreamHandler()
@@ -79,7 +79,6 @@ class RunConfig:
             new_restraint = deepcopy(plugin_config)
             new_restraint.scan_dictionary(general_params)
             new_restraint.scan_dictionary(pair_params)
-            print(new_restraint.get_as_dictionary())
             self.__plugins.append(new_restraint.build_plugin())
 
     def __change_directory(self):
