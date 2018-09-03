@@ -38,6 +38,12 @@ import os
 
 class DirectoryHelper:
     def __init__(self, top_dir, param_dict):
+        """
+        Small class for manipulating a standard directory structure for BRER runs.
+        :param top_dir: the path to the directory containing all the ensemble members.
+        :param param_dict: a dictionary specifying the ensemble number, the iteration,
+        and the phase of the simulation.
+        """
         self._top_dir = top_dir
         self._required_parameters = ['ensemble_num', 'iteration', 'phase']
         for required in self._required_parameters:
@@ -46,7 +52,12 @@ class DirectoryHelper:
         self._param_dict = param_dict
 
     def get_dir(self, level):
-        """ Get the directory for however far you want to go down the directory tree"""
+        """
+        Get the directory for however far you want to go down the directory tree
+        :param level: one of 'top', 'ensemble_num', 'iteration', or 'phase'.
+        See the directory structure example provided at the beginning of this class.
+        :return: the path to the specified directory 'level' as a str.
+        """
         pdict = self._param_dict
         if level == 'top':
             return_dir = self._top_dir
@@ -68,12 +79,9 @@ class DirectoryHelper:
 
     def build_working_dir(self):
         """
-        Checks to see if the working directory for current state of BRER simulation exists. If it does not, creates the
-        directory. Then changes to that directory.
-        :param dir_info: A dictionary containing data on the directory structure.
-        :return:
+        Checks to see if the working directory for current state of BRER simulation exists.
+        If it does not, creates the directory.
         """
-
         if not os.path.exists(self.get_dir('phase')):
             tree = [self.get_dir('ensemble_num'), self.get_dir('iteration')]
             for leaf in tree:

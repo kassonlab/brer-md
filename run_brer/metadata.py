@@ -65,7 +65,7 @@ class MultiMetaData(ABC):
 
     def name_to_id(self, name):
         if not self._names:
-            _ = self._get_names()
+            _ = self.get_names()
         return self._names.index(name)
 
     def id_to_name(self, id):
@@ -93,8 +93,7 @@ class MultiMetaData(ABC):
         json.dump(self.get_as_single_dataset(), open(filename, 'w'))
 
     def read_from_json(self, filename='state.json'):
-        # TODO: decide on expected behavior here if there's a pre-existing list of data.
-        # For now, overwrite
+        # TODO: decide on expected behavior here if there's a pre-existing list of data. For now, overwrite
         self._metadata_list = []
         self._names = []
         data = json.load(open(filename, 'r'))

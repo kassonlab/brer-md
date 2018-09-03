@@ -17,6 +17,6 @@ init = {
 
 config = rc.RunConfig(**init)
 
-config.run_data.set(phase='production', tolerance=100, start_time=5.0)
+config.run_data.set(tolerance=100)
 
 config.run()

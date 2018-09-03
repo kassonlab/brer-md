@@ -6,6 +6,10 @@ from run_brer.pair_data import PairData
 
 
 class GeneralParams(MetaData):
+    """
+    Stores the parameters that are shared by all restraints in a single simulation.
+    These include some of the "Voth" parameters: tau, A, tolerance
+    """
     def __init__(self):
         super().__init__('general')
         self.set_requirements([
@@ -15,13 +19,23 @@ class GeneralParams(MetaData):
 
 
 class PairParams(MetaData):
+    """
+    Stores the parameters that are unique to a specific restraint.
+    """
     def __init__(self, name):
         super().__init__(name)
         self.set_requirements(['sites', 'logging_filename', 'alpha', 'target'])
 
 
 class RunData:
+    """
+    Stores (and manipulates, to a lesser extent) all the metadata for a BRER run.
+    """
     def __init__(self):
+        """
+        The full set of metadata for a single BRER run include both the general parameters
+        and the pair-specific parameters.
+        """
         self.general_params = GeneralParams()
         self.__defaults_general = {
             'ensemble_num': 1,
@@ -40,7 +54,13 @@ class RunData:
         self.__names = []
 
     def set(self, name=None, **kwargs):
+        """
+        method used to set either general or a pair-specific parameter.
+        :param name: restraint name. These are the same identifiers that are used in the RunConfig
+        :param kwargs: parameters and their values.
+        """
         for key, value in kwargs.items():
+            # If a restraint name is not specified, it is assumed that the parameter is a "general" parameter.
             if not name:
                 if key in self.general_params.get_requirements():
                     self.general_params.set(key, value)
@@ -57,6 +77,12 @@ class RunData:
                         '{} is not a pair-specific parameter'.format(key))
 
     def get(self, key, name=None):
+        """
+        get either a general or a pair-specific parameter.
+        :param key: the parameter to get.
+        :param name: if getting a pair-specific parameter, specify the restraint name.
+        :return: the parameter value.
+        """
         if key in self.general_params.get_requirements():
             return self.general_params.get(key)
         elif name:
@@ -67,6 +93,22 @@ class RunData:
                 'Please provide a pair name')
 
     def as_dictionary(self):
+        """
+        Get the run metadata as a heirarchical dictionary:
+        ├── pair parameters
+        │   ├── name of pair 1
+        │   │   ├── alpha
+        │   │   ├── target
+        │   │   └── ...
+        │   ├── name of pair 2
+        |
+        ├── general parameters
+            ├── A
+            ├── tau
+            ├── ...
+
+        :return: heirarchical dictionary of metadata
+        """
         pair_param_dict = {}
         for name in self.pair_params.keys():
             pair_param_dict[name] = self.pair_params[name].get_as_dictionary()
@@ -77,6 +119,10 @@ class RunData:
         }
 
     def from_dictionary(self, data):
+        """
+        Loads metadata into the class from a dictionary.
+        :param data: RunData metadata as a dictionary.
+        """
         self.general_params.set_from_dictionary(data['general parameters'])
         for name in data['pair parameters'].keys():
             self.pair_params[name] = PairParams(name)
@@ -84,6 +130,11 @@ class RunData:
                 data['pair parameters'][name])
 
     def from_pair_data(self, pd: PairData):
+        """
+        Load some of the run metadata from a PairData object.
+        Useful at the beginning of a run.
+        :param pd: PairData object from which metadata are loaded
+        """
         name = pd.name
         self.pair_params[name] = PairParams(name)
         self.pair_params[name].set('sites', pd.get('sites'))

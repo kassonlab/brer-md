@@ -1,6 +1,6 @@
 from run_brer.run_data import RunData
 from run_brer.pair_data import MultiPair
-from run_brer.plugin_configs import *
+from run_brer.plugin_configs import TrainingPluginConfig, ConvergencePluginConfig, ProductionPluginConfig
 from run_brer.directory_helper import DirectoryHelper
 from copy import deepcopy
 import os
@@ -8,11 +8,12 @@ import shutil
 import logging
 import gmx
 import json
+import atexit
 
 
 class RunConfig:
     """
-    Run configuration for single BRER ensemble member
+    Run configuration for single BRER ensemble member.
     """
 
     def __init__(self,
@@ -20,13 +21,30 @@ class RunConfig:
                  ensemble_dir,
                  ensemble_num=1,
                  pairs_json='pair_data.json'):
+        """
+        The run configuration specifies the files and directory structure used for the run.
+        It determines whether the run is in the training, convergence, or production phase,
+        then performs the run.
+        :param tpr: path to tpr. Must be gmx 2017 compatible.
+        :param ensemble_dir: path to top directory which contains the full ensemble.
+        :param ensemble_num: the ensemble member to run.
+        :param pairs_json: path to file containing *ALL* the pair metadata. An example of
+        what such a file should look like is provided in the examples directory.
+
+        :
+        """
         self.tpr = tpr
         self.ens_dir = ensemble_dir
+
+        # a list of identifiers of the residue-residue pairs that will be restrained
         self.__names = []
 
         # Load the pair data from a json. Use this to set up the run metadata
         self.pairs = MultiPair()
         self.pairs.read_from_json(pairs_json)
+        # use the same identifiers for the pairs here as those provided in the pair metadata
+        # file this prevents mixing up pair data amongst the different pairs (i.e.,
+        # accidentally applying the restraints for pair 1 to pair 2.)
         self.__names = self.pairs.get_names()
 
         self.run_data = RunData()
@@ -34,9 +52,12 @@ class RunConfig:
 
         self.state_json = '{}/mem_{}/state.json'.format(
             ensemble_dir, self.run_data.get('ensemble_num'))
-
+        # If we're in the middle of a run, load the BRER checkpoint file and continue from
+        # the current state.
         if os.path.exists(self.state_json):
             self.run_data.from_dictionary(json.load(open(self.state_json)))
+        # Otherwise, populate the state information using the pre-loaded pair data. Then save
+        # the current state.
         else:
             for pd in self.pairs:
                 self.run_data.from_pair_data(pd)
@@ -67,21 +88,34 @@ class RunConfig:
             self.run_data.as_dictionary()))
         self._logger.info("Names of restraints: {}".format(self.__names))
 
+        # Need to cleanly handle cancelled jobs: write out a checkpoint of the state if the
+        # job is exited.
+        def cleanup():
+            self.run_data.save_config(self.state_json)
+            self._logger.info(
+                "BRER received INT signal, stopping and saving data to {}".
+                format(self.state_json))
+        atexit.register(cleanup)
+
     def build_plugins(self, plugin_config):
         # One plugin per restraint.
-        self.__plugins = []
-        # TODO: what is the expected behavior when a list of plugins exists? Probably to wipe them.
+        # TODO: what is the expected behavior when a list of plugins exists? Probably wipe them.
 
+        self.__plugins = []
         general_params = self.run_data.as_dictionary()['general parameters']
+
+        # For each pair-wise restraint, populate the plugin with data: both the "general" data and
+        # the data unique to that restraint.
         for name in self.__names:
             pair_params = self.run_data.as_dictionary()['pair parameters'][
                 name]
             new_restraint = deepcopy(plugin_config)
-            new_restraint.scan_dictionary(general_params)
-            new_restraint.scan_dictionary(pair_params)
+            new_restraint.scan_dictionary(general_params)  # load general data into current restraint
+            new_restraint.scan_dictionary(pair_params)  # load pair-specific data into current restraint
             self.__plugins.append(new_restraint.build_plugin())
 
     def __change_directory(self):
+        # change into the current working directory (ensemble_path/member_path/iteration/phase)
         dir_help = DirectoryHelper(
             top_dir=self.ens_dir,
             param_dict=self.run_data.general_params.get_as_dictionary())
@@ -90,27 +124,30 @@ class RunConfig:
 
     def __train(self):
         iter_num = self.run_data.general_params.get('iteration')
-        # If this is not the first BRER iteration, grab the checkpoint from the production phase of the last round
+        # If this is not the first BRER iteration, grab the checkpoint from the production
+        # phase of the last round
         if iter_num != 0:
             prev_iter = iter_num - 1
-            # Assume we have cd into the working directory
+            # Assume we have cd'd into the working directory
             member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
             gmx_cpt = '{}/{}/production/state.cpt'.format(
                 member_dir, prev_iter)
             if os.path.exists(gmx_cpt):
                 shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
             else:
-                raise FileNotFoundError('{} does not exist.')
+                raise FileNotFoundError('{} does not exist.'.format(gmx_cpt))
 
-        # Do re-sampling
+        # do re-sampling
         targets = self.pairs.re_sample()
         self._logger.info('New targets: {}'.format(targets))
         for name in self.__names:
             self.run_data.set(name=name, target=targets[name])
 
+        # save the new targets to the BRER checkpoint file.
         self.run_data.save_config(fnm=self.state_json)
 
-        # Backup existing checkpoint. TODO: Don't backup the cpt, actually use it!!
+        # backup existing checkpoint.
+        # TODO: Don't backup the cpt, actually use it!!
         cpt = '{}/state.cpt'.format(os.getcwd())
         if os.path.exists(cpt):
             self._logger.warning(
@@ -141,22 +178,31 @@ class RunConfig:
         self.build_plugins(ConvergencePluginConfig())
         for plugin in self.__plugins:
             md.add_dependency(plugin)
-        context = gmx.context.ParallelArrayContext(md, workdir_list=[os.getcwd()])
+        context = gmx.context.ParallelArrayContext(
+            md, workdir_list=[os.getcwd()])
         with context as session:
             session.run()
+
+        # Get the absolute time (in ps) at which the convergence run finished.
+        # This value will be needed if a production run needs to be restarted.
         self.run_data.set(start_time=context.potentials[0].time)
 
     def __production(self):
+
         # Get the checkpoint file from the convergence phase
         gmx_cpt = '{}/convergence/state.cpt'.format(
             os.path.dirname(os.getcwd()))
-
         if os.path.exists(gmx_cpt):
             shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
         else:
             raise FileNotFoundError('{} does not exist'.format(gmx_cpt))
 
-        end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
+        # Calculate the time (in ps) at which the BRER iteration should finish.
+        # This should be: the end time of the convergence run + the amount of time for
+        # production simulation (specified by the user).
+        end_time = self.run_data.get('production_time') + self.run_data.get(
+            'start_time')
+
         md = gmx.workflow.from_tpr(
             self.tpr, end_time=end_time, append_output=False)
 

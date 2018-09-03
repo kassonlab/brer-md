@@ -1,3 +1,8 @@
+"""
+Classes used to build gmxapi plugins for all phases of a BRER iteration
+Each class corresponds to ONE restraint since gmxapi plugins each correspond to one restraint.
+"""
+
 from run_brer.metadata import MetaData
 from abc import abstractmethod
 import gmx
@@ -10,7 +15,8 @@ class PluginConfig(MetaData):
     def scan_dictionary(self, dictionary):
         """
         Scans a dictionary and stores whatever parameters it needs for the build_plugin
-        :param dictionary:
+        :param dictionary: a dictionary containing metadata, some of which may be needed for the run.
+        The dictionary may contain *extra* data, i.e., this can be a superset of the needed plugin data.
         """
         for requirement in self.get_requirements():
             if requirement in dictionary.keys():
@@ -18,8 +24,8 @@ class PluginConfig(MetaData):
 
     def scan_metadata(self, data):
         """
-        This scans either a State obj or PairData obj and stores whatever parameters it needs for a Run.
-        :param data: either type State or type PairData
+        This scans either a RunData or PairData obj and stores whatever parameters it needs for a run.
+        :param data: either type RunData or type PairData
         """
         self.scan_dictionary(data.get_as_dictionary())
 
