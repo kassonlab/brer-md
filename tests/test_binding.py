@@ -112,7 +112,7 @@ SOL         4055
         session.run()
 
     assert gmx.version.api_is_at_least(0,0,5)
-    md = gmx.workflow.from_tpr(tpr_filename)
+    md = gmx.workflow.from_tpr(tpr_filename, append_output=False)
 
     context = gmx.context.ParallelArrayContext(md)
     with context as session:
@@ -200,7 +200,7 @@ SOL         4055
     print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
 
     assert gmx.version.api_is_at_least(0,0,5)
-    md = gmx.workflow.from_tpr([tpr_filename])
+    md = gmx.workflow.from_tpr([tpr_filename], append_output=False)
 
     # Create a WorkElement for the potential
     #potential = gmx.core.TestModule()
@@ -293,7 +293,7 @@ SOL         4055
     logger.info("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
 
     assert gmx.version.api_is_at_least(0,0,5)
-    md = gmx.workflow.from_tpr([tpr_filename, tpr_filename])
+    md = gmx.workflow.from_tpr([tpr_filename, tpr_filename], append_output=False)
 
     # Create a WorkElement for the potential
     #potential = gmx.core.TestModule()
