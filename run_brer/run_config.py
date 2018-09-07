@@ -95,6 +95,7 @@ class RunConfig:
             self._logger.info(
                 "BRER received INT signal, stopping and saving data to {}".
                 format(self.state_json))
+
         atexit.register(cleanup)
 
     def build_plugins(self, plugin_config):
@@ -110,8 +111,10 @@ class RunConfig:
             pair_params = self.run_data.as_dictionary()['pair parameters'][
                 name]
             new_restraint = deepcopy(plugin_config)
-            new_restraint.scan_dictionary(general_params)  # load general data into current restraint
-            new_restraint.scan_dictionary(pair_params)  # load pair-specific data into current restraint
+            new_restraint.scan_dictionary(
+                general_params)  # load general data into current restraint
+            new_restraint.scan_dictionary(
+                pair_params)  # load pair-specific data into current restraint
             self.__plugins.append(new_restraint.build_plugin())
 
     def __change_directory(self):
@@ -228,5 +231,5 @@ class RunConfig:
         else:
             self.__production()
             self.run_data.set(phase='training')
-
+            self.run_data.set(iteration=(self.run_data.get('iteration') + 1))
         self.run_data.save_config(self.state_json)
