@@ -125,8 +125,20 @@ class RunConfig:
         dir_help.build_working_dir()
         dir_help.change_dir('phase')
 
+    def __move_cpt(self):
+        iter_num = self.run_data.get('iteration')
+        if iter_num != 0:
+            prev_iter = iter_num - 1
+            # Assume we have cd'd into the working directory
+            member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
+            gmx_cpt = '{}/{}/production/state.cpt'.format(
+                member_dir, prev_iter)
+            if os.path.exists(gmx_cpt):
+                shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
+            else:
+                raise FileNotFoundError('{} does not exist.'.format(gmx_cpt))
+
     def __train(self):
-        iter_num = self.run_data.general_params.get('iteration')
 
         # do re-sampling
         targets = self.pairs.re_sample()
@@ -146,18 +158,10 @@ class RunConfig:
                 'training. The cpt will be backed up and the run will start over with new targets'
             )
             shutil.move(cpt, '{}.bak'.format(cpt))
+
         # If this is not the first BRER iteration, grab the checkpoint from the production
         # phase of the last round
-        if iter_num != 0:
-            prev_iter = iter_num - 1
-            # Assume we have cd'd into the working directory
-            member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
-            gmx_cpt = '{}/{}/production/state.cpt'.format(
-                member_dir, prev_iter)
-            if os.path.exists(gmx_cpt):
-                shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
-            else:
-                raise FileNotFoundError('{} does not exist.'.format(gmx_cpt))
+        self.__move_cpt()
 
         # Build the gmxapi session.
         md = gmx.workflow.from_tpr(self.tpr, append_output=False)
@@ -177,6 +181,8 @@ class RunConfig:
                 name=self.__names[i], alpha=abs(context.potentials[i].alpha))
 
     def __converge(self):
+        self.__move_cpt()
+
         md = gmx.workflow.from_tpr(self.tpr, append_output=False)
         self.build_plugins(ConvergencePluginConfig())
         for plugin in self.__plugins:
