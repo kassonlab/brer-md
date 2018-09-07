@@ -127,18 +127,6 @@ class RunConfig:
 
     def __train(self):
         iter_num = self.run_data.general_params.get('iteration')
-        # If this is not the first BRER iteration, grab the checkpoint from the production
-        # phase of the last round
-        if iter_num != 0:
-            prev_iter = iter_num - 1
-            # Assume we have cd'd into the working directory
-            member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
-            gmx_cpt = '{}/{}/production/state.cpt'.format(
-                member_dir, prev_iter)
-            if os.path.exists(gmx_cpt):
-                shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
-            else:
-                raise FileNotFoundError('{} does not exist.'.format(gmx_cpt))
 
         # do re-sampling
         targets = self.pairs.re_sample()
@@ -158,6 +146,18 @@ class RunConfig:
                 'training. The cpt will be backed up and the run will start over with new targets'
             )
             shutil.move(cpt, '{}.bak'.format(cpt))
+        # If this is not the first BRER iteration, grab the checkpoint from the production
+        # phase of the last round
+        if iter_num != 0:
+            prev_iter = iter_num - 1
+            # Assume we have cd'd into the working directory
+            member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
+            gmx_cpt = '{}/{}/production/state.cpt'.format(
+                member_dir, prev_iter)
+            if os.path.exists(gmx_cpt):
+                shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
+            else:
+                raise FileNotFoundError('{} does not exist.'.format(gmx_cpt))
 
         # Build the gmxapi session.
         md = gmx.workflow.from_tpr(self.tpr, append_output=False)
