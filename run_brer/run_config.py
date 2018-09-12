@@ -132,7 +132,7 @@ class RunConfig:
                 '{}/mem_{}/{}/state.cpt'.format(self.ens_dir, iter_num,
                                                 phase)):
             pass
-        else:
+        elif iter_num != 0:
             prev_iter = iter_num - 1
             # Choose the appropriate cpt
             if phase in ['training', 'convergence']:
