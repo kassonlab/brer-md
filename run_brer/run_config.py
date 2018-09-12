@@ -127,12 +127,22 @@ class RunConfig:
 
     def __move_cpt(self):
         iter_num = self.run_data.get('iteration')
-        if iter_num != 0:
+        phase = self.run_data.get('phase')
+        if phase != 'training' and os.path.exists(
+                '{}/mem_{}/{}/state.cpt'.format(self.ens_dir, iter_num,
+                                                phase)):
+            pass
+        else:
             prev_iter = iter_num - 1
-            # Assume we have cd'd into the working directory
-            member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
-            gmx_cpt = '{}/{}/production/state.cpt'.format(
-                member_dir, prev_iter)
+            # Choose the appropriate cpt
+            if phase in ['training', 'convergence']:
+                gmx_cpt = '{}/mem_{}/production/state.cpt'.format(
+                    self.ens_dir, prev_iter)
+            else:
+                gmx_cpt = '{}/mem_{}/convergence/state.cpt'.format(
+                    self.ens_dir, iter_num)
+
+            # Now move the file
             if os.path.exists(gmx_cpt):
                 shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
             else:
@@ -181,7 +191,8 @@ class RunConfig:
                 name=self.__names[i], alpha=abs(context.potentials[i].alpha))
 
     def __converge(self):
-        self.__move_cpt()
+        if not os.path.exists('{}/state.cpt'.format(os.getcwd())):
+            self.__move_cpt()
 
         md = gmx.workflow.from_tpr(self.tpr, append_output=False)
         self.build_plugins(ConvergencePluginConfig())
