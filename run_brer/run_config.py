@@ -134,13 +134,16 @@ class RunConfig:
             pass
         elif iter_num != 0:
             prev_iter = iter_num - 1
+            # Assume we have cd'd into the working directory
+            member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
+
             # Choose the appropriate cpt
             if phase in ['training', 'convergence']:
-                gmx_cpt = '{}/mem_{}/production/state.cpt'.format(
-                    self.ens_dir, prev_iter)
+                gmx_cpt = '{}/{}/production/state.cpt'.format(
+                    member_dir, prev_iter)
             else:
-                gmx_cpt = '{}/mem_{}/convergence/state.cpt'.format(
-                    self.ens_dir, iter_num)
+                gmx_cpt = '{}/{}/convergence/state.cpt'.format(
+                    member_dir, iter_num)
 
             # Now move the file
             if os.path.exists(gmx_cpt):
