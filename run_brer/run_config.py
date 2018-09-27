@@ -127,11 +127,14 @@ class RunConfig:
 
     def __move_cpt(self):
         iter_num = self.run_data.get('iteration')
+        ens_num = self.run_data.get('ensemble_num')
         phase = self.run_data.get('phase')
         if phase != 'training' and os.path.exists(
-                '{}/mem_{}/{}/state.cpt'.format(self.ens_dir, iter_num,
-                                                phase)):
-            pass
+                '{}/mem_{}/{}/{}/state.cpt'.format(self.ens_dir, ens_num,
+                                                   iter_num, phase)):
+            self._logger.info(
+                "Phase is {} and state.cpt already exists: not moving any files".
+                format(phase))
         elif iter_num != 0:
             prev_iter = iter_num - 1
             # Assume we have cd'd into the working directory
