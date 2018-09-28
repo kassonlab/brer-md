@@ -6,6 +6,7 @@ Classes to handle
 
 import numpy as np
 from run_brer.metadata import MetaData, MultiMetaData
+import json
 
 
 class PairData(MetaData):
@@ -17,6 +18,16 @@ class PairData(MetaData):
 class MultiPair(MultiMetaData):
     def __init__(self):
         super().__init__()
+
+    def read_from_json(self, filename='state.json'):
+        self._metadata_list = []
+        self._names = []
+        data = json.load(open(filename, 'r'))
+        for name, metadata in data.items():
+            self._names.append(name)
+            metadata_obj = PairData(name=name)
+            metadata_obj.set_from_dictionary(metadata)
+            self._metadata_list.append(metadata_obj)
 
     def re_sample(self):
         """

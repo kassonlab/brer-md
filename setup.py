@@ -7,7 +7,7 @@ package_dir = os.path.abspath('src')
 
 if __name__ == "__main__":
     setuptools.setup(
-        name='brer',
+        name='run_brer',
         version='0.0.1',
         description='Package to run BRER simulations',
         author='Jennifer Hays',
