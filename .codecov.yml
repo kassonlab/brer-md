@@ -1,0 +1,17 @@
+# Codecov configuration to make it a bit less noisy
+codecov:
+  token: 74fe2a29-2d2d-4668-888a-63e08e757c1e
+
+coverage:
+  status:
+    patch: false
+    project:
+      default:
+        threshold: 50%
+comment:
+  layout: "header"
+  require_changes: false
+  branches: null
+  behavior: default
+  flags: null
+  paths: null
