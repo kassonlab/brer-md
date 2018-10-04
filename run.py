@@ -9,14 +9,14 @@ import sys
 sys.path.append('/home/jennifer/Git/brer/build/src/pythonmodule')
 
 init = {
-    'tpr': '/home/jennifer/Git/run_brer/tests/syx.tpr',
+    'tpr': '/home/jennifer/Git/run_brer/run_brer/data/topol.tpr',
     'ensemble_dir': '/home/jennifer/test-brer',
     'ensemble_num': 5,
-    'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
+    'pairs_json': '/home/jennifer/Git/run_brer/run_brer/data/pair_data.json'
 }
 
 config = rc.RunConfig(**init)
 
-config.run_data.set(tolerance=100)
+config.run_data.set(A=100)
 
 config.run()
