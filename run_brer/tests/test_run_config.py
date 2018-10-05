@@ -14,4 +14,11 @@ def test_build_plugins(rc):
 def test_logger(rc):
     rc._logger.info("Testing the logger")
 
-# TODO: Include short test runs for training, convergence, production.
+
+def test_run(rc):
+    current_dir = os.getcwd()
+    rc.run_data.set(A=5, tau=0.1, tolerance=100, nSamples=2, samplePeriod=0.1,
+                    production_time=0.2)
+
+    rc.run()
+    os.chdir(current_dir)

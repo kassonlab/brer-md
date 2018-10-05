@@ -50,6 +50,8 @@ def rc(tmpdir, data_dir):
         'pairs_json': '{}/pair_data.json'.format(data_dir)
     }
     os.mkdir('{}/mem_{}'.format(tmpdir, 1))
+    config = RunConfig(**init)
+    config.run_data.set(tolerance=100, A=10, tau=0.02, production_time=0.02)
     return RunConfig(**init)
 
 
