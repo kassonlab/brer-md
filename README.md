@@ -1,5 +1,8 @@
-# run_brer [![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel)](https://travis-ci.com/jmhays/run_brer)
+# run_brer 
 
+[![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel)](https://travis-ci.com/jmhays/run_brer)
+[![codecov](https://codecov.io/gh/jmhays/run_brer/branch/devel/graph/badge.svg)](https://codecov.io/gh/jmhays/run_brer)
+[![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/1761)
 
 Set of scripts for running BRER simulations using gmxapi. 
 
@@ -11,8 +14,8 @@ If you're going to use a pip or a conda environment, you'll need:
 domain decomposition with MPI, so if you want these simulations to run fast, be sure to compile with GPU support.
 - An installation of [gmxapi](https://github.com/kassonlab/gmxapi). 
 This code has only been tested with [release 0.0.6](https://github.com/kassonlab/gmxapi/releases/tag/v0.0.6).
-- The [plugin code](https://github.com/jmhays/sample_restraint/tree/brer) for BRER. Please make sure you install the 
-`brer` branch, _*NOT*_ `master`.
+- The [plugin code](https://github.com/jmhays/sample_restraint/tree/deer) for BRER. Please make sure you install the 
+`deer` branch, _*NOT*_ `master`.
 
 Otherwise, you can just use a Singularity container!
 
@@ -100,4 +103,4 @@ resets the energy constant A to 100 kcal/mol/nm^2 before launching a run.
 
 #### Launching an ensemble
 Right now, the way to launch an ensemble is to launch multiple jobs. We hope to soon use the `gmxapi` 
-[features](https://github.com/kassonlab/gmxapi) that allow a user to launch many ensemble member in one job.
+[features](https://github.com/kassonlab/gmxapi) that allow a user to launch many ensemble members in one job.
