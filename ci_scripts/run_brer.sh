@@ -2,7 +2,7 @@
 set -ev
 
 pushd $HOME
- [ -d run_brer ] || git clone --depth=1 --no-single-branch https://github.com/jmhays/run_brer.git
+ [ -d run_ebmetad ] || git clone --depth=1 --no-single-branch https://github.com/jmhays/run_brer.git
  pushd run_brer
   git branch -a
   if [ "${TRAVIS_BRANCH}" != "master" ] ; then
@@ -11,6 +11,6 @@ pushd $HOME
    git checkout master
   fi
   $PYTHON setup.py install
-  PYTHONPATH=../sample_restraint/build/src/pythonmodule $PYTHON -m pytest --cov=./
+  PYTHONPATH=$HOME/sample_restraint/build/src/pythonmodule $PYTHON -m pytest --cov=./
  popd
 popd

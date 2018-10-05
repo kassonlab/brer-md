@@ -5,7 +5,7 @@ pushd $HOME
  [ -d sample_restraint ] || git clone --depth=1 --no-single-branch https://github.com/jmhays/sample_restraint.git
  pushd sample_restraint
   git branch -a
-  git checkout brer
+  git checkout deer
   rm -rf build
   mkdir build
   pushd build

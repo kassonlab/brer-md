@@ -28,7 +28,7 @@ cache:
 compiler: gcc
 
 env:
-# Python 2.7 and 3.6 are the only generations provided by pyenv on Travis-CI out-of-the-box. We don't expect run_brer to be compatible with 2.7
+# Python 2.7 and 3.6 are the only generations provided by pyenv on Travis-CI out-of-the-box. We don't expect run_ebmetad to be compatible with 2.7
   - PY=3.6
 
 addons:
