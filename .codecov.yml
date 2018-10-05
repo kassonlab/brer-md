@@ -1,31 +1,21 @@
+# Codecov configuration to make it a bit less noisy
 codecov:
   token: 9dde7aff-38e9-484e-ba40-c7cccd56d0f2
-  notify:
-    require_ci_to_pass: yes
 
 coverage:
-  precision: 2
-  round: down
-  range: "70...100"
-  
   ignore:
     - "setup.py"
     - "versioneer.py"
-
+    - "run_brer/tests/*"
   status:
-    project: yes
-    patch: yes
-    changes: no
-
-parsers:
-  gcov:
-    branch_detection:
-      conditional: yes
-      loop: yes
-      method: no
-      macro: no
-
+    patch: false
+    project:
+      default:
+        threshold: 50%
 comment:
-  layout: "header, diff"
+  layout: "header"
+  require_changes: false
+  branches: null
   behavior: default
-  require_changes: no
+  flags: null
+  paths: null
