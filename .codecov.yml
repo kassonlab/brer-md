@@ -1,6 +1,6 @@
 # Codecov configuration to make it a bit less noisy
 codecov:
-  token: 74fe2a29-2d2d-4668-888a-63e08e757c1e
+  token: 9dde7aff-38e9-484e-ba40-c7cccd56d0f2
 
 coverage:
   status:
