@@ -1,8 +1,13 @@
-# run_brer 
+# run_brer [![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/1761)
 
+
+master branch status:
+[![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=master)](https://travis-ci.com/jmhays/run_brer)
+[![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)](https://codecov.io/gh/jmhays/run_brer)
+
+devel branch status:
 [![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel)](https://travis-ci.com/jmhays/run_brer)
 [![codecov](https://codecov.io/gh/jmhays/run_brer/branch/devel/graph/badge.svg)](https://codecov.io/gh/jmhays/run_brer)
-[![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/1761)
 
 Set of scripts for running BRER simulations using gmxapi. 
 
