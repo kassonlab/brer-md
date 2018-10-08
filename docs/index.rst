@@ -11,6 +11,7 @@ Welcome to Run BRER's documentation!
    :caption: Contents:
 
    user_api
+   developer_api
 
 
 

@@ -1,6 +1,14 @@
 Main User API
 ==============================================
 
-.. automodule:: run_brer 
+run_config
+-------------
+.. automodule:: run_brer.run_config
    :members:
-   :imported-members:
+
+
+run_data
+---------------
+.. automodule:: run_brer.run_data
+   :members:
+
