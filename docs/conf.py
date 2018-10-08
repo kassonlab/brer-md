@@ -15,11 +15,11 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-from recommonmark.parser import CommonMarkParser
+
 
 # -- Project information -----------------------------------------------------
 
-project = 'run_brer'
+project = 'Run BRER'
 copyright = '2018, Jennifer M. Hays'
 author = 'Jennifer M. Hays'
 
@@ -40,8 +40,8 @@ release = '0.0.1'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
+    'sphinx.ext.doctest',
+    'numpydoc'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -50,12 +50,8 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-source_parsers = {
-        '.md': CommonMarkParser,
-}
-
-source_suffix = ['.rst', '.md']
-# source_suffix = '.rst'
+# source_suffix = ['.rst', '.md']
+source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
@@ -69,11 +65,11 @@ language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path .
+# This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = None
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -81,7 +77,7 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -108,7 +104,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'run_brerdoc'
+htmlhelp_basename = 'RunBRERdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -135,7 +131,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'run_brer.tex', 'run\\_brer Documentation',
+    (master_doc, 'RunBRER.tex', 'Run BRER Documentation',
      'Jennifer M. Hays', 'manual'),
 ]
 
@@ -145,7 +141,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'run_brer', 'run_brer Documentation',
+    (master_doc, 'runbrer', 'Run BRER Documentation',
      [author], 1)
 ]
 
@@ -156,10 +152,28 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'run_brer', 'run_brer Documentation',
-     author, 'run_brer', 'One line description of project.',
+    (master_doc, 'RunBRER', 'Run BRER Documentation',
+     author, 'RunBRER', 'One line description of project.',
      'Miscellaneous'),
 ]
+
+
+# -- Options for Epub output -------------------------------------------------
+
+# Bibliographic Dublin Core info.
+epub_title = project
+
+# The unique identifier of the text. This can be a ISBN number
+# or the project homepage.
+#
+# epub_identifier = ''
+
+# A unique identification for the text.
+#
+# epub_uid = ''
+
+# A list of files that should not be packed into the epub file.
+epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
