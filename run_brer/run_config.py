@@ -12,9 +12,7 @@ import atexit
 
 
 class RunConfig:
-    """
-    Run configuration for single BRER ensemble member.
-    """
+    """Run configuration for single BRER ensemble member."""
 
     def __init__(self,
                  tpr,
@@ -91,6 +89,7 @@ class RunConfig:
         # Need to cleanly handle cancelled jobs: write out a checkpoint of the state if the
         # job is exited.
         def cleanup():
+            """ """
             self.run_data.save_config(self.state_json)
             self._logger.info(
                 "BRER received INT signal, stopping and saving data to {}".
@@ -99,6 +98,17 @@ class RunConfig:
         atexit.register(cleanup)
 
     def build_plugins(self, plugin_config):
+        """
+
+        Parameters
+        ----------
+        plugin_config :
+            
+
+        Returns
+        -------
+
+        """
         # One plugin per restraint.
         # TODO: what is the expected behavior when a list of plugins exists? Probably wipe them.
 
@@ -236,6 +246,7 @@ class RunConfig:
             session.run()
 
     def run(self):
+        """ """
         phase = self.run_data.get('phase')
 
         self.__change_directory()

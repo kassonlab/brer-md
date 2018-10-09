@@ -9,35 +9,63 @@ import gmx
 
 
 class PluginConfig(MetaData):
+    """ """
     def __init__(self):
         super().__init__('build_plugin')
 
     def scan_dictionary(self, dictionary):
-        """
-        Scans a dictionary and stores whatever parameters it needs for the build_plugin
-        :param dictionary: a dictionary containing metadata, some of which may be needed for the run.
-        The dictionary may contain *extra* data, i.e., this can be a superset of the needed plugin data.
+        """Scans a dictionary and stores whatever parameters it needs for the build_plugin
+
+        Parameters
+        ----------
+        dictionary :
+            a dictionary containing metadata, some of which may be needed for the run.
+            The dictionary may contain *extra* data, i.e., this can be a superset of the needed plugin data.
+
+        Returns
+        -------
+
         """
         for requirement in self.get_requirements():
             if requirement in dictionary.keys():
                 self.set(requirement, dictionary[requirement])
 
     def scan_metadata(self, data):
-        """
-        This scans either a RunData or PairData obj and stores whatever parameters it needs for a run.
-        :param data: either type RunData or type PairData
+        """This scans either a RunData or PairData obj and stores whatever parameters it needs for a run.
+
+        Parameters
+        ----------
+        data :
+            either type RunData or type PairData
+
+        Returns
+        -------
+
         """
         self.scan_dictionary(data.get_as_dictionary())
 
     def set_parameters(self, **kwargs):
+        """
+
+        Parameters
+        ----------
+        **kwargs :
+            
+
+        Returns
+        -------
+
+        """
         self.scan_dictionary(kwargs)
 
     @abstractmethod
     def build_plugin(self):
+        """ """
         pass
 
 
 class TrainingPluginConfig(PluginConfig):
+    """ """
     def __init__(self):
         super(PluginConfig, self).__init__(name='training')
         self.set_requirements([
@@ -46,6 +74,7 @@ class TrainingPluginConfig(PluginConfig):
         ])
 
     def build_plugin(self):
+        """ """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = gmx.workflow.WorkElement(
@@ -58,6 +87,7 @@ class TrainingPluginConfig(PluginConfig):
 
 
 class ConvergencePluginConfig(PluginConfig):
+    """ """
     def __init__(self):
         super(PluginConfig, self).__init__(name='convergence')
         self.set_requirements([
@@ -66,6 +96,7 @@ class ConvergencePluginConfig(PluginConfig):
         ])
 
     def build_plugin(self):
+        """ """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = gmx.workflow.WorkElement(
@@ -78,11 +109,13 @@ class ConvergencePluginConfig(PluginConfig):
 
 
 class ProductionPluginConfig(PluginConfig):
+    """ """
     def __init__(self):
         super(PluginConfig, self).__init__(name='production')
         self.set_requirements(['sites', 'target', 'alpha'])
 
     def build_plugin(self):
+        """ """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = gmx.workflow.WorkElement(

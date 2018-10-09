@@ -10,16 +10,29 @@ import json
 
 
 class PairData(MetaData):
+    """ """
     def __init__(self, name):
         super().__init__(name=name)
         self.set_requirements(['distribution', 'bins', 'sites'])
 
 
 class MultiPair(MultiMetaData):
+    """ """
     def __init__(self):
         super().__init__()
 
     def read_from_json(self, filename='state.json'):
+        """
+
+        Parameters
+        ----------
+        filename :
+             (Default value = 'state.json')
+
+        Returns
+        -------
+
+        """
         self._metadata_list = []
         self._names = []
         data = json.load(open(filename, 'r'))
@@ -30,9 +43,15 @@ class MultiPair(MultiMetaData):
             self._metadata_list.append(metadata_obj)
 
     def re_sample(self):
-        """
-        Re-sample from the joint space. Do normalization just in case the data aren't normalized already.
+        """Re-sample from the joint space. Do normalization just in case the data aren't normalized already.
         :return: dictionary of targets, drawn from DEER distributions.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
         """
         answer = {}
         for pair_data in self._metadata_list:
