@@ -85,4 +85,6 @@ notifications:
   email: false
 
 after_success:
+  - pushd $HOME/run_brer
   - bash <(curl -s https://codecov.io/bash)
+  - popd
