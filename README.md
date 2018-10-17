@@ -1,5 +1,9 @@
-# run_brer 
+# run_brer
+ 
+Badges:
 [![Documentation Status](https://readthedocs.org/projects/run-brer/badge/?version=latest)](https://run-brer.readthedocs.io/en/latest/?badge=latest)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jmhays/run_brer/context:python)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jmhays/run_brer/alerts/)
 [![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/1761)
 
 
