@@ -139,30 +139,35 @@ class RunConfig:
         iter_num = self.run_data.get('iteration')
         ens_num = self.run_data.get('ensemble_num')
         phase = self.run_data.get('phase')
-        if phase != 'training' and os.path.exists(
+
+        # If the cpt already exists, don't overwrite it
+        if os.path.exists(
                 '{}/mem_{}/{}/{}/state.cpt'.format(self.ens_dir, ens_num,
                                                    iter_num, phase)):
             self._logger.info(
                 "Phase is {} and state.cpt already exists: not moving any files".
                 format(phase))
-        elif iter_num != 0:
-            prev_iter = iter_num - 1
-            # Assume we have cd'd into the working directory
+
+        else:
             member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
+            prev_iter = iter_num - 1
 
-            # Choose the appropriate cpt
             if phase in ['training', 'convergence']:
-                gmx_cpt = '{}/{}/production/state.cpt'.format(
-                    member_dir, prev_iter)
-            else:
-                gmx_cpt = '{}/{}/convergence/state.cpt'.format(
-                    member_dir, iter_num)
+                if prev_iter > -1:
+                    # Get the production cpt from previous iteration
+                    gmx_cpt = '{}/{}/production/state.cpt'.format(
+                        member_dir, prev_iter)
+                    shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
 
-            # Now move the file
-            if os.path.exists(gmx_cpt):
-                shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
+                else:
+                    pass  # Do nothing
+
             else:
-                raise FileNotFoundError('{} does not exist.'.format(gmx_cpt))
+                member_dir = os.path.dirname(os.path.dirname(os.getcwd()))  # Go up two directories
+                # Get the convergence cpt from current iteration
+                gmx_cpt = '{}/{}/convergence/state.cpt'.format(
+                        member_dir, iter)
+                shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
 
     def __train(self):
 
