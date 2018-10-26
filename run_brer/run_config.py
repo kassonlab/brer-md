@@ -136,21 +136,21 @@ class RunConfig:
         dir_help.change_dir('phase')
 
     def __move_cpt(self):
-        iter_num = self.run_data.get('iteration')
+        current_iter = self.run_data.get('iteration')
         ens_num = self.run_data.get('ensemble_num')
         phase = self.run_data.get('phase')
 
         # If the cpt already exists, don't overwrite it
         if os.path.exists(
                 '{}/mem_{}/{}/{}/state.cpt'.format(self.ens_dir, ens_num,
-                                                   iter_num, phase)):
+                                                   current_iter, phase)):
             self._logger.info(
                 "Phase is {} and state.cpt already exists: not moving any files".
                 format(phase))
 
         else:
             member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
-            prev_iter = iter_num - 1
+            prev_iter = current_iter - 1
 
             if phase in ['training', 'convergence']:
                 if prev_iter > -1:
@@ -166,7 +166,7 @@ class RunConfig:
                 member_dir = os.path.dirname(os.path.dirname(os.getcwd()))  # Go up two directories
                 # Get the convergence cpt from current iteration
                 gmx_cpt = '{}/{}/convergence/state.cpt'.format(
-                        member_dir, iter)
+                        member_dir, current_iter)
                 shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
 
     def __train(self):
