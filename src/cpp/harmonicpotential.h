@@ -34,8 +34,8 @@ class Harmonic
     public:
         Harmonic(real equilibrium,
                  real springconstant) :
-            R0{equilibrium},
-            k{springconstant}
+            R0_{equilibrium},
+            k_{springconstant}
         {};
 
         Harmonic() :
@@ -82,10 +82,10 @@ class Harmonic
     private:
         // set equilibrium separation distance in GROMACS units.
         // TODO: be clearer about units
-        real R0;
+        real R0_;
         // set spring constant in native GROMACS units.
         // TODO: be clearer about units
-        real k;
+        real k_;
 };
 
 // implement IRestraintPotential in terms of Harmonic
@@ -103,14 +103,16 @@ class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
          * \param R0 targeted equilibrium pair separation.
          * \param k spring constant.
          */
-        HarmonicRestraint(unsigned long int site1,
-                          unsigned long int site2,
+        HarmonicRestraint(int site1,
+                          int site2,
                           real R0,
                           real k) :
             Harmonic{R0, k},
             site1_{site1},
             site2_{site2}
         {};
+
+        ~HarmonicRestraint() override = default;
 
         /*!
          * \brief Implement required interface of gmx::IRestraintPotential
@@ -120,7 +122,7 @@ class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
          * \todo remove to template header
          * \todo abstraction of site references
          */
-        std::vector<unsigned long int> sites() const override;
+        std::vector<int> sites() const override;
 
         /*!
          * \brief Implement the interface gmx::IRestraintPotential
@@ -139,8 +141,8 @@ class HarmonicRestraint : public ::gmx::IRestraintPotential, private Harmonic
                                          double t) override;
 
     private:
-        unsigned long int site1_{0};
-        unsigned long int site2_{0};
+        int site1_{0};
+        int site2_{0};
 };
 
 /*!
@@ -153,8 +155,8 @@ class HarmonicModule : public gmxapi::MDModule
     public:
         using param_t = Harmonic::input_param_type;
 
-        HarmonicModule(unsigned long int site1,
-                       unsigned long int site2,
+        HarmonicModule(int site1,
+                       int site2,
                        real R0,
                        real k)
         {
@@ -165,7 +167,7 @@ class HarmonicModule : public gmxapi::MDModule
         }
 
 
-        const char* name() override
+        const char* name() const override
         {
             return "HarmonicModule";
         }
@@ -193,8 +195,8 @@ class HarmonicModule : public gmxapi::MDModule
          * \param k
          * \param R0
          */
-        void setParams(unsigned long int site1,
-                       unsigned long int site2,
+        void setParams(int site1,
+                       int site2,
                        real R0,
                        real k)
         {
@@ -205,8 +207,8 @@ class HarmonicModule : public gmxapi::MDModule
         }
 
     private:
-        unsigned long int site1_;
-        unsigned long int site2_;
+        int site1_;
+        int site2_;
         real R0_;
         real k_;
 };

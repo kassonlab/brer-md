@@ -36,7 +36,7 @@ class NullRestraint : public gmx::IRestraintPotential
             return {};
         }
 
-        std::vector<unsigned long> sites() const override
+        std::vector<int> sites() const override
         {
             return {0,0};
         }
@@ -45,7 +45,7 @@ class NullRestraint : public gmx::IRestraintPotential
 class SimpleApiModule : public gmxapi::MDModule
 {
     public:
-        const char *name() override
+        const char *name() const override
         {
             return "NullApiModule";
         }
