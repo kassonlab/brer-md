@@ -4,7 +4,7 @@ set -ev
 pushd $HOME
  [ -d gmxapi ] || git clone --depth=1 --no-single-branch https://github.com/kassonlab/gmxapi.git
  pushd gmxapi
-  git checkout v0.0.6
+  git checkout release-0_0_7
   rm -rf build
   mkdir -p build
   pushd build

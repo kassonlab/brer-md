@@ -222,7 +222,7 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
     public:
         using EnsembleHarmonic::input_param_type;
 
-        EnsembleRestraint(std::vector<unsigned long> sites,
+        EnsembleRestraint(std::vector<int> sites,
                           const input_param_type& params,
                           std::shared_ptr<EnsembleResources> resources
         ) :
@@ -230,6 +230,8 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
             sites_{std::move(sites)},
             resources_{std::move(resources)}
         {}
+
+        ~EnsembleRestraint() override = default;
 
         /*!
          * \brief Implement required interface of gmx::IRestraintPotential
@@ -239,7 +241,7 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
          * \todo remove to template header
          * \todo abstraction of site references
          */
-        std::vector<unsigned long int> sites() const override
+        std::vector<int> sites() const override
         {
             return sites_;
         }
@@ -302,7 +304,7 @@ class EnsembleRestraint : public ::gmx::IRestraintPotential, private EnsembleHar
         }
 
     private:
-        std::vector<unsigned long int> sites_;
+        std::vector<int> sites_;
 //        double callbackPeriod_;
 //        double nextCallback_;
         std::shared_ptr<EnsembleResources> resources_;

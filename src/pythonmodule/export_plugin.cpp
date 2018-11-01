@@ -12,9 +12,12 @@
 
 #include "export_plugin.h"
 
+#include <cassert>
+
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
+#include "gmxapi/exceptions.h"
 #include "gmxapi/md.h"
 #include "gmxapi/md/mdmodule.h"
 #include "gmxapi/gmxapi.h"
@@ -210,8 +213,8 @@ class HarmonicRestraintBuilder
             assert(parameter_dict.contains("R0"));
             assert(parameter_dict.contains("k"));
             py::list sites = parameter_dict["sites"];
-            site1Index_ = py::cast<unsigned long>(sites[0]);
-            site2Index_ = py::cast<unsigned long>(sites[1]);
+            site1Index_ = py::cast<int>(sites[0]);
+            site2Index_ = py::cast<int>(sites[1]);
             equilibriumPosition_ = py::cast<real>(parameter_dict["R0"]);
             springConstant_ = py::cast<real>(parameter_dict["k"]);
         };
@@ -254,8 +257,8 @@ class HarmonicRestraintBuilder
         };
 
         py::object subscriber_;
-        unsigned long site1Index_;
-        unsigned long site2Index_;
+        int site1Index_;
+        int site2Index_;
         real equilibriumPosition_;
         real springConstant_;
 };
@@ -282,7 +285,7 @@ class EnsembleRestraintBuilder
             py::list sites = parameter_dict["sites"];
             for (auto&& site : sites)
             {
-                siteIndices_.emplace_back(py::cast<unsigned long>(site));
+                siteIndices_.emplace_back(py::cast<int>(site));
             }
 
             auto nbins = py::cast<size_t>(parameter_dict["nbins"]);
@@ -380,7 +383,7 @@ class EnsembleRestraintBuilder
 
         py::object subscriber_;
         py::object context_;
-        std::vector<unsigned long int> siteIndices_;
+        std::vector<int> siteIndices_;
 
         plugin::ensemble_input_param_type params_;
 
@@ -512,8 +515,8 @@ PYBIND11_MODULE(myplugin, m) {
     // Deprecated constructor directly taking restraint paramaters.
     harmonic.def(
         py::init(
-            [](unsigned long int site1,
-               unsigned long int site2,
+            [](int site1,
+               int site2,
                real R0,
                real k) {
                 return PyRestraint<plugin::HarmonicModule>::create(site1,

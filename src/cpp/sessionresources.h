@@ -13,7 +13,6 @@
 #include "gmxapi/gromacsfwd.h"
 #include "gmxapi/session.h"
 #include "gmxapi/session/resources.h"
-#include "gmxapi/session/outputstream.h"
 #include "gmxapi/md/mdmodule.h"
 
 #include "gromacs/restraint/restraintpotential.h"
@@ -129,18 +128,6 @@ class EnsembleResourceHandle
                                  Matrix<double>*)>* reduce_;
 
         gmxapi::SessionResources* session_;
-
-        /*!
-         * \brief Get the current output stream manager.
-         *
-         * The output stream manager provides methods with signatures like `template<class T> set(std::string, T)` so
-         * that a call to ostream()->set("stop", true) will find a registered resource named "stop" that accepts Boolean
-         * data and call it with `true`.
-         */
-        gmxapi::session::OutputStream* ostream();
-
-    private:
-        std::shared_ptr<gmxapi::session::OutputStream> ostream_;
 };
 
 /*!
@@ -189,13 +176,6 @@ class EnsembleResources
          */
         void setSession(gmxapi::SessionResources* session);
 
-        /*!
-         * \brief Sets the OutputStream manager for this set of resources.
-         *
-         * \param ostream ownership of an OutputStream manager
-         */
-        void setOutputStream(std::unique_ptr<gmxapi::session::OutputStream> ostream);
-
     private:
         //! bound function object to provide ensemble reduce facility.
         std::function<void(const Matrix<double>&,
@@ -203,9 +183,6 @@ class EnsembleResources
 
         // Raw pointer to the session in which these resources live.
         gmxapi::SessionResources* session_;
-
-        // Shareable OutputStream object
-        std::shared_ptr<gmxapi::session::OutputStream> ostream_;
 };
 
 /*!
@@ -239,7 +216,7 @@ class RestraintModule : public gmxapi::MDModule // consider names
          * \param resources
          */
         RestraintModule(std::string name,
-                        std::vector<unsigned long int> sites,
+                        std::vector<int> sites,
                         const typename R::input_param_type& params,
                         std::shared_ptr<EnsembleResources> resources) :
             sites_{std::move(sites)},
@@ -259,7 +236,7 @@ class RestraintModule : public gmxapi::MDModule // consider names
          * \return
          */
         // \todo make member function const
-        const char* name() override
+        const char* name() const override
         {
             return name_.c_str();
         }
@@ -289,7 +266,7 @@ class RestraintModule : public gmxapi::MDModule // consider names
         }
 
     private:
-        std::vector<unsigned long int> sites_;
+        std::vector<int> sites_;
         param_t params_;
 
         // Need to figure out if this is copyable or who owns it.
