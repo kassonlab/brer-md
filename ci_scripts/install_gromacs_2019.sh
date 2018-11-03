@@ -5,12 +5,19 @@ export GMX_DOUBLE=OFF
 export GMX_MPI=OFF
 export GMX_THREAD_MPI=ON
 
+export GMX_SRC_DIR=gromacs-2019
+
 export CCACHE_DIR=$HOME/.ccache_gmxapi
 ccache -s
 
 pushd $HOME
- [ -d gromacs-gmxapi ] || git clone --depth=1 --no-single-branch https://github.com/gromacs/gromacs.git gromacs-gmxapi
- pushd gromacs-gmxapi
+ [ -d gromacs-gmxapi ] || \
+    git clone \
+        --depth=1 \
+        --no-single-branch \
+        https://github.com/gromacs/gromacs.git \
+        ${GMX_SRC_DIR}
+ pushd ${GMX_SRC_DIR}
   git branch -a
   git checkout release-2019
   pwd
