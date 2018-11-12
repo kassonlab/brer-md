@@ -1,21 +1,16 @@
-//
-// Created by Eric Irrgang on 11/3/17.
-//
-
 /*! \file
  * \brief Provide Python bindings and helper functions for setting up restraint potentials.
  *
  * There is currently a lot of boilerplate here that will be generalized and removed in a future version.
  * In the mean time, follow the example for EnsembleRestraint to create the proper helper functions
  * and instantiate the necessary templates.
+ *
+ * \author M. Eric Irrgang <ericirrgang@gmail.com>
  */
 
 #include "export_plugin.h"
 
 #include <cassert>
-
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
 
 #include "gmxapi/exceptions.h"
 #include "gmxapi/md.h"
