@@ -126,6 +126,8 @@ message(STATUS "Python module will be installed to GMXPLUGIN_INSTALL_PATH cache 
 # Now move on to building the custom code.
 add_subdirectory(src)
 
+add_subdirectory(docs)
+
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
