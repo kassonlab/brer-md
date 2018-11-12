@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.4.3)
+# If you are using this repository as a template, you should probably change the
+# project name and adopt your own versioning scheme.
 project(sample_restraint VERSION 0.0.7)
 
-# This project requires GROMACS to build. It should be sufficient to source the GMXRC, but you can also set the
-# GROMACS_DIR environment variable to help CMake find the GROMACS installation.
+# This project requires a GROMACS supporting gmxapi 0.0.7 or higher. It should
+# be sufficient to source the GMXRC, but you can also set the GROMACS_DIR or
+# gmxapi_DIR environment variable to help CMake find the GROMACS installation.
 
 # Note that the code will need to be built separately for different versions of Python and for substantially different
 # versions of GROMACS. If building from the command line, you can specify a Python executable with the PYTHON_EXECUTABLE
@@ -12,8 +15,6 @@ set(CMAKE_CXX_STANDARD 11)
 
 # CMake modules are in a subdirectory to keep this file cleaner
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-option(BUILD_TESTING "set ON to build testing framework" ON)
 
 # Assuming GROMACS is in our path or that we have set either the gmxapi_DIR or GROMACS_DIR environment variables,
 # this will find the CMake configuration for the GROMACS libraries we need and define the CMake library objects
@@ -128,7 +129,7 @@ add_subdirectory(src)
 
 add_subdirectory(docs)
 
+include(CTest)
 if(BUILD_TESTING)
-    enable_testing()
     add_subdirectory(tests)
 endif()
