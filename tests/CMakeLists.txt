@@ -42,7 +42,7 @@ add_executable(library-test test_binding.cpp)
 add_test(BasicPlugin library-test)
 
 target_include_directories(library-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(library-test libgromacs Gromacs::gmxapi gtest_main)
+target_link_libraries(library-test Gromacs::gmxapi gtest_main)
 
 set_tests_properties(BasicPlugin PROPERTIES
                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
