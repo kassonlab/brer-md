@@ -6,19 +6,6 @@ def test_unscoped_enum():
     assert str(m.UnscopedEnum.EOne) == "UnscopedEnum.EOne"
     assert str(m.UnscopedEnum.ETwo) == "UnscopedEnum.ETwo"
     assert str(m.EOne) == "UnscopedEnum.EOne"
-
-    # name property
-    assert m.UnscopedEnum.EOne.name == "EOne"
-    assert m.UnscopedEnum.ETwo.name == "ETwo"
-    assert m.EOne.name == "EOne"
-    # name readonly
-    with pytest.raises(AttributeError):
-        m.UnscopedEnum.EOne.name = ""
-    # name returns a copy
-    foo = m.UnscopedEnum.EOne.name
-    foo = "bar"
-    assert m.UnscopedEnum.EOne.name == "EOne"
-
     # __members__ property
     assert m.UnscopedEnum.__members__ == \
         {"EOne": m.UnscopedEnum.EOne, "ETwo": m.UnscopedEnum.ETwo}
@@ -31,28 +18,10 @@ def test_unscoped_enum():
     assert m.UnscopedEnum.__members__ == \
         {"EOne": m.UnscopedEnum.EOne, "ETwo": m.UnscopedEnum.ETwo}
 
-    assert m.UnscopedEnum.__doc__ == \
-        '''An unscoped enumeration
-
-Members:
-
-  EOne : Docstring for EOne
-
-  ETwo : Docstring for ETwo''' or m.UnscopedEnum.__doc__ == \
-        '''An unscoped enumeration
-
-Members:
-
-  ETwo : Docstring for ETwo
-
-  EOne : Docstring for EOne'''
-
-    # Unscoped enums will accept ==/!= int comparisons
+    # no TypeError exception for unscoped enum ==/!= int comparisons
     y = m.UnscopedEnum.ETwo
     assert y == 2
-    assert 2 == y
     assert y != 3
-    assert 3 != y
 
     assert int(m.UnscopedEnum.ETwo) == 2
     assert str(m.UnscopedEnum(2)) == "UnscopedEnum.ETwo"
@@ -77,20 +46,11 @@ def test_scoped_enum():
     z = m.ScopedEnum.Two
     assert m.test_scoped_enum(z) == "ScopedEnum::Two"
 
-    # Scoped enums will *NOT* accept ==/!= int comparisons (Will always return False)
-    assert not z == 3
-    assert not 3 == z
-    assert z != 3
-    assert 3 != z
-    # Scoped enums will *NOT* accept >, <, >= and <= int comparisons (Will throw exceptions)
+    # expected TypeError exceptions for scoped enum ==/!= int comparisons
     with pytest.raises(TypeError):
-        z > 3
+        assert z == 2
     with pytest.raises(TypeError):
-        z < 3
-    with pytest.raises(TypeError):
-        z >= 3
-    with pytest.raises(TypeError):
-        z <= 3
+        assert z != 3
 
     # order
     assert m.ScopedEnum.Two < m.ScopedEnum.Three
@@ -159,9 +119,3 @@ def test_enum_to_int():
     m.test_enum_to_uint(m.ClassWithUnscopedEnum.EMode.EFirstMode)
     m.test_enum_to_long_long(m.Flags.Read)
     m.test_enum_to_long_long(m.ClassWithUnscopedEnum.EMode.EFirstMode)
-
-
-def test_duplicate_enum_name():
-    with pytest.raises(ValueError) as excinfo:
-        m.register_bad_enum()
-    assert str(excinfo.value) == 'SimpleEnum: element "ONE" already exists!'

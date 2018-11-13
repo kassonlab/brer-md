@@ -24,9 +24,6 @@ struct NoBraceInitialization {
 TEST_SUBMODULE(class_, m) {
     // test_instance
     struct NoConstructor {
-        NoConstructor() = default;
-        NoConstructor(const NoConstructor &) = default;
-        NoConstructor(NoConstructor &&) = default;
         static NoConstructor *new_instance() {
             auto *ptr = new NoConstructor();
             print_created(ptr, "via new_instance");
@@ -95,12 +92,7 @@ TEST_SUBMODULE(class_, m) {
     m.def("dog_bark", [](const Dog &dog) { return dog.bark(); });
 
     // test_automatic_upcasting
-    struct BaseClass {
-        BaseClass() = default;
-        BaseClass(const BaseClass &) = default;
-        BaseClass(BaseClass &&) = default;
-        virtual ~BaseClass() {}
-    };
+    struct BaseClass { virtual ~BaseClass() {} };
     struct DerivedClass1 : BaseClass { };
     struct DerivedClass2 : BaseClass { };
 
@@ -341,19 +333,6 @@ TEST_SUBMODULE(class_, m) {
                 "a"_a, "b"_a, "c"_a);
     base.def("g", [](NestBase &, Nested &) {});
     base.def("h", []() { return NestBase(); });
-
-    // test_error_after_conversion
-    // The second-pass path through dispatcher() previously didn't
-    // remember which overload was used, and would crash trying to
-    // generate a useful error message
-
-    struct NotRegistered {};
-    struct StringWrapper { std::string str; };
-    m.def("test_error_after_conversions", [](int) {});
-    m.def("test_error_after_conversions",
-          [](StringWrapper) -> NotRegistered { return {}; });
-    py::class_<StringWrapper>(m, "StringWrapper").def(py::init<std::string>());
-    py::implicitly_convertible<std::string, StringWrapper>();
 }
 
 template <int N> class BreaksBase { public: virtual ~BreaksBase() = default; };

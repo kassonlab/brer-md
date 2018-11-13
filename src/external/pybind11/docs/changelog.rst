@@ -6,50 +6,6 @@ Changelog
 Starting with version 1.8.0, pybind11 releases use a `semantic versioning
 <http://semver.org>`_ policy.
 
-v2.3.0 (Not yet released)
------------------------------------------------------
-
-* Significantly reduced module binary size (10-20%) when compiled in C++11 mode
-  with GCC/Clang, or in any mode with MSVC. Function signatures are now always
-  precomputed at compile time (this was previously only available in C++14 mode
-  for non-MSVC compilers).
-  `#934 <https://github.com/pybind/pybind11/pull/934>`_.
-
-* Add basic support for tag-based static polymorphism, where classes
-  provide a method to returns the desired type of an instance.
-  `#1326 <https://github.com/pybind/pybind11/pull/1326>`_.
-
-* Added support for write only properties.
-  `#1144 <https://github.com/pybind/pybind11/pull/1144>`_.
-
-* Python type wrappers (``py::handle``, ``py::object``, etc.)
-  now support map Python's number protocol onto C++ arithmetic
-  operators such as ``operator+``, ``operator/=``, etc.
-  `#1511 <https://github.com/pybind/pybind11/pull/1511>`_.
-
-* A number of improvements related to enumerations:
-
-   1. The ``enum_`` implementation was rewritten from scratch to reduce
-      code bloat. Rather than instantiating a full implementation for each
-      enumeration, most code is now contained in a generic base class.
-      `#1511 <https://github.com/pybind/pybind11/pull/1511>`_.
-
-   2. The ``value()``  method of ``py::enum_`` now accepts an optional
-      docstring that will be shown in the documentation of the associated
-      enumeration. `#1160 <https://github.com/pybind/pybind11/pull/1160>`_.
-
-   3. check for already existing enum value and throw an error if present.
-      `#1453 <https://github.com/pybind/pybind11/pull/1453>`_.
-
-* added ``py::ellipsis()`` method for slicing of multidimensional NumPy arrays
-  `#1502 <https://github.com/pybind/pybind11/pull/1502>`_.
-
-* ``pybind11_add_module()``: allow including Python as a ``SYSTEM`` include path.
-  `#1416 <https://github.com/pybind/pybind11/pull/1416>`_.
-
-* ``pybind11/stl.h`` does not convert strings to ``vector<string>`` anymore.
-  `#1258 <https://github.com/pybind/pybind11/issues/1258>`_.
-
 v2.2.4 (September 11, 2018)
 -----------------------------------------------------
 
@@ -58,7 +14,7 @@ v2.2.4 (September 11, 2018)
   `#1517 <https://github.com/pybind/pybind11/pull/1517>`_.
 
 * Fixes for newer MSVC versions and C++17 mode.
-  `#1347 <https://github.com/pybind/pybind11/pull/1347>`_,
+  `#1347 <https://github.com/pybind/pybind11/pull/1347>`_.
   `#1462 <https://github.com/pybind/pybind11/pull/1462>`_.
 
 * Propagate return value policies to type-specific casters
@@ -112,6 +68,10 @@ v2.2.3 (April 29, 2018)
 
 * Fixed an endianness-related fault in the test suite.
   `#1287 <https://github.com/pybind/pybind11/pull/1287>`_.
+
+* Intel compilers have needed to be >= 17.0 since v2.1. Now the check
+  is explicit and a compile-time error is raised if the compiler does
+  not meet the requirements.
 
 v2.2.2 (February 7, 2018)
 -----------------------------------------------------
