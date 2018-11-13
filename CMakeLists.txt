@@ -124,12 +124,27 @@ set(GMXPLUGIN_INSTALL_PATH ${GMXPLUGIN_DEFAULT_SITE_PACKAGES} CACHE PATH
 message(STATUS "Python module will be installed to GMXPLUGIN_INSTALL_PATH cache value ${GMXPLUGIN_INSTALL_PATH}")
 
 
+# Set up testing options.
+include(CTest)
+
+# Either use the git subtree in tests/googletest or download a fresh copy of
+# googletest master branch.
+option(DOWNLOAD_GOOGLETEST OFF "Download the latest master branch of googletest.")
+mark_as_advanced(DOWNLOAD_GOOGLETEST)
+
+# Prevent overriding the parent project's compiler/linker
+# settings on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+
 # Now move on to building the custom code.
 add_subdirectory(src)
 
+# Set up documentation build targets (work in progress).
 add_subdirectory(docs)
 
-include(CTest)
+
+# Process CMake configuration for Python and C++ tests.
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()
