@@ -1,20 +1,18 @@
-//
-// Created by Eric Irrgang on 11/3/17.
-//
-
 /*! \file
  * \brief Provide Python bindings and helper functions for setting up restraint potentials.
  *
  * There is currently a lot of boilerplate here that will be generalized and removed in a future version.
  * In the mean time, follow the example for EnsembleRestraint to create the proper helper functions
  * and instantiate the necessary templates.
+ *
+ * \author M. Eric Irrgang <ericirrgang@gmail.com>
  */
 
 #include "export_plugin.h"
 
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include <cassert>
 
+#include "gmxapi/exceptions.h"
 #include "gmxapi/md.h"
 #include "gmxapi/md/mdmodule.h"
 #include "gmxapi/gmxapi.h"
@@ -210,8 +208,8 @@ class HarmonicRestraintBuilder
             assert(parameter_dict.contains("R0"));
             assert(parameter_dict.contains("k"));
             py::list sites = parameter_dict["sites"];
-            site1Index_ = py::cast<unsigned long>(sites[0]);
-            site2Index_ = py::cast<unsigned long>(sites[1]);
+            site1Index_ = py::cast<int>(sites[0]);
+            site2Index_ = py::cast<int>(sites[1]);
             equilibriumPosition_ = py::cast<real>(parameter_dict["R0"]);
             springConstant_ = py::cast<real>(parameter_dict["k"]);
         };
@@ -254,8 +252,8 @@ class HarmonicRestraintBuilder
         };
 
         py::object subscriber_;
-        unsigned long site1Index_;
-        unsigned long site2Index_;
+        int site1Index_;
+        int site2Index_;
         real equilibriumPosition_;
         real springConstant_;
 };
@@ -282,7 +280,7 @@ class EnsembleRestraintBuilder
             py::list sites = parameter_dict["sites"];
             for (auto&& site : sites)
             {
-                siteIndices_.emplace_back(py::cast<unsigned long>(site));
+                siteIndices_.emplace_back(py::cast<int>(site));
             }
 
             auto nbins = py::cast<size_t>(parameter_dict["nbins"]);
@@ -333,8 +331,10 @@ class EnsembleRestraintBuilder
             // can just call with matrix arguments.
 
             // This can be replaced with a subscription and delayed until launch, if necessary.
-            assert(py::hasattr(context_,
-                               "ensemble_update"));
+            if (!py::hasattr(context_, "ensemble_update"))
+            {
+                throw gmxapi::ProtocolError("context does not have 'ensemble_update'.");
+            }
             // make a local copy of the Python object so we can capture it in the lambda
             auto update = context_.attr("ensemble_update");
             // Make a callable with standardizeable signature.
@@ -378,7 +378,7 @@ class EnsembleRestraintBuilder
 
         py::object subscriber_;
         py::object context_;
-        std::vector<unsigned long int> siteIndices_;
+        std::vector<int> siteIndices_;
 
         plugin::ensemble_input_param_type params_;
 
@@ -510,8 +510,8 @@ PYBIND11_MODULE(myplugin, m) {
     // Deprecated constructor directly taking restraint paramaters.
     harmonic.def(
         py::init(
-            [](unsigned long int site1,
-               unsigned long int site2,
+            [](int site1,
+               int site2,
                real R0,
                real k) {
                 return PyRestraint<plugin::HarmonicModule>::create(site1,

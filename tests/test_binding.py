@@ -35,24 +35,7 @@ def test_imports():
     import myplugin
     assert myplugin
     import gmx.core
-
-@pytest.mark.usefixtures("cleandir")
-def test_add_potential():
     import gmx
-    import myplugin
-    import pytest
-    # gmx.data provides a sample minimal tpr file
-    from gmx.data import tpr_filename
-    system = gmx.System._from_file(tpr_filename)
-    potential = myplugin.MyRestraint()
-    generic_object = object()
-    with pytest.raises(Exception) as exc_info:
-        potential.bind(generic_object)
-    assert str(exc_info).endswith("bind method requires a python capsule as input")
-
-    system.add_mdmodule(potential)
-    with gmx.context.DefaultContext(system.workflow) as session:
-        session.run()
 
 @pytest.mark.usefixtures("cleandir")
 def test_harmonic_potential():
@@ -102,16 +85,6 @@ SOL         4055
         from gmx.data import tpr_filename
     print("Testing plugin potential with input file {}".format(os.path.abspath(tpr_filename)))
 
-    # Low level API
-    system = gmx.System._from_file(tpr_filename)
-    potential = myplugin.HarmonicRestraint(1, 4, 2.0, 10000.0)
-    # potential.set_params(1, 4, 2.0, 10000.0)
-
-    system.add_mdmodule(potential)
-    with gmx.context.DefaultContext(system.workflow) as session:
-        session.run()
-
-    assert gmx.version.api_is_at_least(0,0,5)
     md = gmx.workflow.from_tpr(tpr_filename, append_output=False)
 
     context = gmx.context.ParallelArrayContext(md)

@@ -1,30 +1,35 @@
-# Download and unpack googletest at configure time
-configure_file(CMakeLists.gtest.in googletest-download/CMakeLists.txt)
-execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
-                RESULT_VARIABLE result
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
-if(result)
-    message(WARNING "CMake step for googletest failed: ${result}")
-#    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
-endif()
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
-                RESULT_VARIABLE result
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
-if(result)
-    message(WARNING "Build step for googletest failed: ${result}")
-#    message(FATAL_ERROR "Build step for googletest failed: ${result}")
-endif()
+# Activate the CTest module for this directory.
+enable_testing()
 
-# Prevent overriding the parent project's compiler/linker
-# settings on Windows
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
-# Add googletest directly to our build. This defines
-# the gtest and gtest_main targets.
-add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
-                 ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-                 EXCLUDE_FROM_ALL)
+if(DOWNLOAD_GOOGLETEST)
+    # Download and unpack googletest at configure time
+    configure_file(CMakeLists.gtest.in googletest-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+                    RESULT_VARIABLE result
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+    if(result)
+        message(WARNING "CMake step for googletest failed: ${result}")
+        #    message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+    endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+                    RESULT_VARIABLE result
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download)
+    if(result)
+        message(WARNING "Build step for googletest failed: ${result}")
+        #    message(FATAL_ERROR "Build step for googletest failed: ${result}")
+    endif()
 
+    # Add googletest directly to our build. This defines
+    # the gtest and gtest_main targets.
+    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+                     ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+                     EXCLUDE_FROM_ALL)
+
+else()
+    # use googletest git subtree from the current repository
+    # subdirectory already included in src/external/CMakeLists.txt
+endif() # DOWNLOAD_GOOGLETEST
 
 #
 # Set up our tests
@@ -42,7 +47,7 @@ add_executable(library-test test_binding.cpp)
 add_test(BasicPlugin library-test)
 
 target_include_directories(library-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(library-test libgromacs Gromacs::gmxapi gtest_main)
+target_link_libraries(library-test Gromacs::gmxapi gtest_main)
 
 set_tests_properties(BasicPlugin PROPERTIES
                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

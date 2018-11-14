@@ -8,7 +8,6 @@
 
 #include "gmxapi/exceptions.h"
 #include "gmxapi/md/mdsignals.h"
-#include "gmxapi/session/outputstream.h"
 
 namespace plugin
 {
@@ -21,9 +20,15 @@ void EnsembleResourceHandle::reduce(const Matrix<double>& send,
                                     Matrix<double>* receive) const
 {
     assert(reduce_);
-    // Should probably check that the function object has been initialized...
-    (*reduce_)(send,
+    if (*reduce_)
+    {
+        (*reduce_)(send,
                receive);
+    }
+    else
+    {
+        throw gmxapi::ProtocolError("'reduce' functor was not initialized before use.");
+    }
 }
 
 void EnsembleResourceHandle::stop()
@@ -35,11 +40,11 @@ void EnsembleResourceHandle::stop()
     // Should probably check that the function object has been initialized...
     signaller();
 }
-
-gmxapi::session::OutputStream* EnsembleResourceHandle::ostream()
-{
-    return ostream_.get();
-}
+//
+//gmxapi::session::OutputStream* EnsembleResourceHandle::ostream()
+//{
+//    return ostream_.get();
+//}
 
 EnsembleResourceHandle EnsembleResources::getHandle() const
 {
@@ -68,11 +73,11 @@ void EnsembleResources::setSession(gmxapi::SessionResources* session)
     }
     session_ = session;
 }
-
-void EnsembleResources::setOutputStream(std::unique_ptr<gmxapi::session::OutputStream> ostream)
-{
-    ostream_ = std::move(ostream);
-}
+//
+//void EnsembleResources::setOutputStream(std::unique_ptr<gmxapi::session::OutputStream> ostream)
+//{
+//    ostream_ = std::move(ostream);
+//}
 
 } // end namespace myplugin
 

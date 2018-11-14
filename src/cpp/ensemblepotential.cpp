@@ -14,6 +14,7 @@
 
 #include "ensemblepotential.h"
 
+#include <cassert>
 #include <cmath>
 
 #include <vector>
@@ -166,7 +167,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
                                 double t,
                                 const EnsembleResources& resources)
 {
-    auto rdiff = v - v0;
+    const auto rdiff = v - v0;
     const auto Rsquared = dot(rdiff,
                               rdiff);
     const auto R = sqrt(Rsquared);
@@ -273,7 +274,7 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
 {
     // This is not the vector from v to v0. It is the position of a site
     // at v, relative to the origin v0. This is a potentially confusing convention...
-    auto rdiff = v - v0;
+    const auto rdiff = v - v0;
     const auto Rsquared = dot(rdiff,
                               rdiff);
     const auto R = sqrt(Rsquared);
@@ -315,7 +316,8 @@ gmx::PotentialPointData EnsembleHarmonic::calculate(gmx::Vector v,
             f = -k_ * f_scal;
         }
 
-        output.force = f / norm(rdiff) * rdiff;
+        const auto magnitude = f / norm(rdiff);
+        output.force = rdiff * static_cast<decltype(rdiff[0])>(magnitude);
     }
     return output;
 }

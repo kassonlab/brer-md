@@ -1,8 +1,11 @@
 cmake_minimum_required(VERSION 3.4.3)
-project(sample_restraint CXX)
+# If you are using this repository as a template, you should probably change the
+# project name and adopt your own versioning scheme.
+project(sample_restraint VERSION 0.0.7)
 
-# This project requires GROMACS to build. It should be sufficient to source the GMXRC, but you can also set the
-# GROMACS_DIR environment variable to help CMake find the GROMACS installation.
+# This project requires a GROMACS supporting gmxapi 0.0.7 or higher. It should
+# be sufficient to source the GMXRC, but you can also set the GROMACS_DIR or
+# gmxapi_DIR environment variable to help CMake find the GROMACS installation.
 
 # Note that the code will need to be built separately for different versions of Python and for substantially different
 # versions of GROMACS. If building from the command line, you can specify a Python executable with the PYTHON_EXECUTABLE
@@ -13,13 +16,11 @@ set(CMAKE_CXX_STANDARD 11)
 # CMake modules are in a subdirectory to keep this file cleaner
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-option(BUILD_TESTING "set ON to build testing framework" ON)
-
 # Assuming GROMACS is in our path or that we have set either the gmxapi_DIR or GROMACS_DIR environment variables,
 # this will find the CMake configuration for the GROMACS libraries we need and define the CMake library objects
 # Gromacs::gmxapi
 find_package(gmxapi
-             0.0.6 REQUIRED CONFIG
+             0.0.7 REQUIRED CONFIG
              PATHS "$ENV{GROMACS_DIR}"
              )
 
@@ -123,10 +124,27 @@ set(GMXPLUGIN_INSTALL_PATH ${GMXPLUGIN_DEFAULT_SITE_PACKAGES} CACHE PATH
 message(STATUS "Python module will be installed to GMXPLUGIN_INSTALL_PATH cache value ${GMXPLUGIN_INSTALL_PATH}")
 
 
+# Set up testing options.
+include(CTest)
+
+# Either use the git subtree in tests/googletest or download a fresh copy of
+# googletest master branch.
+option(DOWNLOAD_GOOGLETEST OFF "Download the latest master branch of googletest.")
+mark_as_advanced(DOWNLOAD_GOOGLETEST)
+
+# Prevent overriding the parent project's compiler/linker
+# settings on Windows
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+
 # Now move on to building the custom code.
 add_subdirectory(src)
 
+# Set up documentation build targets (work in progress).
+add_subdirectory(docs)
+
+
+# Process CMake configuration for Python and C++ tests.
 if(BUILD_TESTING)
-    enable_testing()
     add_subdirectory(tests)
 endif()

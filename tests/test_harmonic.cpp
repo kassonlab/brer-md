@@ -22,11 +22,9 @@
 
 namespace {
 
-using gmx::detail::vec3;
-
-std::ostream& operator<<(std::ostream& stream, const gmx::Vector& vec)
+std::ostream& operator<<(std::ostream& stream, const ::gmx::Vector& vec)
 {
-    stream << "(" << vec.x << "," << vec.y << "," << vec.z << ")";
+    stream << "(" << vec[0] << "," << vec[1] << "," << vec[2] << ")";
     return stream;
 }
 
@@ -42,52 +40,63 @@ TEST(HarmonicPotentialPlugin, Build)
 
 TEST(HarmonicPotentialPlugin, ForceCalc)
 {
-    constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);
+    const ::gmx::Vector zerovec = {0, 0, 0};
     // define some unit vectors
-    const vec3<real> e1{real(1), real(0), real(0)};
-    const vec3<real> e2{real(0), real(1), real(0)};
-    const vec3<real> e3{real(0), real(0), real(1)};
+    const ::gmx::Vector e1{real(1), real(0), real(0)};
+    const ::gmx::Vector e2{real(0), real(1), real(0)};
+    const ::gmx::Vector e3{real(0), real(0), real(1)};
 
     const real R0{1.0};
     const real k{1.0};
 
     // store temporary values long enough for inspection
-    vec3<real> force{};
+    ::gmx::Vector force{};
 
     plugin::Harmonic puller{R0, k};
 
     // When input vectors are equal, output vector is meaningless and magnitude is set to zero.
-    auto calculateForce = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.calculate(a,b,0).force; };
-    ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1)));
+    auto calculateForce = [&puller](const ::gmx::Vector& a, const ::gmx::Vector& b) { return puller.calculate(a,b,0).force; };
+    EXPECT_FLOAT_EQ(0., norm(calculateForce(e1, e1)));
 
     // Default equilibrium distance is 1.0, so force should be zero when norm(r12) == 1.0.
     force = calculateForce(zerovec, e1);
-    ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    EXPECT_FLOAT_EQ(0., norm(zerovec - force)) << " where force is (" << force[0] << ", " << force[1] << ", " <<
+    force[2] <<
+    ")\n";
 
     force = calculateForce(e1, zerovec);
-    ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    EXPECT_FLOAT_EQ(0., norm(zerovec - force)) << " where force is (" << force[0] << ", " << force[1] << ", " <<
+    force[2] << ")"
+                                                                                                                   "\n";
 
-    force = calculateForce(e1, 2*e1);
-    ASSERT_EQ(zerovec, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    force = calculateForce(e1,
+                           static_cast<real>(2)*e1);
+    EXPECT_FLOAT_EQ(0., norm(zerovec - force)) << " where force is (" << force[0] << ", " << force[1] << ", " <<
+    force[2] << ")\n";
 
     // -kx should give vector (1, 0, 0) when vector r1 == r2 - (2, 0, 0)
-    force = calculateForce(-2*e1, zerovec);
-    ASSERT_EQ(real(1), force.x);
-    force = calculateForce(-2*e1, zerovec);
-    ASSERT_EQ(e1, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    force = calculateForce(static_cast<real>(-2)*e1, zerovec);
+    EXPECT_FLOAT_EQ(1., force[0]);
+    force = calculateForce(static_cast<real>(-2)*e1, zerovec);
+    EXPECT_FLOAT_EQ(0., norm(e1 - force)) << " where force is (" << force[0] << ", " << force[1] << ", " << force[2] <<
+    ")\n";
 
     // -kx should give vector (-2, 0, 0) when vector r1 == r2 + (2, 0, 0)
-    force = calculateForce(2*e1, -e1);
-    ASSERT_EQ(-2*e1, force) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    force = calculateForce(static_cast<real>(2)*e1,
+                           static_cast<real>(-1)*e1);
+    EXPECT_FLOAT_EQ(0., norm(static_cast<real>(-2)*e1 - force)) << " where force is (" << force[0] << ", " << force[1]
+    <<
+    ", " <<
+    force[2] << ")\n";
 }
 
 TEST(HarmonicPotentialPlugin, EnergyCalc)
 {
-    constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);
+    const ::gmx::Vector zerovec = {0, 0, 0};
     // define some unit vectors
-    const vec3<real> e1{real(1), real(0), real(0)};
-    const vec3<real> e2{real(0), real(1), real(0)};
-    const vec3<real> e3{real(0), real(0), real(1)};
+    const ::gmx::Vector e1{real(1), real(0), real(0)};
+    const ::gmx::Vector e2{real(0), real(1), real(0)};
+    const ::gmx::Vector e3{real(0), real(0), real(1)};
 
     const real R0{1.0};
     const real k{1.0};
@@ -98,26 +107,28 @@ TEST(HarmonicPotentialPlugin, EnergyCalc)
     plugin::Harmonic puller{R0, k};
 
     // When input vectors are equal, potential energy is still calculable.
-    auto calculateEnergy = [&puller](const vec3<real>& a, const vec3<real>& b) { return puller.calculate(a,b,0).energy; };
-    ASSERT_EQ(real(0.5*k*R0*R0), calculateEnergy(e1, e1));
+    auto calculateEnergy = [&puller](const ::gmx::Vector& a, const ::gmx::Vector& b) { return puller.calculate(a,b,0).energy; };
+    EXPECT_FLOAT_EQ(real(0.5*k*R0*R0), calculateEnergy(e1, e1));
 
     // Default equilibrium distance is 1.0, so energy should be zero when norm(r12) == 1.0.
     energy = calculateEnergy(zerovec, e1);
-    ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
+    EXPECT_FLOAT_EQ(0, energy) << " where energy is " << energy << "\n";
 
     energy = calculateEnergy(e1, zerovec);
-    ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
+    EXPECT_FLOAT_EQ(0, energy) << " where energy is " << energy << "\n";
 
-    energy = calculateEnergy(e1, 2*e1);
-    ASSERT_EQ(0, energy) << " where energy is " << energy << "\n";
+    energy = calculateEnergy(e1,
+                             static_cast<real>(2)*e1);
+    EXPECT_FLOAT_EQ(0, energy) << " where energy is " << energy << "\n";
 
     // -kx should give vector (1, 0, 0) when vector r1 == r2 - (2, 0, 0)
-    energy = calculateEnergy(-2*e1, zerovec);
-    ASSERT_EQ(real(0.5*k*R0*R0), energy) << " where energy is " << energy << "\n";
+    energy = calculateEnergy(static_cast<real>(-2)*e1, zerovec);
+    EXPECT_FLOAT_EQ(real(0.5*k*R0*R0), energy) << " where energy is " << energy << "\n";
 
     // -kx should give vector (-2, 0, 0) when vector r1 == r2 + (2, 0, 0)
-    energy = calculateEnergy(2*e1, -e1);
-    ASSERT_EQ(real(0.5*k*4*R0*R0), energy) << " where energy is " << energy << "\n";
+    energy = calculateEnergy(static_cast<real>(2)*e1,
+                             static_cast<real>(-1)*e1);
+    EXPECT_FLOAT_EQ(real(0.5*k*4*R0*R0), energy) << " where energy is " << energy << "\n";
 }
 
 // This should be part of a validation test, not a unit test.

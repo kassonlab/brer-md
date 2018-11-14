@@ -14,29 +14,29 @@
 
 #include <gtest/gtest.h>
 
+using ::gmx::Vector;
+
 namespace {
 
-using gmx::detail::vec3;
-
-std::ostream& operator<<(std::ostream& stream, const gmx::Vector& vec)
+std::ostream& operator<<(std::ostream& stream, const Vector& vec)
 {
-    stream << "(" << vec.x << "," << vec.y << "," << vec.z << ")";
+    stream << "(" << vec[0] << "," << vec[1] << "," << vec[2] << ")";
     return stream;
 }
 
 TEST(EnsembleHistogramPotentialPlugin, ForceCalc)
 {
-    constexpr vec3<real> zerovec = gmx::detail::make_vec3<real>(0, 0, 0);
+    const Vector zerovec = {0, 0, 0};
     // define some unit vectors
-    const vec3<real> e1{real(1), real(0), real(0)};
-    const vec3<real> e2{real(0), real(1), real(0)};
-    const vec3<real> e3{real(0), real(0), real(1)};
+    const Vector e1{real(1), real(0), real(0)};
+    const Vector e2{real(0), real(1), real(0)};
+    const Vector e3{real(0), real(0), real(1)};
 
     const real R0{1.0};
     const real k{1.0};
 
     // store temporary values long enough for inspection
-    vec3<real> force{};
+    Vector force{};
 
     // Get a dummy EnsembleResources. We aren't testing that here.
     auto dummyFunc = [](const plugin::Matrix<double>&, plugin::Matrix<double>*){
@@ -61,27 +61,27 @@ TEST(EnsembleHistogramPotentialPlugin, ForceCalc)
                                     };
 
     auto calculateForce =
-        [&restraint](const vec3<real>& a, const vec3<real>& b, double t)
+        [&restraint](const Vector& a, const Vector& b, double t)
         {
             return restraint.calculate(a,b,t).force;
         };
 
     // With the initial histogram (all zeros) the force should be zero no matter where the particles are.
-    ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1, 0.)));
-    ASSERT_EQ(real(0.0), norm(calculateForce(e1, e2, 0.)));
-    ASSERT_EQ(real(0.0), norm(calculateForce(e1, -e1, 0.)));
+    ASSERT_EQ(static_cast<real>(0.0), norm(calculateForce(e1, e1, 0.)));
+    ASSERT_EQ(static_cast<real>(0.0), norm(calculateForce(e1, e2, 0.)));
+    ASSERT_EQ(static_cast<real>(0.0), norm(calculateForce(e1, static_cast<real>(-1)*e1, 0.)));
 
     // Establish a history of the atoms being 2.0 apart.
-    restraint.callback(e1, 3*e1, 0.001, *resource);
+    restraint.callback(e1, static_cast<real>(3)*e1, 0.001, *resource);
 
     // Atoms should now be driven towards each other where the difference in experimental and historic distributions is greater.
-    force = calculateForce(e1, 3*e1, 0.001);
-    ASSERT_GT(force.x, 0.) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
-    force = calculateForce(3*e1, e1, 0.001);
-    ASSERT_LT(force.x, 0.) << " where force is (" << force.x << ", " << force.y << ", " << force.z << ")\n";
+    force = calculateForce(e1, static_cast<real>(3)*e1, 0.001);
+    ASSERT_GT(force[0], 0.) << " where force is (" << force[0] << ", " << force[1] << ", " << force[2] << ")\n";
+    force = calculateForce(static_cast<real>(3)*e1, e1, 0.001);
+    ASSERT_LT(force[0], 0.) << " where force is (" << force[0] << ", " << force[1] << ", " << force[2] << ")\n";
 
     // When input vectors are equal, output vector is meaningless and magnitude is set to zero.
-    ASSERT_EQ(real(0.0), norm(calculateForce(e1, e1, 0.001)));
+    ASSERT_EQ(static_cast<real>(0.0), norm(calculateForce(e1, e1, 0.001)));
 
 }
 
