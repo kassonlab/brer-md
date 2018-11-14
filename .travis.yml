@@ -73,8 +73,8 @@ before_script:
   - pip install pytest numpy networkx sphinx sphinx_rtd_theme
 
 script:
-#  - source $HOME/install/gromacs_2019/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
-#  - ./ci_scripts/sample_restraint.sh
+  - source $HOME/install/gromacs_2019/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
+  - ./ci_scripts/sample_restraint.sh
   - |
     if [ "${TRAVIS_BRANCH}" != master ] ; then
       source $HOME/install/gromacs_devel/bin/GMXRC
