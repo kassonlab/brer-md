@@ -25,8 +25,9 @@ FROM gmxapi/gmxapi
 RUN rm -rf /home/jovyan/sample_restraint /home/jovyan/plugin-build
 
 # This is a bit risky and troublesome, but I want to test the current repo state without committing.
-COPY --chown=1000 CMakeLists.txt README.rst /home/jovyan/sample_restraint/
+COPY --chown=1000 CMakeLists.txt README.md /home/jovyan/sample_restraint/
 COPY --chown=1000 cmake/ /home/jovyan/sample_restraint/cmake/
+COPY --chown=1000 docs/ /home/jovyan/sample_restraint/docs/
 COPY --chown=1000 examples/ /home/jovyan/sample_restraint/examples/
 COPY --chown=1000 src/ /home/jovyan/sample_restraint/src/
 COPY --chown=1000 tests/ /home/jovyan/sample_restraint/tests/
