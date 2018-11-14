@@ -148,11 +148,14 @@ class EnsembleResources
          * This constructor is called by the framework during Session launch to provide the plugin
          * potential with external resources.
          *
+         * \note If getHandle() is going to be used, setSession() must be called first.
+         *
          * \param reduce ownership of a function object providing ensemble averaging of a 2D matrix.
          */
         explicit EnsembleResources(std::function<void(const Matrix<double>&,
                                                       Matrix<double>*)>&& reduce) :
-            reduce_(reduce)
+            reduce_(reduce),
+            session_(nullptr)
         {};
 
         /*!
@@ -161,6 +164,10 @@ class EnsembleResources
          * Objects should not keep resource handles open for longer than a single block of code.
          * calculate() and callback() functions get a handle to the resources for the current time step
          * by calling getHandle().
+         *
+         * \note setSession() must be called before this function can be used.
+         * This clumsy protocol requires other infrastructure before it can be
+         * cleaned up for gmxapi 0.1
          *
          * \return resource handle
          *
