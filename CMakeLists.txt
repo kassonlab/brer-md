@@ -12,6 +12,7 @@ project(sample_restraint VERSION 0.0.7)
 # variable. For instance, to make sure you are building for your default Python, cmake -DPYTHON_EXECUTABLE=`which python`.
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 # CMake modules are in a subdirectory to keep this file cleaner
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
