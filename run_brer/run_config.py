@@ -194,10 +194,18 @@ class RunConfig:
         # phase of the last round
         self.__move_cpt()
 
+        # Set up a dictionary to go from plugin name -> restraint name
+        sites_to_name = {}
+
         # Build the gmxapi session.
         md = gmx.workflow.from_tpr(self.tpr, append_output=False)
         self.build_plugins(TrainingPluginConfig())
         for plugin in self.__plugins:
+            plugin_name = plugin.name
+            for name in self.__names:
+                run_data_sites = "{}".format(self.run_data.get('sites', name=name))
+                if run_data_sites == plugin_name:
+                    sites_to_name[plugin_name] = name
             md.add_dependency(plugin)
         context = gmx.context.ParallelArrayContext(
             md, workdir_list=[os.getcwd()])
@@ -209,7 +217,8 @@ class RunConfig:
         # In the future runs (convergence, production) we need the ABSOLUTE VALUE of alpha.
         for i in range(len(self.__names)):
             self.run_data.set(
-                name=self.__names[i], alpha=abs(context.potentials[i].alpha))
+                name=sites_to_name[context.potentials[i].name],
+                alpha=abs(context.potentials[i].alpha))
 
     def __converge(self):
 
