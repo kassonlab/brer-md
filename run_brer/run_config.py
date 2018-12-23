@@ -219,6 +219,9 @@ class RunConfig:
             self.run_data.set(
                 name=sites_to_name[context.potentials[i].name],
                 alpha=abs(context.potentials[i].alpha))
+            self.run_data.set(
+                name=sites_to_name[context.potentials[i].name],
+                target=context.potentials[i].target)
 
     def __converge(self):
 
