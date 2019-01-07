@@ -149,7 +149,7 @@ class RunConfig:
                 format(phase))
 
         else:
-            member_dir = os.path.dirname(os.path.dirname(os.getcwd()))
+            member_dir = '{}/mem_{}'.format(self.ens_dir, ens_num)
             prev_iter = current_iter - 1
 
             if phase in ['training', 'convergence']:
@@ -163,7 +163,6 @@ class RunConfig:
                     pass  # Do nothing
 
             else:
-                member_dir = os.path.dirname(os.path.dirname(os.getcwd()))  # Go up two directories
                 # Get the convergence cpt from current iteration
                 gmx_cpt = '{}/{}/convergence/state.cpt'.format(
                         member_dir, current_iter)
