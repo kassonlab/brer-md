@@ -214,13 +214,20 @@ class RunConfig:
             session.run()
 
         # In the future runs (convergence, production) we need the ABSOLUTE VALUE of alpha.
+        self._logger.info("=====TRAINING INFO======\n")
+
         for i in range(len(self.__names)):
-            self.run_data.set(
-                name=sites_to_name[context.potentials[i].name],
-                alpha=abs(context.potentials[i].alpha))
-            self.run_data.set(
-                name=sites_to_name[context.potentials[i].name],
-                target=context.potentials[i].target)
+            current_name = sites_to_name[context.potentials[i].name]
+            current_alpha = context.potentials[i].alpha
+            current_target = context.potentials[i].target
+
+            self.run_data.set(name=current_name, alpha=current_alpha)
+            self.run_data.set(name=current_name, target=current_target)
+            self._logger.info("Plugin {}: alpha = {}, target = {}".format(
+                current_name,
+                current_alpha,
+                current_target)
+            )
 
     def __converge(self):
 
@@ -238,6 +245,16 @@ class RunConfig:
         # Get the absolute time (in ps) at which the convergence run finished.
         # This value will be needed if a production run needs to be restarted.
         self.run_data.set(start_time=context.potentials[0].time)
+
+        self._logger.info("=====CONVERGENCE INFO======\n")
+        for name in self.__names:
+            current_alpha = self.run_data.get('alpha', name=name)
+            current_target = self.run_data.get('target', name=name)
+            self._logger.info("Plugin {}: alpha = {}, target = {}".format(
+                name,
+                current_alpha,
+                current_target)
+            )
 
     def __production(self):
 
@@ -260,6 +277,16 @@ class RunConfig:
             md, workdir_list=[os.getcwd()])
         with context as session:
             session.run()
+
+        self._logger.info("=====PRODUCTION INFO======\n")
+        for name in self.__names:
+            current_alpha = self.run_data.get('alpha', name=name)
+            current_target = self.run_data.get('target', name=name)
+            self._logger.info("Plugin {}: alpha = {}, target = {}".format(
+                name,
+                current_alpha,
+                current_target)
+            )
 
     def run(self):
         """ """
