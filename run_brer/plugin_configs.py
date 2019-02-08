@@ -112,7 +112,7 @@ class ProductionPluginConfig(PluginConfig):
     """ """
     def __init__(self):
         super(PluginConfig, self).__init__(name='production')
-        self.set_requirements(['sites', 'target', 'alpha'])
+        self.set_requirements(['sites', 'target', 'alpha', 'samplePeriod', 'logging_filename'])
 
     def build_plugin(self):
         """ """
