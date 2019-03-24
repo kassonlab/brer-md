@@ -62,7 +62,8 @@ install:
   - export CCACHE_DIR=$HOME/.ccache_gromacs
   - ccache -s
   - ./ci_scripts/install_gromacs_2019.sh
-  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
+# Need to update infrastructure for new CMake version requirements to build against devel.
+#  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
 
 before_script:
   - export CCACHE_DIR=$HOME/.ccache_py
@@ -75,9 +76,10 @@ before_script:
 script:
   - source $HOME/install/gromacs_2019/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
   - ./ci_scripts/sample_restraint.sh
-  - |
-    if [ "${TRAVIS_BRANCH}" != master ] ; then
-      source $HOME/install/gromacs_devel/bin/GMXRC
-      ./ci_scripts/pygmx_devel.sh
-      ./ci_scripts/sample_restraint.sh
-    fi
+# Need to update infrastructure for new CMake version requirements to build against devel.
+#  - |
+#    if [ "${TRAVIS_BRANCH}" != master ] ; then
+#      source $HOME/install/gromacs_devel/bin/GMXRC
+#      ./ci_scripts/pygmx_devel.sh
+#      ./ci_scripts/sample_restraint.sh
+#    fi
