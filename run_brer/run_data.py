@@ -2,7 +2,7 @@
 Class that handles the simulation data for BRER simulations
 <doi!>
 """
-from run_brer.metadata import MetaData, MultiMetaData
+from run_brer.metadata import MetaData
 from run_brer.pair_data import PairData
 import json
 
