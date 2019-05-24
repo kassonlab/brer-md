@@ -18,8 +18,6 @@
 #include "gromacs/restraint/restraintpotential.h"
 #include "gromacs/utility/real.h"
 
-#include "make_unique.h"
-
 namespace plugin
 {
 

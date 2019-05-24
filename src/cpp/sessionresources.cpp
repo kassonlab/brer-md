@@ -6,6 +6,8 @@
 
 #include <cassert>
 
+#include <memory>
+
 #include "gmxapi/exceptions.h"
 #include "gmxapi/md/mdsignals.h"
 

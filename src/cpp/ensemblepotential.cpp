@@ -17,6 +17,7 @@
 #include <cassert>
 #include <cmath>
 
+#include <memory>
 #include <vector>
 
 #include "gmxapi/context.h"
@@ -189,7 +190,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
     if (t >= nextWindowUpdateTime_)
     {
         // Get next histogram array, recycling old one if available.
-        std::unique_ptr<Matrix<double>> new_window = gmx::compat::make_unique<Matrix<double>>(1,
+        std::unique_ptr<Matrix<double>> new_window = std::make_unique<Matrix<double>>(1,
                                                                                               nBins_);
         std::unique_ptr<Matrix<double>> temp_window;
         if (windows_.size() == nWindows_)
@@ -201,7 +202,7 @@ void EnsembleHarmonic::callback(gmx::Vector v,
         }
         else
         {
-            auto new_temp_window = gmx::compat::make_unique<Matrix<double>>(1,
+            auto new_temp_window = std::make_unique<Matrix<double>>(1,
                                                                             nBins_);
             assert(new_temp_window);
             temp_window.swap(new_temp_window);
@@ -334,7 +335,7 @@ makeEnsembleParams(size_t nbins,
                    double k,
                    double sigma)
 {
-    using gmx::compat::make_unique;
+    using std::make_unique;
     auto params = make_unique<ensemble_input_param_type>();
     params->nBins = nbins;
     params->binWidth = binWidth;

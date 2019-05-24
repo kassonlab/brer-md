@@ -12,6 +12,8 @@
 
 #include <cassert>
 
+#include <memory>
+
 #include "gmxapi/exceptions.h"
 #include "gmxapi/md.h"
 #include "gmxapi/md/mdmodule.h"
@@ -19,7 +21,6 @@
 
 #include "harmonicpotential.h"
 #include "ensemblepotential.h"
-#include "make_unique.h"
 
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
@@ -405,7 +406,7 @@ std::unique_ptr<HarmonicRestraintBuilder> createHarmonicBuilder(const py::object
  */
 std::unique_ptr<EnsembleRestraintBuilder> createEnsembleBuilder(const py::object element)
 {
-    using gmx::compat::make_unique;
+    using std::make_unique;
     auto builder = make_unique<EnsembleRestraintBuilder>(element);
     return builder;
 }
