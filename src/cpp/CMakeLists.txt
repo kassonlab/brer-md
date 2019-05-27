@@ -21,3 +21,24 @@ set_target_properties(linearpotential PROPERTIES SKIP_BUILD_RPATH FALSE)
 set_target_properties(linearpotential PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
 
 target_link_libraries(linearpotential PRIVATE Gromacs::gmxapi)
+
+# Create a shared object library for a simple restraint.
+add_library(linearstoppotential STATIC
+            linearstoppotential.h
+            linearstoppotential.cpp
+            sessionresources.cpp)
+set_target_properties(linearstoppotential PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+target_include_directories(linearstoppotential PUBLIC
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                           $<INSTALL_INTERFACE:include>
+                           )
+# RPATH management
+# don't skip the full RPATH for the build tree
+set_target_properties(linearstoppotential PROPERTIES SKIP_BUILD_RPATH FALSE)
+
+# (but later on when installing)
+# If building with setuptools, CMake will not be performing the install
+set_target_properties(linearstoppotential PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+
+target_link_libraries(linearstoppotential PRIVATE Gromacs::gmxapi)
