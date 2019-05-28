@@ -13,6 +13,7 @@
 #include "gmxapi/md.h"
 #include "gmxapi/md/mdmodule.h"
 
+#include "brerpotential.h"
 #include "linearpotential.h"
 #include "linearstoppotential.h"
 #include "make_unique.h"
@@ -131,6 +132,12 @@ PyRestraint<plugin::RestraintModule<plugin::LinearRestraint>>::getModule() {
 template <>
 std::shared_ptr<gmxapi::MDModule>
 PyRestraint<plugin::RestraintModule<plugin::LinearStopRestraint>>::getModule() {
+  return shared_from_this();
+}
+
+template <>
+std::shared_ptr<gmxapi::MDModule>
+PyRestraint<plugin::RestraintModule<plugin::BRERRestraint>>::getModule() {
   return shared_from_this();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -362,6 +369,108 @@ createLinearStopBuilder(const py::object element) {
   return builder;
 }
 
+// Start BRER Restraint
+class BRERRestraintBuilder {
+public:
+  explicit BRERRestraintBuilder(py::object element) {
+    name_ = py::cast<std::string>(element.attr("name"));
+    assert(!name_.empty());
+    // Params attribute should be a Python list
+    auto parameter_dict = py::cast<py::dict>(element.attr("params"));
+
+    assert(parameter_dict.contains("sites"));
+    assert(parameter_dict.contains("target"));
+    assert(parameter_dict.contains("A"));
+    assert(parameter_dict.contains("tau"));
+    assert(parameter_dict.contains("num_samples"));
+    assert(parameter_dict.contains("tolerance"));
+    assert(parameter_dict.contains("logging_filename"));
+
+    py::list sites = parameter_dict["sites"];
+    for (auto &&site : sites) {
+      siteIndices_.emplace_back(py::cast<int>(site));
+    }
+
+    auto A = py::cast<double>(parameter_dict["A"]);
+    auto tau = py::cast<double>(parameter_dict["tau"]);
+    auto nSamples = py::cast<double>(parameter_dict["num_samples"]);
+    auto tolerance = py::cast<double>(parameter_dict["tolerance"]);
+    auto target = py::cast<double>(parameter_dict["target"]);
+    auto logging_filename =
+        py::cast<std::string>(parameter_dict["logging_filename"]);
+
+    auto params = plugin::makeBRERParams(A, tau, tolerance, target, nSamples,
+                                         logging_filename);
+    params_ = std::move(*params);
+
+    assert(py::hasattr(element, "workspec"));
+    auto workspec = element.attr("workspec");
+    assert(py::hasattr(workspec, "_context"));
+    context_ = workspec.attr("_context");
+  }
+
+  void build(py::object graph) {
+    // Temporarily subvert things to get quick-and-dirty solution for testing.
+    // Need to capture Python communicator and pybind syntax in closure so
+    // EnsembleResources can just call with matrix arguments.
+
+    // This can be replaced with a subscription and delayed until launch, if
+    // necessary.
+    if (!py::hasattr(context_, "ensemble_update")) {
+      throw gmxapi::ProtocolError("context does not have 'ensemble_update'.");
+    }
+    // make a local copy of the Python object so we can capture it in the lambda
+    auto update = context_.attr("ensemble_update");
+    // Make a callable with standardizeable signature.
+    const std::string name{name_};
+    auto functor = [update, name](const plugin::Matrix<double> &send,
+                                  plugin::Matrix<double> *receive) {
+      update(send, receive, py::str(name));
+    };
+
+    // To use a reduce function on the Python side, we need to provide it with a
+    // Python buffer-like object, so we will create one here. Note: it looks
+    // like the SharedData element will be useful after all.
+    auto resources =
+        std::make_shared<plugin::EnsembleResources>(std::move(functor));
+
+    auto potential =
+        PyRestraint<plugin::RestraintModule<plugin::BRERRestraint>>::create(
+            name_, siteIndices_, params_, resources);
+
+    auto subscriber = subscriber_;
+    py::list potentialList = subscriber.attr("potential");
+    potentialList.append(potential);
+  };
+  void addSubscriber(py::object subscriber) {
+    assert(py::hasattr(subscriber, "potential"));
+    subscriber_ = subscriber;
+  };
+
+  py::object subscriber_;
+  py::object context_;
+  std::vector<int> siteIndices_;
+
+  plugin::BRER_input_param_type params_;
+
+  std::string name_;
+};
+
+/*!
+ * \brief Factory function to create a new builder for use during Session
+ * launch.
+ *
+ * \param element WorkElement provided through Context
+ * \return ownership of new builder object
+ */
+
+std::unique_ptr<BRERRestraintBuilder>
+createBRERBuilder(const py::object element) {
+  using gmx::compat::make_unique;
+  auto builder = make_unique<BRERRestraintBuilder>(element);
+  return builder;
+}
+
 PYBIND11_MODULE(myplugin, m) {
   m.doc() = "sample plugin"; // This will be the text of the module's docstring.
 
@@ -451,5 +560,41 @@ PYBIND11_MODULE(myplugin, m) {
   });
   //
   // End LinearStopRestraint
+  ///////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////
+  // Begin BRERRestraint
+  //
+  // Define Builder to be returned from brer_restraint Python function
+  // defined further down.
+  pybind11::class_<BRERRestraintBuilder> brerBuilder(m, "BRERBuilder");
+  brerBuilder.def("add_subscriber", &BRERRestraintBuilder::addSubscriber);
+  brerBuilder.def("build", &BRERRestraintBuilder::build);
+
+  // Get more concise name for the template instantiation...
+  using PyBRER = PyRestraint<plugin::RestraintModule<plugin::BRERRestraint>>;
+
+  // Export a Python class for our parameters struct
+  py::class_<plugin::BRERRestraint::input_param_type> brerParams(
+      m, "BRERRestraintParams");
+
+  // API object to build.
+  py::class_<PyBRER, std::shared_ptr<PyBRER>> brer(m, "BRERRestraint");
+  // EnsembleRestraint can only be created via builder for now.
+  brer.def("bind", &PyBRER::bind, "Implement binding protocol");
+  brer.def("make_brer_params", &plugin::makeBRERParams);
+  brer.def_property_readonly("name", &PyBRER::name, "Get the name");
+  brer.def_property_readonly("alpha", [](PyBRER *potential) {
+    return static_cast<plugin::BRERRestraint *>(potential->getRestraint().get())
+        ->getAlphaMax();
+  });
+  brer.def_property_readonly("target", [](PyBRER *potential) {
+    return static_cast<plugin::BRERRestraint *>(potential->getRestraint().get())
+        ->getTarget();
+  });
+
+  m.def("brer_restraint",
+        [](const py::object element) { return createBRERBuilder(element); });
+  //
+  // End BRERRestraint
   ///////////////////////////////////////////////////////////////////////////
 }
