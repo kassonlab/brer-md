@@ -11,6 +11,7 @@ import json
 
 class PairData(MetaData):
     """ """
+
     def __init__(self, name):
         super().__init__(name=name)
         self.set_requirements(['distribution', 'bins', 'sites'])
@@ -18,6 +19,7 @@ class PairData(MetaData):
 
 class MultiPair(MultiMetaData):
     """ """
+
     def __init__(self):
         super().__init__()
 
@@ -63,4 +65,3 @@ class MultiPair(MultiMetaData):
             answer[name] = np.random.choice(bins, p=normalized)
 
         return answer
-

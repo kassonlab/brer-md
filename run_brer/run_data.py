@@ -18,16 +18,18 @@ class GeneralParams(MetaData):
     -------
 
     """
+
     def __init__(self):
         super().__init__('general')
         self.set_requirements([
             'ensemble_num', 'iteration', 'phase', 'start_time', 'A', 'tau',
-            'tolerance', 'nSamples', 'samplePeriod', 'production_time'
+            'tolerance', 'num_samples', 'sample_period', 'production_time'
         ])
 
 
 class PairParams(MetaData):
     """Stores the parameters that are unique to a specific restraint."""
+
     def __init__(self, name):
         super().__init__(name)
         self.set_requirements(['sites', 'logging_filename', 'alpha', 'target'])
@@ -35,6 +37,7 @@ class PairParams(MetaData):
 
 class RunData:
     """Stores (and manipulates, to a lesser extent) all the metadata for a BRER run."""
+
     def __init__(self):
         """
         The full set of metadata for a single BRER run include both the general parameters
@@ -49,8 +52,8 @@ class RunData:
             'A': 50,
             'tau': 50,
             'tolerance': 0.25,
-            'nSamples': 50,
-            'samplePeriod': 100,
+            'num_samples': 50,
+            'sample_period': 100,
             'production_time': 10000  # 10 ns
         }
         self.general_params.set_from_dictionary(self.__defaults_general)
@@ -67,7 +70,7 @@ class RunData:
         kwargs :
             parameters and their values.
         **kwargs :
-            
+
 
         Returns
         -------
@@ -128,7 +131,7 @@ class RunData:
             ├── A
             ├── tau
             ├── ...
-        
+
         :return: heirarchical dictionary of metadata
 
         Parameters
@@ -174,7 +177,7 @@ class RunData:
         pd :
             PairData object from which metadata are loaded
         pd: PairData :
-            
+
 
         Returns
         -------
