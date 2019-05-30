@@ -104,7 +104,7 @@ class ConvergencePluginConfig(PluginConfig):
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = gmx.workflow.WorkElement(
             namespace="myplugin",
-            operation="linearStop_restraint",
+            operation="linearstop_restraint",
             depends=[],
             params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
