@@ -10,11 +10,21 @@ def test_missing_keys(run_data):
 
 
 def test_pair_parameters(run_data):
-    assert (set(run_data.pair_params.keys()) == {'196_228', '105_216', '052_210'})
+    assert (set(run_data.pair_params.keys()) == {
+        '196_228', '105_216', '052_210'
+    })
 
 
 def test_general_parameters(run_data):
     assert (run_data.general_params.get_requirements() == [
-        'ensemble_num', 'iteration', 'phase', 'start_time', 'A', 'tau', 'tolerance', 'nSamples', 'samplePeriod',
+        'ensemble_num',
+        'iteration',
+        'phase',
+        'start_time',
+        'A',
+        'tau',
+        'tolerance',
+        'num_samples',
+        'sample_period',
         'production_time'
     ])
