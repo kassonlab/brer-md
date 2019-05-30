@@ -192,7 +192,7 @@ public:
     }
 
     auto alpha = py::cast<double>(parameter_dict["alpha"]);
-    auto samplePeriod = py::cast<double>(parameter_dict["samplePeriod"]);
+    auto samplePeriod = py::cast<double>(parameter_dict["sample_period"]);
     auto target = py::cast<double>(parameter_dict["target"]);
     auto logging_filename =
         py::cast<std::string>(parameter_dict["logging_filename"]);
