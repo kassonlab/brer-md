@@ -31,7 +31,7 @@ struct linearstop_input_param_type {
 };
 
 std::unique_ptr<linearstop_input_param_type>
-makeLinearStopParams(double alpha, double tolerance, double target,
+makeLinearStopParams(double alpha, double target, double tolerance,
                      double samplePeriod, std::string logging_filename);
 //                   double samplePeriod)
 
