@@ -297,8 +297,8 @@ public:
     auto logging_filename =
         py::cast<std::string>(parameter_dict["logging_filename"]);
 
-    auto params = plugin::makeLinearStopParams(alpha, target, samplePeriod,
-                                               tolerance, logging_filename);
+    auto params = plugin::makeLinearStopParams(alpha, target, tolerance,
+                                               samplePeriod, logging_filename);
     params_ = std::move(*params);
 
     assert(py::hasattr(element, "workspec"));
