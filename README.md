@@ -1,9 +1,9 @@
 Sample MD restraint plugin
 ==========================
 
-[![image](https://travis-ci.org/kassonlab/sample_restraint.svg?branch=master)](https://travis-ci.org/kassonlab/sample_restraint)
+[![Build Status](https://travis-ci.org/jmhays/sample_restraint.svg?branch=devel)](https://travis-ci.org/jmhays/sample_restraint)
 
-This [repository](https://github.com/kassonlab/sample_restraint)
+This [repository](https://github.com/jmhays/sample_restraint)
 provides a complete and working implementation of a few GROMACS
 restraint potentials. It is intended as both a tutorial and as a
 template for implementing new custom restraint potentials.
@@ -287,11 +287,11 @@ image using the Dockerfile in this repository.
 
     docker build -t samplerestraint . Dockerfile
     docker run --cpus 2 --rm -ti samplerestraint bash -c \
-        "cd /home/jovyan/sample_restraint/tests && 
+        "cd /home/jovyan/sample_restraint/tests &&
         mpiexec -n 2 python -m mpi4py -m pytest"
 
 To test with a pre-built image from our docker hub repository, do
 
     docker run --cpus 2 --rm -ti gmxapi/sample_restraint bash -c \
-            "cd /home/jovyan/sample_restraint/tests && 
+            "cd /home/jovyan/sample_restraint/tests &&
             mpiexec -n 2 python -m mpi4py -m pytest"
