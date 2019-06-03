@@ -5,8 +5,13 @@
 add_subdirectory(cpp)
 
 
-# Import the third-party software
-add_subdirectory(external)
+# Import the Googletest targets, unless the user has requested that the repository
+# be downloaded instead (see tests/CMakeLists.txt)
+if(NOT ${DOWNLOAD_GOOGLETEST})
+    if(${BUILD_TESTING})
+        add_subdirectory(external/googletest EXCLUDE_FROM_ALL)
+    endif()
+endif()
 
 
 # Build a Python extension package from our new library.

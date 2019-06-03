@@ -87,8 +87,8 @@ unset(PYTHONLIBS_FOUND)
 find_package(PythonInterp)
 if (PYTHONINTERP_FOUND)
     message(STATUS "Found Python interpreter: ${PYTHON_EXECUTABLE}")
-    find_package(PythonLibs)
-    if (PYTHONLIBS_FOUND)
+    add_subdirectory(src/external/pybind11)
+    if (PYTHON_LIBRARIES)
         if (GMXPLUGIN_USER_INSTALL)
             execute_process(COMMAND ${PYTHON_EXECUTABLE} "-m" "site" "--user-site"
                             OUTPUT_VARIABLE GMXPLUGIN_DEFAULT_SITE_PACKAGES
@@ -106,7 +106,7 @@ if (PYTHONINTERP_FOUND)
             message(STATUS "Python site-packages directory is ${GMXPLUGIN_DEFAULT_SITE_PACKAGES}")
         endif()
     else()
-        message(FATAL
+        message(FATAL_ERROR
             "Found Python interpreter ${PYTHON_EXECUTABLE} but this Python installation does not have developer tools."
             "Set PYTHON_EXECUTABLE to the Python interpreter that was installed with a working Python.h header file.")
     endif()

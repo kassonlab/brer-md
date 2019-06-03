@@ -12,7 +12,7 @@ pushd $HOME
    make -j2 install
   popd
  popd
- mpiexec -n 2 $PYTHON -m mpi4py -m pytest --pyargs gmx -s --verbose
+ mpiexec -n 2 $PYTHON -m mpi4py -m pytest --log-cli-level=WARN --pyargs gmx -s
 # mpiexec -n 2 $PYTHON -m mpi4py -m pytest --log-cli-level=DEBUG --pyargs gmx -s --verbose
  ccache -s
 popd

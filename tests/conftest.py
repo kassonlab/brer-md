@@ -35,3 +35,10 @@ try:
                                       reason="Test requires at least 2 MPI ranks, but MPI is not initialized or too small.")
 except ImportError:
     withmpi_only = pytest.mark.skip(reason="Test requires at least 2 MPI ranks, but mpi4py is not available.")
+
+@pytest.fixture()
+def tpr_filename():
+    """Provide a sample TPR file by filename."""
+    current_dir = os.path.dirname(__file__)
+    file_path = os.path.join(current_dir, 'data', 'topol.tpr')
+    return os.path.abspath(file_path)

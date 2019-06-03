@@ -13,7 +13,7 @@
 #     docker run -ti --name restraint_test sample_restraint
 #
 # Test with
-#     docker run --cpus 2 --rm -ti gmxapi/sample_restraint:devel bash -c \
+#     docker run --cpus 2 --rm -ti sample_restraint bash -c \
 #         "cd /home/jovyan/sample_restraint/tests && mpiexec -n 2 python -m mpi4py -m pytest"
 # or replace `gmxapi/sample_restraint:devel` with your local image name
 
