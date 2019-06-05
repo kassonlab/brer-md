@@ -14,7 +14,9 @@ devel:
 [![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel)](https://travis-ci.com/jmhays/run_brer)
 [![codecov](https://codecov.io/gh/jmhays/run_brer/branch/devel/graph/badge.svg)](https://codecov.io/gh/jmhays/run_brer)
 
-Set of scripts for running BRER simulations using gmxapi. 
+Set of scripts for running BRER simulations using gmxapi. Details of this method may be found at:
+
+Hays, J.M., Cafiso, D.S., & Kasson, P.M. Hybrid Refinement of Heterogeneous Conformational Ensembles using Spectroscopic Data. *The Journal of Physical Chemistry Letters*. DOI: [10.1021/acs.jpclett.9b01407](https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407)
 
 ## Installation
 ### Requirements
