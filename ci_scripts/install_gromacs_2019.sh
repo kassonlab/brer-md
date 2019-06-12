@@ -13,7 +13,6 @@ pushd $HOME
  pushd gromacs-gmxapi
   git branch -a
   git checkout release-2019
-  pwdv0.0.6
   rm -rf build
   mkdir build
   pushd build
