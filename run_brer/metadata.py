@@ -39,7 +39,7 @@ class MetaData(ABC):
         Parameters
         ----------
         list_of_requirements: list :
-            
+
 
         Returns
         -------
@@ -57,9 +57,9 @@ class MetaData(ABC):
         Parameters
         ----------
         key :
-            
+
         value :
-            
+
 
         Returns
         -------
@@ -73,7 +73,7 @@ class MetaData(ABC):
         Parameters
         ----------
         key :
-            
+
 
         Returns
         -------
@@ -87,7 +87,7 @@ class MetaData(ABC):
         Parameters
         ----------
         data :
-            
+
 
         Returns
         -------
@@ -119,7 +119,8 @@ class MultiMetaData(ABC):
         """ """
         if not self._names:
             if not self._metadata_list:
-                raise IndexError('Must import a list of metadata before retrieving names')
+                raise IndexError(
+                    'Must import a list of metadata before retrieving names')
             self._names = [metadata.name for metadata in self._metadata_list]
         return self._names
 
@@ -129,7 +130,7 @@ class MultiMetaData(ABC):
         Parameters
         ----------
         name :
-            
+
 
         Returns
         -------
@@ -145,7 +146,7 @@ class MultiMetaData(ABC):
         Parameters
         ----------
         id :
-            
+
 
         Returns
         -------
@@ -157,7 +158,7 @@ class MultiMetaData(ABC):
         return self._metadata_list[item]
 
     def __setitem__(self, key, value):
-        self._metadata_list[key]=value
+        self._metadata_list[key] = value
 
     def __delitem__(self, key):
         self._metadata_list.__delitem__(key)

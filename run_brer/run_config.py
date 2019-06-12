@@ -103,7 +103,7 @@ class RunConfig:
         Parameters
         ----------
         plugin_config :
-            
+
 
         Returns
         -------
@@ -165,7 +165,7 @@ class RunConfig:
             else:
                 # Get the convergence cpt from current iteration
                 gmx_cpt = '{}/{}/convergence/state.cpt'.format(
-                        member_dir, current_iter)
+                    member_dir, current_iter)
                 shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
 
     def __train(self):
@@ -202,7 +202,8 @@ class RunConfig:
         for plugin in self.__plugins:
             plugin_name = plugin.name
             for name in self.__names:
-                run_data_sites = "{}".format(self.run_data.get('sites', name=name))
+                run_data_sites = "{}".format(
+                    self.run_data.get('sites', name=name))
                 if run_data_sites == plugin_name:
                     sites_to_name[plugin_name] = name
             md.add_dependency(plugin)

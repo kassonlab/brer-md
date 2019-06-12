@@ -10,6 +10,7 @@ import gmx
 
 class PluginConfig(MetaData):
     """ """
+
     def __init__(self):
         super().__init__('build_plugin')
 
@@ -50,7 +51,7 @@ class PluginConfig(MetaData):
         Parameters
         ----------
         **kwargs :
-            
+
 
         Returns
         -------
@@ -66,10 +67,11 @@ class PluginConfig(MetaData):
 
 class TrainingPluginConfig(PluginConfig):
     """ """
+
     def __init__(self):
         super(PluginConfig, self).__init__(name='training')
         self.set_requirements([
-            'sites', 'target', 'A', 'tau', 'tolerance', 'nSamples',
+            'sites', 'target', 'A', 'tau', 'tolerance', 'num_samples',
             'logging_filename'
         ])
 
@@ -88,10 +90,11 @@ class TrainingPluginConfig(PluginConfig):
 
 class ConvergencePluginConfig(PluginConfig):
     """ """
+
     def __init__(self):
         super(PluginConfig, self).__init__(name='convergence')
         self.set_requirements([
-            'sites', 'alpha', 'target', 'tolerance', 'samplePeriod',
+            'sites', 'alpha', 'target', 'tolerance', 'sample_period',
             'logging_filename'
         ])
 
@@ -101,7 +104,7 @@ class ConvergencePluginConfig(PluginConfig):
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = gmx.workflow.WorkElement(
             namespace="myplugin",
-            operation="linearStop_restraint",
+            operation="linearstop_restraint",
             depends=[],
             params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
@@ -110,9 +113,11 @@ class ConvergencePluginConfig(PluginConfig):
 
 class ProductionPluginConfig(PluginConfig):
     """ """
+
     def __init__(self):
         super(PluginConfig, self).__init__(name='production')
-        self.set_requirements(['sites', 'target', 'alpha', 'samplePeriod', 'logging_filename'])
+        self.set_requirements(
+            ['sites', 'target', 'alpha', 'sample_period', 'logging_filename'])
 
     def build_plugin(self):
         """ """
