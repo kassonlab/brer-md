@@ -1,6 +1,5 @@
-"""
-Organizes the directory structure for BRER runs.
-Creates directories on the fly.
+"""Organizes the directory structure for BRER runs. Creates directories on the
+fly.
 
 How the directory structure is organized:
     - This script should be run from your "top" directory (where
@@ -30,7 +29,6 @@ How the directory structure is organized:
 ├── state.json
 ├── submit.slurm
 └── syx.tpr
-
 """
 
 import os
@@ -38,7 +36,8 @@ import os
 
 class DirectoryHelper:
     def __init__(self, top_dir, param_dict):
-        """Small class for manipulating a standard directory structure for BRER runs.
+        """Small class for manipulating a standard directory structure for BRER
+        runs.
 
         Parameters
         ----------
@@ -50,7 +49,6 @@ class DirectoryHelper:
 
         Returns
         -------
-
         """
         self._top_dir = top_dir
         self._required_parameters = ['ensemble_num', 'iteration', 'phase']
@@ -60,7 +58,8 @@ class DirectoryHelper:
         self._param_dict = param_dict
 
     def get_dir(self, level):
-        """Get the directory for however far you want to go down the directory tree
+        """Get the directory for however far you want to go down the directory
+        tree.
 
         Parameters
         ----------
@@ -72,7 +71,6 @@ class DirectoryHelper:
         -------
         type
             the path to the specified directory 'level' as a str.
-
         """
         pdict = self._param_dict
         if level == 'top':
@@ -94,15 +92,14 @@ class DirectoryHelper:
         return return_dir
 
     def build_working_dir(self):
-        """Checks to see if the working directory for current state of BRER simulation exists.
-        If it does not, creates the directory.
+        """Checks to see if the working directory for current state of BRER
+        simulation exists. If it does not, creates the directory.
 
         Parameters
         ----------
 
         Returns
         -------
-
         """
         if not os.path.exists(self.get_dir('phase')):
             tree = [self.get_dir('ensemble_num'), self.get_dir('iteration')]
