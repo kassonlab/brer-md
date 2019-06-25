@@ -37,7 +37,8 @@ namespace py = pybind11;
  */
 template <class T>
 class PyRestraint : public T,
-                    public std::enable_shared_from_this<PyRestraint<T>> {
+                    public std::enable_shared_from_this<PyRestraint<T>>
+{
 public:
   void bind(py::object object);
 
@@ -62,7 +63,8 @@ public:
    * \return
    */
   template <typename... ArgsT>
-  static std::shared_ptr<PyRestraint<T>> create(ArgsT... args) {
+  static std::shared_ptr<PyRestraint<T>> create(ArgsT... args)
+  {
     auto newRestraint = std::make_shared<PyRestraint<T>>(args...);
     return newRestraint;
   }
@@ -79,9 +81,12 @@ public:
  * \tparam T restraint class exported below.
  * \param object Python Capsule object to allow binding with a simple C API.
  */
-template <class T> void PyRestraint<T>::bind(py::object object) {
+template <class T>
+void PyRestraint<T>::bind(py::object object)
+{
   PyObject *capsule = object.ptr();
-  if (PyCapsule_IsValid(capsule, gmxapi::MDHolder::api_name)) {
+  if (PyCapsule_IsValid(capsule, gmxapi::MDHolder::api_name))
+  {
     auto holder = static_cast<gmxapi::MDHolder *>(
         PyCapsule_GetPointer(capsule, gmxapi::MDHolder::api_name));
     auto workSpec = holder->getSpec();
@@ -92,7 +97,9 @@ template <class T> void PyRestraint<T>::bind(py::object object) {
 
     auto module = getModule();
     workSpec->addModule(module);
-  } else {
+  }
+  else
+  {
     throw gmxapi::ProtocolError(
         "bind method requires a python capsule as input");
   }
@@ -117,7 +124,8 @@ template <class T> void PyRestraint<T>::bind(py::object object) {
 // shared_from_this()
 
 template <class T>
-std::shared_ptr<gmxapi::MDModule> PyRestraint<T>::getModule() {
+std::shared_ptr<gmxapi::MDModule> PyRestraint<T>::getModule()
+{
   auto module = std::make_shared<typename std::enable_if<
       std::is_base_of<gmxapi::MDModule, T>::value, T>::type>();
   return module;
@@ -125,19 +133,22 @@ std::shared_ptr<gmxapi::MDModule> PyRestraint<T>::getModule() {
 
 template <>
 std::shared_ptr<gmxapi::MDModule>
-PyRestraint<plugin::RestraintModule<plugin::LinearRestraint>>::getModule() {
+PyRestraint<plugin::RestraintModule<plugin::LinearRestraint>>::getModule()
+{
   return shared_from_this();
 }
 
 template <>
 std::shared_ptr<gmxapi::MDModule>
-PyRestraint<plugin::RestraintModule<plugin::LinearStopRestraint>>::getModule() {
+PyRestraint<plugin::RestraintModule<plugin::LinearStopRestraint>>::getModule()
+{
   return shared_from_this();
 }
 
 template <>
 std::shared_ptr<gmxapi::MDModule>
-PyRestraint<plugin::RestraintModule<plugin::BRERRestraint>>::getModule() {
+PyRestraint<plugin::RestraintModule<plugin::BRERRestraint>>::getModule()
+{
   return shared_from_this();
 }
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +161,8 @@ PyRestraint<plugin::RestraintModule<plugin::BRERRestraint>>::getModule() {
 /*!
  * \brief No-op restraint class for testing and demonstration.
  */
-class MyRestraint {
+class MyRestraint
+{
 public:
   static const char *docstring;
 
@@ -158,7 +170,8 @@ public:
 };
 
 template <>
-std::shared_ptr<gmxapi::MDModule> PyRestraint<MyRestraint>::getModule() {
+std::shared_ptr<gmxapi::MDModule> PyRestraint<MyRestraint>::getModule()
+{
   auto module = std::make_shared<gmxapi::MDModule>();
   return module;
 }
@@ -172,9 +185,11 @@ const char *MyRestraint::docstring =
 //////////////////
 
 // Start Linear Restraint
-class LinearRestraintBuilder {
+class LinearRestraintBuilder
+{
 public:
-  explicit LinearRestraintBuilder(py::object element) {
+  explicit LinearRestraintBuilder(py::object element)
+  {
     name_ = py::cast<std::string>(element.attr("name"));
     assert(!name_.empty());
     // Params attribute should be a Python list
@@ -187,7 +202,8 @@ public:
     assert(parameter_dict.contains("logging_filename"));
 
     py::list sites = parameter_dict["sites"];
-    for (auto &&site : sites) {
+    for (auto &&site : sites)
+    {
       siteIndices_.emplace_back(py::cast<int>(site));
     }
 
@@ -207,14 +223,24 @@ public:
     context_ = workspec.attr("_context");
   }
 
-  void build(py::object graph) {
+  void build(py::object graph)
+  {
     // Temporarily subvert things to get quick-and-dirty solution for testing.
     // Need to capture Python communicator and pybind syntax in closure so
     // EnsembleResources can just call with matrix arguments.
-
+    if (!subscriber_)
+    {
+      return;
+    }
+    else
+    {
+      if (!py::hasattr(subscriber_, "potential"))
+        throw gmxapi::ProtocolError("Invalid subscriber");
+    }
     // This can be replaced with a subscription and delayed until launch, if
     // necessary.
-    if (!py::hasattr(context_, "ensemble_update")) {
+    if (!py::hasattr(context_, "ensemble_update"))
+    {
       throw gmxapi::ProtocolError("context does not have 'ensemble_update'.");
     }
     // make a local copy of the Python object so we can capture it in the lambda
@@ -240,7 +266,8 @@ public:
     py::list potentialList = subscriber.attr("potential");
     potentialList.append(potential);
   };
-  void addSubscriber(py::object subscriber) {
+  void addSubscriber(py::object subscriber)
+  {
     assert(py::hasattr(subscriber, "potential"));
     subscriber_ = subscriber;
   };
@@ -263,16 +290,19 @@ public:
  */
 
 std::unique_ptr<LinearRestraintBuilder>
-createLinearBuilder(const py::object element) {
+createLinearBuilder(const py::object element)
+{
   using gmx::compat::make_unique;
   auto builder = make_unique<LinearRestraintBuilder>(element);
   return builder;
 }
 
 // Start LinearStop Restraint
-class LinearStopRestraintBuilder {
+class LinearStopRestraintBuilder
+{
 public:
-  explicit LinearStopRestraintBuilder(py::object element) {
+  explicit LinearStopRestraintBuilder(py::object element)
+  {
     name_ = py::cast<std::string>(element.attr("name"));
     assert(!name_.empty());
     // Params attribute should be a Python list
@@ -286,7 +316,8 @@ public:
     assert(parameter_dict.contains("logging_filename"));
 
     py::list sites = parameter_dict["sites"];
-    for (auto &&site : sites) {
+    for (auto &&site : sites)
+    {
       siteIndices_.emplace_back(py::cast<int>(site));
     }
 
@@ -307,14 +338,24 @@ public:
     context_ = workspec.attr("_context");
   }
 
-  void build(py::object graph) {
+  void build(py::object graph)
+  {
     // Temporarily subvert things to get quick-and-dirty solution for testing.
     // Need to capture Python communicator and pybind syntax in closure so
     // EnsembleResources can just call with matrix arguments.
-
+    if (!subscriber_)
+    {
+      return;
+    }
+    else
+    {
+      if (!py::hasattr(subscriber_, "potential"))
+        throw gmxapi::ProtocolError("Invalid subscriber");
+    }
     // This can be replaced with a subscription and delayed until launch, if
     // necessary.
-    if (!py::hasattr(context_, "ensemble_update")) {
+    if (!py::hasattr(context_, "ensemble_update"))
+    {
       throw gmxapi::ProtocolError("context does not have 'ensemble_update'.");
     }
     // make a local copy of the Python object so we can capture it in the lambda
@@ -340,7 +381,8 @@ public:
     py::list potentialList = subscriber.attr("potential");
     potentialList.append(potential);
   };
-  void addSubscriber(py::object subscriber) {
+  void addSubscriber(py::object subscriber)
+  {
     assert(py::hasattr(subscriber, "potential"));
     subscriber_ = subscriber;
   };
@@ -363,16 +405,19 @@ public:
  */
 
 std::unique_ptr<LinearStopRestraintBuilder>
-createLinearStopBuilder(const py::object element) {
+createLinearStopBuilder(const py::object element)
+{
   using gmx::compat::make_unique;
   auto builder = make_unique<LinearStopRestraintBuilder>(element);
   return builder;
 }
 
 // Start BRER Restraint
-class BRERRestraintBuilder {
+class BRERRestraintBuilder
+{
 public:
-  explicit BRERRestraintBuilder(py::object element) {
+  explicit BRERRestraintBuilder(py::object element)
+  {
     name_ = py::cast<std::string>(element.attr("name"));
     assert(!name_.empty());
     // Params attribute should be a Python list
@@ -387,7 +432,8 @@ public:
     assert(parameter_dict.contains("logging_filename"));
 
     py::list sites = parameter_dict["sites"];
-    for (auto &&site : sites) {
+    for (auto &&site : sites)
+    {
       siteIndices_.emplace_back(py::cast<int>(site));
     }
 
@@ -409,14 +455,25 @@ public:
     context_ = workspec.attr("_context");
   }
 
-  void build(py::object graph) {
+  void build(py::object graph)
+  {
+    if (!subscriber_)
+    {
+      return;
+    }
+    else
+    {
+      if (!py::hasattr(subscriber_, "potential"))
+        throw gmxapi::ProtocolError("Invalid subscriber");
+    }
     // Temporarily subvert things to get quick-and-dirty solution for testing.
     // Need to capture Python communicator and pybind syntax in closure so
     // EnsembleResources can just call with matrix arguments.
 
     // This can be replaced with a subscription and delayed until launch, if
     // necessary.
-    if (!py::hasattr(context_, "ensemble_update")) {
+    if (!py::hasattr(context_, "ensemble_update"))
+    {
       throw gmxapi::ProtocolError("context does not have 'ensemble_update'.");
     }
     // make a local copy of the Python object so we can capture it in the lambda
@@ -442,7 +499,8 @@ public:
     py::list potentialList = subscriber.attr("potential");
     potentialList.append(potential);
   };
-  void addSubscriber(py::object subscriber) {
+  void addSubscriber(py::object subscriber)
+  {
     assert(py::hasattr(subscriber, "potential"));
     subscriber_ = subscriber;
   };
@@ -465,13 +523,15 @@ public:
  */
 
 std::unique_ptr<BRERRestraintBuilder>
-createBRERBuilder(const py::object element) {
+createBRERBuilder(const py::object element)
+{
   using gmx::compat::make_unique;
   auto builder = make_unique<BRERRestraintBuilder>(element);
   return builder;
 }
 
-PYBIND11_MODULE(myplugin, m) {
+PYBIND11_MODULE(myplugin, m)
+{
   m.doc() = "sample plugin"; // This will be the text of the module's docstring.
 
   // Matrix utility class (temporary). Borrowed from
