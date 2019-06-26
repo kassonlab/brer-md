@@ -25,9 +25,9 @@ If you're going to use a pip or a conda environment, you'll need:
 - An installation of [gromacs-gmxapi](http://github.com/kassonlab/gromacs-gmxapi). Currently, `gmxapi` does not support 
 domain decomposition with MPI, so if you want these simulations to run fast, be sure to compile with GPU support.
 - An installation of [gmxapi](https://github.com/kassonlab/gmxapi). 
-This code has only been tested with [release 0.0.6](https://github.com/kassonlab/gmxapi/releases/tag/v0.0.6).
-- The [plugin code](https://github.com/jmhays/sample_restraint/tree/deer) for BRER. Please make sure you install the 
-`deer` branch, _*NOT*_ `master`.
+This code has only been tested with [Gromacs 2019](http://manual.gromacs.org/documentation/2019/index.html).
+- The [plugin code](https://github.com/jmhays/sample_restraint/tree/corr-struct) for BRER. Please make sure you install the 
+`corr-struct` branch, _*NOT*_ `master`.
 
 Otherwise, you can just use a Singularity container!
 
@@ -74,13 +74,6 @@ _**for a single ensemble member**_:
 1. Initializing/setting up parameters for the BRER run.
 2. Launching the run. 
 
-Next, we add the `gmxapi` plugin to the `PYTHONPATH`. You'll need to change this line of code to reflect where you have 
-installed the `brer` repository.
-```
-sys.path.append('/builds/brer/build/src/pythonmodule')
-```
-Just FYI, the path shown above is actually the correct path if you're working with the Singualrity container :)
-
 Then we provide some files and directory paths to the `RunConfig` object. 
 ```
 init = {
@@ -94,7 +87,7 @@ config = rc.RunConfig(**init)
 ```
 
 In order to run a BRER simulation, we need to provide :
-1. a `tpr` (compatible with GROMACS 2017).
+1. a `tpr` (compatible with GROMACS 2019).
 2. The path to our ensemble. This directory should contain subdirectories of the form `mem_<my ensemble number>`
 3. The ensemble number. This is an integer used to identify which ensemble member we are running and thus, the subdirectory in which we will be running our simulations.
 4. The path to the DEER metadata. Please see the example json in this repository: `run_brer/data/pair_data.json`
