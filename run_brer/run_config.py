@@ -10,7 +10,7 @@ import shutil
 import logging
 import gmx
 import json
-import atexit
+# import atexit
 
 
 class RunConfig:
@@ -88,12 +88,12 @@ class RunConfig:
 
         # Need to cleanly handle cancelled jobs: write out a checkpoint of the state if the
         # job is exited.
-        def cleanup():
-            """"""
-            self.run_data.save_config(self.state_json)
-            self._logger.info("BRER received INT signal, stopping and saving data to {}".format(self.state_json))
+        # def cleanup():
+        #     """"""
+        #     self.run_data.save_config(self.state_json)
+        #     self._logger.info("BRER received INT signal, stopping and saving data to {}".format(self.state_json))
 
-        atexit.register(cleanup)
+        # atexit.register(cleanup)
 
     def build_plugins(self, plugin_config: PluginConfig):
         """Builds the plugin configuration. For each pair-wise restraint,
