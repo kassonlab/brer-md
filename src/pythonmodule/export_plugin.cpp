@@ -614,6 +614,10 @@ PYBIND11_MODULE(myplugin, m)
       m, "LinearStopRestraint");
   // EnsembleRestraint can only be created via builder for now.
   linearStop.def("bind", &PyLinearStop::bind, "Implement binding protocol");
+  linearStop.def_property_readonly("time", [](PyLinearStop *potential) {
+    return static_cast<plugin::LinearStopRestraint *>(potential->getRestraint().get())
+        ->getTime();
+  });
 
   m.def("linearstop_restraint", [](const py::object element) {
     return createLinearStopBuilder(element);
