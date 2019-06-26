@@ -15,13 +15,22 @@ def test_metadata():
     with pytest.warns(Warning):
         metadata.set_from_dictionary(data={"bad_parameter": "bad"})
 
+    with pytest.warns(Warning):
+        metadata.set("bad_parameter", "bad")
+
     assert metadata.get_as_dictionary() == {"param1": "string", "param2": 0., "bad_parameter": "bad"}
+
 
 def test_multi_metadata(tmpdir):
     multi = MultiMetaData()
 
     metadata = MetaData(name="test1")
     metadata.set_requirements(["param1", "param2"])
+
+    with pytest.raises(IndexError):
+        multi.names
+    with pytest.raises(IndexError):
+        multi.name_to_id("random name")
 
     multi.add_metadata(metadata)
     assert multi.names
@@ -34,4 +43,3 @@ def test_multi_metadata(tmpdir):
     multi.read_from_json("{}/state.json".format(tmpdir))
 
     assert old_multi.get_as_single_dataset() == multi.get_as_single_dataset()
-

@@ -228,9 +228,14 @@ class MultiMetaData(ABC):
         -------
         int
             the index of the MetaData class in the self._metadata list.
+        
+        Raises
+        ------
+        IndexError
+            Raise IndexError if no metadata have been loaded.
         """
         if not self.__names:
-            _ = self.__names
+            raise IndexError('{} is not a valid name.'.format(name))
         return self.__names.index(name)
 
     def id_to_name(self, id):
@@ -252,14 +257,14 @@ class MultiMetaData(ABC):
     def __getitem__(self, item):
         return self._metadata_list[item]
 
-    def __setitem__(self, key, value):
-        self._metadata_list[key] = value
+    # def __setitem__(self, key, value):
+    #     self._metadata_list[key] = value
 
-    def __delitem__(self, key):
-        self._metadata_list.__delitem__(key)
+    # def __delitem__(self, key):
+    #     self._metadata_list.__delitem__(key)
 
-    def __sizeof__(self):
-        return len(self._metadata_list)
+    # def __sizeof__(self):
+    #     return len(self._metadata_list)
 
     def get_as_single_dataset(self):
         """"""

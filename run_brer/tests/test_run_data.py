@@ -55,9 +55,26 @@ def test_run_data(tmpdir, raw_pair_data):
 
     assert not rd.general_params.get_missing_keys()
 
+    # Test the setting function
+    with pytest.raises(ValueError):
+        rd.set(tau=0.1, name=name)
+    with pytest.raises(ValueError):
+        rd.set(alpha=1.)
+    rd.set(alpha=1., name=name)
+    
+    # Test getting
+    rd.get("alpha", name=name)
+    with pytest.raises(ValueError):
+        rd.get("alpha")
+
+    # Test read/write of the state
     rd.save_config("{}/state.json".format(tmpdir))
     old_rd = rd
     rd = RunData()
     rd.load_config("{}/state.json".format(tmpdir))
 
     assert old_rd.as_dictionary() == rd.as_dictionary()
+
+    # Test clearing pair data
+    rd.clear_pair_data()
+    assert rd.pair_params == {}
