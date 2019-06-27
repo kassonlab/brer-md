@@ -2,6 +2,8 @@
 
 State and PairData classes inherit from this class.
 """
+
+
 from abc import ABC
 import json
 import warnings
@@ -15,9 +17,6 @@ class MetaData(ABC):
         ----------
         name :
             Give your MetaData class a descriptive name.
-
-        Returns
-        -------
         """
         self.__name = name
         self.__required_parameters = []
@@ -112,7 +111,7 @@ class MetaData(ABC):
 
         Returns
         -------
-        any
+        type
             The value of the parameter associated with the key.
         """
         return self._metadata[key]
@@ -191,7 +190,7 @@ class MultiMetaData(ABC):
         Returns
         -------
         list
-            [description]
+            list of names
 
         Raises
         ------
@@ -228,7 +227,7 @@ class MultiMetaData(ABC):
         -------
         int
             the index of the MetaData class in the self._metadata list.
-        
+
         Raises
         ------
         IndexError
@@ -257,15 +256,6 @@ class MultiMetaData(ABC):
     def __getitem__(self, item):
         return self._metadata_list[item]
 
-    # def __setitem__(self, key, value):
-    #     self._metadata_list[key] = value
-
-    # def __delitem__(self, key):
-    #     self._metadata_list.__delitem__(key)
-
-    # def __sizeof__(self):
-    #     return len(self._metadata_list)
-
     def get_as_single_dataset(self):
         """"""
         single_dataset = {}
@@ -274,30 +264,22 @@ class MultiMetaData(ABC):
         return single_dataset
 
     def write_to_json(self, filename='state.json'):
-        """
+        """Writes state to json.
 
         Parameters
         ----------
-        filename :
+        filename : str
              (Default value = 'state.json')
-
-        Returns
-        -------
-
         """
         json.dump(self.get_as_single_dataset(), open(filename, 'w'))
 
     def read_from_json(self, filename='state.json'):
-        """
+        """Reads state from json.
 
         Parameters
         ----------
-        filename :
+        filename : str
              (Default value = 'state.json')
-
-        Returns
-        -------
-
         """
         # TODO: decide on expected behavior here if there's a pre-existing list of data. For now, overwrite
         self._metadata_list = []

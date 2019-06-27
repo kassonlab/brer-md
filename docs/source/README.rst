@@ -1,28 +1,18 @@
-.. Run BRER documentation master file, created by
-   sphinx-quickstart on Mon Oct  8 17:05:57 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+run\_brer
+=========
 
-Welcome to Run BRER's documentation!
-====================================
+Badges: |Documentation Status| |Language grade: Python| |Total alerts|
+|https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg|
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+master: |Build Status| |codecov| devel: |Build Status| |codecov|
 
-   user_api
-   developer_api
+Set of scripts for running BRER simulations using gmxapi. Details of
+this method may be found at:
 
-
-
-run_brer |https://www.singularity-hub.org/static/img/hosted-singularity–hub-%23e32929.svg|
-==========================================================================================
-
-master branch status: |Build Status| |codecov|
-
-devel branch status: |Build Status| |codecov|
-
-Set of scripts for running BRER simulations using gmxapi.
+Hays, J.M., Cafiso, D.S., & Kasson, P.M. Hybrid Refinement of
+Heterogeneous Conformational Ensembles using Spectroscopic Data. *The
+Journal of Physical Chemistry Letters*. DOI:
+`10.1021/acs.jpclett.9b01407 <https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407>`__
 
 Installation
 ------------
@@ -30,18 +20,19 @@ Installation
 Requirements
 ~~~~~~~~~~~~
 
-If you’re going to use a pip or a conda environment, you’ll need: -
+If you're going to use a pip or a conda environment, you'll need: -
 Python 3.X - An installation of
 `gromacs-gmxapi <http://github.com/kassonlab/gromacs-gmxapi>`__.
 Currently, ``gmxapi`` does not support domain decomposition with MPI, so
 if you want these simulations to run fast, be sure to compile with GPU
 support. - An installation of
 `gmxapi <https://github.com/kassonlab/gmxapi>`__. This code has only
-been tested with `release
-0.0.6 <https://github.com/kassonlab/gmxapi/releases/tag/v0.0.6>`__. -
-The `plugin
-code <https://github.com/jmhays/sample_restraint/tree/deer>`__ for BRER.
-Please make sure you install the ``deer`` branch, *NOT* ``master``.
+been tested with `Gromacs
+2019 <http://manual.gromacs.org/documentation/2019/index.html>`__. - The
+`plugin
+code <https://github.com/jmhays/sample_restraint/tree/corr-struct>`__
+for BRER. Please make sure you install the ``corr-struct`` branch,
+**NOT** ``master``.
 
 Otherwise, you can just use a Singularity container!
 
@@ -67,12 +58,12 @@ ones for this repository.
 2. Source, the environment, then use the standard Python ``setup.py``
    protocol:
 
-::
+   ::
 
-   source activate BRER
-   git clone https://github.com/jmhays/run_brer.git
-   cd run_brer
-   python setup.py install
+       source activate BRER
+       git clone https://github.com/jmhays/run_brer.git
+       cd run_brer
+       python setup.py install
 
 Running BRER
 ------------
@@ -82,50 +73,39 @@ Launching a single ensemble member.
 
 An example script, ``run.py``, is provided for ensemble simulations.
 
-Let’s work through it piece by piece.
+Let's work through it piece by piece.
 
 ::
 
-   #!/usr/bin/env python
-   """
-   Example run script for BRER simulations
-   """
+    #!/usr/bin/env python
+    """
+    Example run script for BRER simulations
+    """
 
-   import run_brer.run_config as rc
-   import sys
+    import run_brer.run_config as rc
+    import sys
 
 The ``import run_brer.run_config`` statement imports a ``RunConfig``
-object, which handles the following things **for a single ensemble
-member**: 1. Initializing/setting up parameters for the BRER run. 2.
+object, which handles the following things ***for a single ensemble
+member***: 1. Initializing/setting up parameters for the BRER run. 2.
 Launching the run.
-
-Next, we add the ``gmxapi`` plugin to the ``PYTHONPATH``. You’ll need to
-change this line of code to reflect where you have installed the
-``brer`` repository.
-
-::
-
-   sys.path.append('/builds/brer/build/src/pythonmodule')
-
-Just FYI, the path shown above is actually the correct path if you’re
-working with the Singualrity container :)
 
 Then we provide some files and directory paths to the ``RunConfig``
 object.
 
 ::
 
-   init = {
-       'tpr': '/home/jennifer/Git/run_brer/tests/syx.tpr',
-       'ensemble_dir': '/home/jennifer/test-brer',
-       'ensemble_num': 5,
-       'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
-   }
+    init = {
+        'tpr': '/home/jennifer/Git/run_brer/tests/syx.tpr',
+        'ensemble_dir': '/home/jennifer/test-brer',
+        'ensemble_num': 5,
+        'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
+    }
 
-   config = rc.RunConfig(**init)
+    config = rc.RunConfig(**init)
 
 In order to run a BRER simulation, we need to provide : 1. a ``tpr``
-(compatible with GROMACS 2017). 2. The path to our ensemble. This
+(compatible with GROMACS 2019). 2. The path to our ensemble. This
 directory should contain subdirectories of the form
 ``mem_<my ensemble number>`` 3. The ensemble number. This is an integer
 used to identify which ensemble member we are running and thus, the
@@ -137,16 +117,16 @@ Finally, we launch the run!
 
 ::
 
-   config.run()
+    config.run()
 
 You may change various parameters before launching the run using
 ``config.set(**kwargs)``. For example:
 
 ::
 
-   config = rc.RunConfig(**init)
-   config.set(A=100)
-   config.run()
+    config = rc.RunConfig(**init)
+    config.set(A=100)
+    config.run()
 
 resets the energy constant A to 100 kcal/mol/nm^2 before launching a
 run.
@@ -159,23 +139,13 @@ hope to soon use the ``gmxapi``
 `features <https://github.com/kassonlab/gmxapi>`__ that allow a user to
 launch many ensemble members in one job.
 
-
-License
-==============================================
-
-The code is released under the GNU LGPL license. See the LICENSE file for
-details.
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-.. |https://www.singularity-hub.org/static/img/hosted-singularity–hub-%23e32929.svg| image:: https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg
+.. |Documentation Status| image:: https://readthedocs.org/projects/run-brer/badge/?version=latest
+   :target: https://run-brer.readthedocs.io/en/latest/?badge=latest
+.. |Language grade: Python| image:: https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18
+   :target: https://lgtm.com/projects/g/jmhays/run_brer/context:python
+.. |Total alerts| image:: https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18
+   :target: https://lgtm.com/projects/g/jmhays/run_brer/alerts/
+.. |https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg| image:: https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg
    :target: https://singularity-hub.org/collections/1761
 .. |Build Status| image:: https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=master
    :target: https://travis-ci.com/jmhays/run_brer

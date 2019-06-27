@@ -254,7 +254,8 @@ class RunConfig:
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(name, current_alpha, current_target))
 
     def run(self):
-        """"""
+        """Perform the MD simulations.
+        """
         phase = self.run_data.get('phase')
 
         self.__change_directory()

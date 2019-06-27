@@ -1,6 +1,4 @@
 """Class that handles the simulation data for BRER simulations.
-
-<doi!>
 """
 from run_brer.metadata import MetaData
 from run_brer.pair_data import PairData
@@ -145,22 +143,26 @@ class RunData:
     def as_dictionary(self):
         """Get the run metadata as a heirarchical dictionary:
 
-        ├── pair parameters
-        │   ├── name of pair 1
-        │   │   ├── alpha
-        │   │   ├── target
-        │   │   └── ...
-        │   ├── name of pair 2
-        |
-        ├── general parameters
-            ├── A
-            ├── tau
-            ├── ...
-
         Returns
         -------
         type
             heirarchical dictionary of metadata
+        
+        Examples
+        --------
+
+        >>> ├── pair parameters
+        >>> │   ├── name of pair 1
+        >>> │   │   ├── alpha
+        >>> │   │   ├── target
+        >>> │   │   └── ...
+        >>> │   ├── name of pair 2
+        >>> |
+        >>> ├── general parameters
+        >>>     ├── A
+        >>>     ├── tau
+        >>>     ├── ...
+
         """
         pair_param_dict = {}
         for name in self.pair_params.keys():
@@ -210,8 +212,8 @@ class RunData:
         json.dump(self.as_dictionary(), open(fnm, 'w'))
 
     def load_config(self, fnm='state.json'):
-        """Load state parameters from file
-        
+        """Load state parameters from file.
+
         Parameters
         ----------
         fnm : str, optional
