@@ -4,15 +4,18 @@ Developer API
 directory_helper
 ================
 .. automodule:: run_brer.directory_helper
+
 .. autoclass:: run_brer.directory_helper.DirectoryHelper
-        :members:
+    :members:
 
 metadata
 ========
 .. automodule:: run_brer.metadata
+
 .. autoclass:: run_brer.metadata.MetaData
 	:members:
 .. autoclass:: run_brer.metadata.MultiMetaData
+	:members:
 
 pair_data
 =========

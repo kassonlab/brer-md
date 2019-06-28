@@ -15,10 +15,6 @@ Welcome to run BRER's documentation!
    developer_api
 
 
-
-
-
-
 Indices and tables
 ==================
 
