@@ -4,9 +4,11 @@ User API
 run_brer
 ========
 .. automodule:: run_brer.run_config
-        :members:
+.. autoclass:: run_brer.run_config.RunConfig
+	:members:
 
 run_config
 ==========
 .. automodule:: run_brer.run_data
-        :members:
+.. autoclass:: run_brer.run_data.RunData
+	:members:

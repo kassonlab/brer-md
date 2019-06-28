@@ -10,14 +10,32 @@ directory_helper
 metadata
 ========
 .. automodule:: run_brer.metadata
-        :members:
+.. autoclass:: run_brer.metadata.MetaData
+	:members:
+.. autoclass:: run_brer.metadata.MultiMetaData
 
 pair_data
 =========
 .. automodule:: run_brer.pair_data
-        :members:
+
+.. autoclass:: run_brer.pair_data.PairData
+	:members:
+
+.. autoclass:: run_brer.pair_data.MultiPair
+	:members:
 
 plugin_configs
 ==============
 .. automodule:: run_brer.plugin_configs
-        :members:
+
+.. autoclass:: run_brer.plugin_configs.PluginConfig
+	:members:
+
+.. autoclass:: run_brer.plugin_configs.TrainingPluginConfig
+	:members:
+
+.. autoclass:: run_brer.plugin_configs.ConvergencePluginConfig
+	:members:
+
+.. autoclass:: run_brer.plugin_configs.ProductionPluginConfig
+	:members:
