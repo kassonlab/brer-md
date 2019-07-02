@@ -10,7 +10,6 @@ pushd $HOME
   pushd build
    cmake .. -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DPYTHON_EXECUTABLE=$PYTHON
    make -j2 install
-   make -j2 docs
   popd
  popd
  mpiexec -n 2 $PYTHON -m mpi4py -m pytest --pyargs gmx -s --verbose

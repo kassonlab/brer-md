@@ -8,7 +8,6 @@ version: "= 0"
 os: linux
 dist: xenial
 language: cpp
-sudo: false
 
 # If we set 'ccache: true', Travis installs replacement ccache wrappers of system compilers, which we don't want,
 # so we'll do our own ccache management.
@@ -35,7 +34,7 @@ env:
 addons:
   apt:
     sources:
-    - ubuntu-toolchain-r-test
+    - sourceline: 'ppa:ubuntu-toolchain-r/test'
     packages:
     - cmake
     - cmake-data
