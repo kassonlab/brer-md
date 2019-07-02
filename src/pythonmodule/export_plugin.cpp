@@ -224,6 +224,14 @@ class HarmonicRestraintBuilder
          */
         void build(py::object graph)
         {
+            if (!subscriber_)
+            {
+                return;
+            }
+            else
+            {
+                if (!py::hasattr(subscriber_, "potential")) throw gmxapi::ProtocolError("Invalid subscriber");
+            }
             auto potential = PyRestraint<plugin::HarmonicModule>::create(site1Index_,
                                                                          site2Index_,
                                                                          equilibriumPosition_,
@@ -327,6 +335,15 @@ class EnsembleRestraintBuilder
          */
         void build(py::object graph)
         {
+            if (!subscriber_)
+            {
+                return;
+            }
+            else
+            {
+                if (!py::hasattr(subscriber_, "potential")) throw gmxapi::ProtocolError("Invalid subscriber");
+            }
+
             // Temporarily subvert things to get quick-and-dirty solution for testing.
             // Need to capture Python communicator and pybind syntax in closure so EnsembleResources
             // can just call with matrix arguments.
@@ -392,7 +409,7 @@ class EnsembleRestraintBuilder
  * \param element WorkElement provided through Context
  * \return ownership of new builder object
  */
-std::unique_ptr<HarmonicRestraintBuilder> createHarmonicBuilder(const py::object element)
+std::unique_ptr<HarmonicRestraintBuilder> createHarmonicBuilder(const py::object& element)
 {
     std::unique_ptr<HarmonicRestraintBuilder> builder{new HarmonicRestraintBuilder(element)};
     return builder;
