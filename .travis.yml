@@ -6,6 +6,7 @@ version: "= 0"
 # https://docs.travis-ci.com/user/common-build-problems/#Troubleshooting-Locally-in-a-Docker-Image
 
 os: linux
+dist: xenial
 language: cpp
 sudo: false
 
