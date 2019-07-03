@@ -2,23 +2,18 @@
 
 
 ![Documentation Status](https://readthedocs.org/projects/run-brer/badge/?version=latest)
-
-![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)]
-
+![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
 ![Total alerts](https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
-
 ![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)
 
 master:
 
 ![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=master)
-
-![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)]
+![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)
 
 devel:
 
 ![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel)
-
 ![codecov](https://codecov.io/gh/jmhays/run_brer/branch/devel/graph/badge.svg)
 
 Set of scripts for running BRER simulations using gmxapi. Details of this method may be found at:
