@@ -30,8 +30,6 @@
 #include "gromacs/restraint/restraintpotential.h"
 #include "gromacs/utility/real.h"
 
-// We do not require C++14, so we have a back-ported C++14 feature for C++11 code.
-#include "make_unique.h"
 #include "sessionresources.h"
 
 namespace plugin

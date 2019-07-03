@@ -6,8 +6,8 @@ version: "= 0"
 # https://docs.travis-ci.com/user/common-build-problems/#Troubleshooting-Locally-in-a-Docker-Image
 
 os: linux
+dist: xenial
 language: cpp
-sudo: false
 
 # If we set 'ccache: true', Travis installs replacement ccache wrappers of system compilers, which we don't want,
 # so we'll do our own ccache management.
@@ -34,7 +34,7 @@ env:
 addons:
   apt:
     sources:
-    - ubuntu-toolchain-r-test
+    - sourceline: 'ppa:ubuntu-toolchain-r/test'
     packages:
     - cmake
     - cmake-data
@@ -62,7 +62,8 @@ install:
   - export CCACHE_DIR=$HOME/.ccache_gromacs
   - ccache -s
   - ./ci_scripts/install_gromacs_2019.sh
-  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
+# Need to update infrastructure for new CMake version requirements to build against devel.
+#  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
 
 before_script:
   - export CCACHE_DIR=$HOME/.ccache_py
@@ -75,9 +76,10 @@ before_script:
 script:
   - source $HOME/install/gromacs_2019/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
   - ./ci_scripts/sample_restraint.sh
-  - |
-    if [ "${TRAVIS_BRANCH}" != master ] ; then
-      source $HOME/install/gromacs_devel/bin/GMXRC
-      ./ci_scripts/pygmx_devel.sh
-      ./ci_scripts/sample_restraint.sh
-    fi
+# Need to update infrastructure for new CMake version requirements to build against devel.
+#  - |
+#    if [ "${TRAVIS_BRANCH}" != master ] ; then
+#      source $HOME/install/gromacs_devel/bin/GMXRC
+#      ./ci_scripts/pygmx_devel.sh
+#      ./ci_scripts/sample_restraint.sh
+#    fi
