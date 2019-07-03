@@ -1,38 +1,25 @@
 # run_brer
 
-[
 
-![Documentation Status](https://readthedocs.org/projects/run-brer/badge/?version=latest)](https://run-brer.readthedocs.io/en/latest/?badge=latest)
+![Documentation Status](https://readthedocs.org/projects/run-brer/badge/?version=latest)
 
-[
+![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)]
 
-![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jmhays/run_brer/context:python)
+![Total alerts](https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
 
-[
-
-![Total alerts](https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jmhays/run_brer/alerts/)
-
-[
-
-![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)](https://singularity-hub.org/collections/1761)
+![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)
 
 master:
-[
 
-![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=master)](https://travis-ci.com/jmhays/run_brer)
+![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=master)
 
-[
-
-![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)](https://codecov.io/gh/jmhays/run_brer)
+![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)]
 
 devel:
-[
 
-![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel)](https://travis-ci.com/jmhays/run_brer)
+![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel)
 
-[
-
-![codecov](https://codecov.io/gh/jmhays/run_brer/branch/devel/graph/badge.svg)](https://codecov.io/gh/jmhays/run_brer)
+![codecov](https://codecov.io/gh/jmhays/run_brer/branch/devel/graph/badge.svg)
 
 Set of scripts for running BRER simulations using gmxapi. Details of this method may be found at:
 
@@ -44,18 +31,12 @@ Hays, J. M., Cafiso, D. S., & Kasson, P. M. Hybrid Refinement of Heterogeneous C
 
 If you're going to use a pip or a conda environment, you'll need:
 
-- Python 3. X
-- An installation of [gromacs-gmxapi](http://github.com/kassonlab/gromacs-gmxapi). Currently, `gmxapi` does not support 
+- Python 3.X
+- An installation of [gromacs-gmxapi](http://github.com/kassonlab/gromacs-gmxapi). Currently, `gmxapi` does not support domain decomposition with MPI, so if you want these simulations to run fast, be sure to compile with GPU support.
 
-domain decomposition with MPI, so if you want these simulations to run fast, be sure to compile with GPU support.
+- An installation of [gmxapi](https://github.com/kassonlab/gmxapi). This code has only been tested with [Gromacs 2019](http://manual.gromacs.org/documentation/2019/index.html).
 
-- An installation of [gmxapi](https://github.com/kassonlab/gmxapi). 
-
-This code has only been tested with [Gromacs 2019](http://manual.gromacs.org/documentation/2019/index.html).
-
-- The [plugin code](https://github.com/jmhays/sample_restraint/tree/corr-struct) for BRER. Please make sure you install the 
-
- `corr-struct` branch, _*NOT*_ `master` .
+- The [plugin code](https://github.com/jmhays/sample_restraint/tree/corr-struct) for BRER. Please make sure you install the `corr-struct` branch, _*NOT*_ `master` .
 
 Otherwise, you can just use a Singularity container!
 
@@ -73,21 +54,19 @@ For instructions on using the container, please see [this](https://github.com/jm
 
 ### Conda environment
 
-I suggest running this in a conda environment rather than `pip install` . The following conda command will handle all 
-the `gmxapi` and `sample_restraint` python dependencies, as well as the ones for this repository.
+I suggest running this in a conda environment rather than `pip install` . The following conda command will handle all the `gmxapi` and `sample_restraint` python dependencies, as well as the ones for this repository.
 
 1. `conda create -n BRER numpy scipy networkx setuptools mpi4py cmake` 
 
-    If you want to run the tests, then install `pytest` 
-    as well.
+    If you want to run the tests, then install `pytest` as well.
 
-2. Source, the environment, then use the standard Python `setup.py` protocol:
+2. Source the environment and then `pip install`: 
 
 ```
 source activate BRER
 git clone https: //github.com/jmhays/run_brer.git
-    cd run_brer
-python setup.py install
+cd run_brer
+pip install .
 ```
 
 ## Running BRER
@@ -101,19 +80,16 @@ Let's work through it piece by piece.
 ```
 #!/usr/bin/env python
 
-""
-"
+"""
 Example run script
 for BRER simulations
-    ""
-"
+"""
 
 import run_brer.run_config as rc
 import sys
 ```
 
-The `import run_brer.run_config` statement imports a `RunConfig` object, which handles the following things 
-_**for a single ensemble member**_:
+The `import run_brer.run_config` statement imports a `RunConfig` object, which handles the following things _**for a single ensemble member**_:
 
 1. Initializing/setting up parameters for the BRER run.
 2. Launching the run. 
@@ -156,5 +132,4 @@ resets the energy constant A to 100 kcal/mol/nm^2 before launching a run.
 
 #### Launching an ensemble
 
-Right now, the way to launch an ensemble is to launch multiple jobs. We hope to soon use the `gmxapi` 
-[features](https://github.com/kassonlab/gmxapi) that allow a user to launch many ensemble members in one job.
+Right now, the way to launch an ensemble is to launch multiple jobs. We hope to soon use the `gmxapi` [features](https://github.com/kassonlab/gmxapi) that allow a user to launch many ensemble members in one job.
