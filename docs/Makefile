@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = build
-GH_PAGES_SOURCES = source Makefile
+GH_PAGES_SOURCES = docs/source docs/Makefile
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -15,11 +15,13 @@ help:
 gh-pages:
 	git checkout gh-pages
 	rm -rf build _sources _static
+	cd ../
 	git checkout master $(GH_PAGES_SOURCES)
 	git reset HEAD
+	cd docs/
 	make html
-	mv -fv build/html/* ./
-	rm -rf $(GH_PAGES_SOURCES) build
+	mv -fv build/html/* ../
+	rm -rf build
 	git add -A
 	git commit -m "Generated gh-pages for `git log master -1 --pretty=short --abbrev-commit`" && git push origin gh-pages ; git checkout master
 
