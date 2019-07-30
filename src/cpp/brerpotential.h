@@ -80,10 +80,10 @@ public:
        double variance, double A, double tau, double g, double gsqrsum,
        double eta, bool converged, double tolerance, double target,
        unsigned int nSamples, std::string parameter_filename);
-
   // If dispatching this virtual function is not fast enough, the compiler may
   // be able to better optimize a free function that receives the current
   // restraint as an argument.
+
   gmx::PotentialPointData calculate(gmx::Vector v, gmx::Vector v0,
                                     gmx_unused double t);
 
@@ -93,19 +93,6 @@ public:
   // periodically by the Restraint framework.
   void callback(gmx::Vector v, gmx::Vector v0, double t,
                 const EnsembleResources &resources);
-
-  // Cache of historical distance data. Not thread safe
-  //        std::vector<float> history{};
-
-  // The class will either be inherited as a mix-in or inherit a CRTP base
-  // class. Either way, it probably needs proper virtual destructor management.
-  virtual ~BRER() {
-    //            for (auto&& distance: history)
-    //            {
-    //                std::cout << distance << "\n";
-    //            }
-    //            std::cout << std::endl;
-  }
 
   double getAlphaMax() { return alpha_max_; }
   double getTarget() { return target_; }
@@ -159,7 +146,7 @@ public:
                 std::shared_ptr<EnsembleResources> resources)
       : BRER(params), sites_{std::move(sites)}, resources_{
                                                     std::move(resources)} {}
-
+  ~BRERRestraint() override = default;
   std::vector<int> sites() const override { return sites_; }
 
   gmx::PotentialPointData evaluate(gmx::Vector r1, gmx::Vector r2,

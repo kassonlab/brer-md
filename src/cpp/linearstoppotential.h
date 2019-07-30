@@ -56,7 +56,6 @@ public:
   // periodically by the Restraint framework.
   void callback(gmx::Vector v, gmx::Vector v0, double t,
                 const EnsembleResources &resources);
-  virtual ~LinearStop() {}
 
   double getTime() { return time_; }
 
@@ -92,6 +91,8 @@ public:
                       std::shared_ptr<EnsembleResources> resources)
       : LinearStop(params), sites_{sites}, resources_{std::move(resources)} {}
 
+  ~LinearStopRestraint() override = default;
+  
   std::vector<int> sites() const override { return sites_; }
 
   gmx::PotentialPointData evaluate(gmx::Vector r1, gmx::Vector r2,

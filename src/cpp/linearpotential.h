@@ -46,8 +46,6 @@ public:
   void callback(gmx::Vector v, gmx::Vector v0, double t,
                 const EnsembleResources &resources);
 
-  virtual ~Linear() {}
-
 private:
   bool initialized_{FALSE};
   double alpha_;
@@ -74,6 +72,7 @@ public:
       : Linear(params), sites_{sites}, resources_{std::move(resources)} {}
 
   std::vector<int> sites() const override { return sites_; }
+  ~LinearRestraint() override = default;
 
   gmx::PotentialPointData evaluate(gmx::Vector r1, gmx::Vector r2,
                                    double t) override {
