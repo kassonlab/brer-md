@@ -232,8 +232,6 @@ class RestraintModule : public gmxapi::MDModule // consider names
 
         };
 
-        ~RestraintModule() override = default;
-
         /*!
          * \brief Implement gmxapi::MDModule interface to get module name.
          *
