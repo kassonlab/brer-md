@@ -5,21 +5,19 @@ export GMX_DOUBLE=OFF
 export GMX_MPI=OFF
 export GMX_THREAD_MPI=ON
 
-export GMX_SRC_DIR=gromacs-2019
+export GMX_SRC_DIR=gromacs-2020
 
 export CCACHE_DIR=$HOME/.ccache_gmxapi
 ccache -s
 
 pushd $HOME
- [ -d gromacs-gmxapi ] || \
+ [ -d $GMX_SRC_DIR ] || \
     git clone \
         --depth=1 \
-        --no-single-branch \
+        -b release-2020 \
         https://github.com/gromacs/gromacs.git \
         ${GMX_SRC_DIR}
  pushd ${GMX_SRC_DIR}
-  git branch -a
-  git checkout release-2019
   pwd
   rm -rf build
   mkdir build
@@ -31,7 +29,7 @@ pushd $HOME
          -DGMX_MPI=$GMX_MPI \
          -DGMX_THREAD_MPI=$GMX_THREAD_MPI \
          -DGMXAPI=ON \
-         -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs_2019 \
+         -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs_2020 \
          ..
    make -j2 install
   popd
