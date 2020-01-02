@@ -70,6 +70,7 @@ endif()
 # messages, since we actually know what the config file should be called.
 find_package(GROMACS ${_gmx_find_args} CONFIG
              NAMES ${_gmx_pkg_name}
-             CONFIGS ${_gmx_pkg_name}-config.cmake)
+             CONFIGS ${_gmx_pkg_name}-config.cmake
+             PATHS "$ENV{gmxapi_DIR}" "${gmxapi_DIR}" "$ENV{GROMACS_DIR}" "${GROMACS_DIR}")
 unset(_gmx_find_args)
 unset(_gmx_pkg_name)
