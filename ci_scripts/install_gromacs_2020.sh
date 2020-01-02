@@ -7,7 +7,6 @@ export GMX_THREAD_MPI=ON
 
 export GMX_SRC_DIR=gromacs-2020
 
-export CCACHE_DIR=$HOME/.ccache_gmxapi
 ccache -s
 
 pushd $HOME
