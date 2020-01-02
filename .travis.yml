@@ -51,8 +51,7 @@ before_install:
 install:
   - ccache -s
   - ./ci_scripts/install_gromacs_2020.sh
-# Need to update infrastructure for new CMake version requirements to build against devel.
-#  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
+  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
 
 before_script:
   - ccache -s
@@ -64,10 +63,9 @@ before_script:
 script:
   - source $HOME/install/gromacs_2020/bin/GMXRC && $PYTHON -m pip install gmxapi
   - ./ci_scripts/sample_restraint.sh
-# Need to update infrastructure for new CMake version requirements to build against devel.
-#  - |
-#    if [ "${TRAVIS_BRANCH}" != master ] ; then
-#      source $HOME/install/gromacs_devel/bin/GMXRC
-#      ./ci_scripts/pygmx_devel.sh
-#      ./ci_scripts/sample_restraint.sh
-#    fi
+  - |
+    if [ "${TRAVIS_BRANCH}" != master ] ; then
+      source $HOME/install/gromacs_devel/bin/GMXRC
+      $PYTHON -m pip install --upgrade --pre --force-reinstall gmxapi
+      ./ci_scripts/sample_restraint.sh
+    fi
