@@ -57,8 +57,8 @@ before_script:
   - ccache -s
   - $PYTHON -m pip install --upgrade pip setuptools
   - $PYTHON -m pip install --upgrade packaging scikit-build
-  - $PYTHON -m pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
-  - $PYTHON -m pip install pytest numpy networkx sphinx sphinx_rtd_theme
+  - $PYTHON -m pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
+  - $PYTHON -m pip install pytest numpy networkx sphinx
 
 script:
   - source $HOME/install/gromacs_2020/bin/GMXRC && $PYTHON -m pip install gmxapi
