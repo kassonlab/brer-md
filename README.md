@@ -27,9 +27,9 @@ Hays, J. M., Cafiso, D. S., & Kasson, P. M. Hybrid Refinement of Heterogeneous C
 If you're going to use a pip or a conda environment, you'll need:
 
 - Python 3.X
-- An installation of [gromacs-gmxapi](http://github.com/kassonlab/gromacs-gmxapi). Currently, `gmxapi` does not support domain decomposition with MPI, so if you want these simulations to run fast, be sure to compile with GPU support.
-
-- An installation of [gmxapi](https://github.com/kassonlab/gmxapi). This code has only been tested with [Gromacs 2019](http://manual.gromacs.org/documentation/2019/index.html).
+- gmxapi for GROMACS 2019. See [recommended installation](https://gmxapi.readthedocs.io/en/release-0_0_7/install.html#installation), or
+    1. Install [GROMACS 2019](http://manual.gromacs.org/2019-current/index.html), configured with [`-DGMXAPI=ON`](http://manual.gromacs.org/2019-current/dev-manual/build-system.html#cmake-GMXAPI). Currently, `gmxapi` does not support domain decomposition with MPI, so if you want these simulations to run fast, be sure to compile with GPU support.
+    2. Install gmxapi 0.0.7 [Python package](https://github.com/kassonlab/gmxapi/tree/release-0_0_7). This code has only been tested with [Gromacs 2019](http://manual.gromacs.org/documentation/2019/index.html).
 
 - The [plugin code](https://github.com/jmhays/sample_restraint/tree/corr-struct) for BRER. Please make sure you install the `corr-struct` branch, _*NOT*_ `master` .
 
