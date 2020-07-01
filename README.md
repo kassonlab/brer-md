@@ -39,7 +39,7 @@ Otherwise, you can just use a Singularity container!
 
 By far the easiest option! If you are working with an older Singularity version (< 3), pull the container hosted on singularity hub:
 
- `singularity pull -name myimage.simg shub://jmhays/singularity-brer` 
+ `singularity pull --name myimage.simg shub://jmhays/singularity-brer` 
 
 If you have the latest and greatest Singuarity (v > 3), you can pull the container from the *new* cloud repository:
 
