@@ -1,12 +1,6 @@
 # Recipe for build and integration testing on Travis-CI
 
-# Try beta version of new travis-yml checker
-version: "= 0"
-# For extra debugging of failed jobs, see
-# https://docs.travis-ci.com/user/common-build-problems/#Troubleshooting-Locally-in-a-Docker-Image
-
-os: linux
-dist: xenial
+dist: bionic
 language: cpp
 
 # If we set 'ccache: true', Travis installs replacement ccache wrappers of system compilers, which we don't want,
@@ -32,11 +26,7 @@ env:
 
 addons:
   apt:
-    sources:
-    - sourceline: 'ppa:ubuntu-toolchain-r/test'
     packages:
-    - cmake
-    - cmake-data
     - doxygen
     - libblas-dev
     - libcr-dev
