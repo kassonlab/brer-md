@@ -8,13 +8,8 @@
 
 master:
 
-![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=master)
+[![Build Status](https://travis-ci.org/kassonlab/run_brer.svg?branch=master)](https://travis-ci.org/kassonlab/run_brer)
 ![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)
-
-devel:
-
-![Build Status](https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel)
-![codecov](https://codecov.io/gh/jmhays/run_brer/branch/devel/graph/badge.svg)
 
 Set of scripts for running BRER simulations using gmxapi. Details of this method may be found at:
 
