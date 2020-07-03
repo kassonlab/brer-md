@@ -4,9 +4,6 @@
 ![Documentation Status](https://readthedocs.org/projects/run-brer/badge/?version=latest)
 ![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
 ![Total alerts](https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
-![https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg](https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg)
-
-master:
 
 [![Build Status](https://travis-ci.org/kassonlab/run_brer.svg?branch=master)](https://travis-ci.org/kassonlab/run_brer)
 ![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)
@@ -32,13 +29,11 @@ Otherwise, you can just use a Singularity container!
 
 ### Singularity 
 
-By far the easiest option! If you are working with an older Singularity version (< 3), pull the container hosted on singularity hub:
+By far the easiest option!
 
- `singularity pull --name myimage.simg shub://jmhays/singularity-brer` 
+If you have the latest and greatest Singuarity (v > 3), you can pull the container from the cloud repository:
 
-If you have the latest and greatest Singuarity (v > 3), you can pull the container from the *new* cloud repository:
-
- `singularity pull library://jmhays/default/brer:latest` 
+ `singularity pull library://eirrgang/default/brer:latest` 
 
 For instructions on using the container, please see the [singularity-brer](https://github.com/kassonlab/singularity-brer) repository.
 
@@ -63,7 +58,7 @@ pip install .
 
 #### Launching a single ensemble member.
 
-An example script, `run.py` , is provided for ensemble simulations. 
+An example script, `run.py` , is provided for ensemble simulations.
 
 Let's work through it piece by piece.
 
