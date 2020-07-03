@@ -40,7 +40,7 @@ If you have the latest and greatest Singuarity (v > 3), you can pull the contain
 
  `singularity pull library://jmhays/default/brer:latest` 
 
-For instructions on using the container, please see [this](https://github.com/jmhays/singularity-brer) repository.
+For instructions on using the container, please see the [singularity-brer](https://github.com/kassonlab/singularity-brer) repository.
 
 ### Conda environment
 
@@ -54,7 +54,7 @@ I suggest running this in a conda environment rather than `pip install` . The fo
 
 ```
 source activate BRER
-git clone https: //github.com/jmhays/run_brer.git
+git clone https://github.com/kassonlab/run_brer.git
 cd run_brer
 pip install .
 ```
