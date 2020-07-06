@@ -89,7 +89,7 @@ init = {
     'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
 }
 
-config = rc.RunConfig( ** init)
+config = rc.RunConfig(**init)
 ```
 
 In order to run a BRER simulation, we need to provide :
@@ -108,8 +108,8 @@ config.run()
 You may change various parameters before launching the run using `config.set(**kwargs)` . For example:
 
 ```
-config = rc.RunConfig( ** init)
-config.set(A = 100)
+config = rc.RunConfig(**init)
+config.set(A=100)
 config.run()
 ```
 
