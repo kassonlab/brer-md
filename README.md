@@ -33,7 +33,7 @@ By far the easiest option!
 
 If you have the latest and greatest Singuarity (v > 3), you can pull the container from the cloud repository:
 
- `singularity pull library://eirrgang/default/brer:latest` 
+ `singularity pull library://kassonlab/default/brer:latest` 
 
 For instructions on using the container, please see the [singularity-brer](https://github.com/kassonlab/singularity-brer) repository.
 
