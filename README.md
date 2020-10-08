@@ -5,7 +5,7 @@
 ![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
 ![Total alerts](https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
 
-[![Build Status](https://travis-ci.org/kassonlab/run_brer.svg?branch=master)](https://travis-ci.org/kassonlab/run_brer)
+[![Build Status](https://travis-ci.com/kassonlab/run_brer.svg?branch=master)](https://travis-ci.com/kassonlab/run_brer)
 ![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)
 
 Set of scripts for running BRER simulations using gmxapi. Details of this method may be found at:
