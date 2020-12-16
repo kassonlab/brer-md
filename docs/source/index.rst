@@ -14,15 +14,12 @@ Welcome to run BRER's documentation!
    user_api
    developer_api
 
-README
+run_brer
 ========
 
-|Documentation Status|
-|Language grade: Python|
-|Total alerts| 
-|https://www.singularity-hub.org/static/img/hosted-singularity–hub-%23e32929.svg|
-|Build Status|
-|codecov|
+|Documentation Status| |Language grade: Python| |Total alerts|
+
+|Build Status| |codecov|
 
 Set of scripts for running BRER simulations using gmxapi. Details of
 this method may be found at:
@@ -40,42 +37,43 @@ Requirements
 
 If you’re going to use a pip or a conda environment, you’ll need:
 
--  Python 3. X
--  An installation of
-   `gromacs-gmxapi <http://github.com/kassonlab/gromacs-gmxapi>`__.
-   Currently, ``gmxapi`` does not support
+-  Python 3.X
+-  gmxapi for GROMACS 2019. See `recommended
+   installation <https://gmxapi.readthedocs.io/en/release-0_0_7/install.html#installation>`__,
+   or
 
-domain decomposition with MPI, so if you want these simulations to run
-fast, be sure to compile with GPU support.
-
--  An installation of `gmxapi <https://github.com/kassonlab/gmxapi>`__.
-
-This code has only been tested with `Gromacs
-2019 <http://manual.gromacs.org/documentation/2019/index.html>`__.
+   1. Install `GROMACS
+      2019 <http://manual.gromacs.org/2019-current/index.html>`__,
+      configured with
+      ```-DGMXAPI=ON`` <http://manual.gromacs.org/2019-current/dev-manual/build-system.html#cmake-GMXAPI>`__.
+      Currently, ``gmxapi`` does not support domain decomposition with
+      MPI, so if you want these simulations to run fast, be sure to
+      compile with GPU support.
+   2. Install gmxapi 0.0.7 `Python
+      package <https://github.com/kassonlab/gmxapi/tree/release-0_0_7>`__.
+      This code has only been tested with `Gromacs
+      2019 <http://manual.gromacs.org/documentation/2019/index.html>`__.
 
 -  The `plugin
-   code <https://github.com/jmhays/sample_restraint/tree/corr-struct>`__
-   for BRER. Please make sure you install the
-
-``corr-struct`` branch, *NOT* ``master`` .
+   code <https://github.com/jmhays/sample_restraint/tree/brer>`__ for
+   BRER. Please make sure you install the ``brer`` branch, *NOT*
+   ``master`` .
 
 Otherwise, you can just use a Singularity container!
 
 Singularity
 ~~~~~~~~~~~
 
-By far the easiest option! If you are working with an older Singularity
-version (< 3), pull the container hosted on singularity hub:
-
-``singularity pull -name myimage.simg shub://jmhays/singularity-brer``
+By far the easiest option!
 
 If you have the latest and greatest Singuarity (v > 3), you can pull the
-container from the *new* cloud repository:
+container from the cloud repository:
 
-``singularity pull library://jmhays/default/brer:latest``
+``singularity pull library://kassonlab/default/brer:latest``
 
-For instructions on using the container, please see
-`this <https://github.com/jmhays/singularity-brer>`__ repository.
+For instructions on using the container, please see the
+`singularity-brer <https://github.com/kassonlab/singularity-brer>`__
+repository.
 
 Conda environment
 ~~~~~~~~~~~~~~~~~
@@ -89,15 +87,14 @@ ones for this repository.
 
    If you want to run the tests, then install ``pytest`` as well.
 
-2. Source, the environment, then use the standard Python ``setup.py``
-   protocol:
+2. Source the environment and then ``pip install``:
 
 ::
 
    source activate BRER
-   git clone https: //github.com/jmhays/run_brer.git
-       cd run_brer
-   python setup.py install
+   git clone https://github.com/kassonlab/run_brer.git
+   cd run_brer
+   pip install .
 
 Running BRER
 ------------
@@ -113,12 +110,10 @@ Let’s work through it piece by piece.
 
    #!/usr/bin/env python
 
-   ""
-   "
+   """
    Example run script
    for BRER simulations
-       ""
-   "
+   """
 
    import run_brer.run_config as rc
    import sys
@@ -142,7 +137,7 @@ object.
        'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
    }
 
-   config = rc.RunConfig( ** init)
+   config = rc.RunConfig(**init)
 
 In order to run a BRER simulation, we need to provide :
 
@@ -166,8 +161,8 @@ You may change various parameters before launching the run using
 
 ::
 
-   config = rc.RunConfig( ** init)
-   config.set(A = 100)
+   config = rc.RunConfig(**init)
+   config.set(A=100)
    config.run()
 
 resets the energy constant A to 100 kcal/mol/nm^2 before launching a
@@ -184,9 +179,9 @@ launch many ensemble members in one job.
 .. |Documentation Status| image:: https://readthedocs.org/projects/run-brer/badge/?version=latest
 .. |Language grade: Python| image:: https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18
 .. |Total alerts| image:: https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18
-.. |https://www.singularity-hub.org/static/img/hosted-singularity–hub-%23e32929.svg| image:: https://www.singularity-hub.org/static/img/hosted-singularity--hub-%23e32929.svg
-.. |Build Status| image:: https://travis-ci.com/jmhays/run_brer.svg?token=zQbC3QZqV1zHSGhQXUTP&branch=devel
-.. |codecov| image:: https://codecov.io/gh/jmhays/run_brer/branch/devel/graph/badge.svg
+.. |Build Status| image:: https://travis-ci.com/kassonlab/run_brer.svg?branch=master
+   :target: https://travis-ci.com/kassonlab/run_brer
+.. |codecov| image:: https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg
 
 Indices and tables
 ==================

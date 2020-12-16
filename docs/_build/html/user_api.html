@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,27 +11,29 @@
   
 
   
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Developer API" href="developer_api.html" />
@@ -50,7 +51,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> run BRER
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> run BRER
           
 
           
@@ -73,6 +74,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -93,6 +95,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -131,7 +134,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>User API</li>
     
@@ -157,9 +160,9 @@
 <div class="section" id="module-run_brer.run_config">
 <span id="run-brer"></span><h2>run_brer<a class="headerlink" href="#module-run_brer.run_config" title="Permalink to this headline">¶</a></h2>
 <p>RunConfig class handles the actual workflow logic.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="run_brer.run_config.RunConfig">
-<em class="property">class </em><code class="sig-prename descclassname">run_brer.run_config.</code><code class="sig-name descname">RunConfig</code><span class="sig-paren">(</span><em class="sig-param">tpr</em>, <em class="sig-param">ensemble_dir</em>, <em class="sig-param">ensemble_num=1</em>, <em class="sig-param">pairs_json='pair_data.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_config.RunConfig" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">run_brer.run_config.</code><code class="sig-name descname">RunConfig</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tpr</span></em>, <em class="sig-param"><span class="n">ensemble_dir</span></em>, <em class="sig-param"><span class="n">ensemble_num</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">pairs_json</span><span class="o">=</span><span class="default_value">'pair_data.json'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_config.RunConfig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run configuration for single BRER ensemble member.</p>
 <p>The run configuration specifies the files and directory structure
 used for the run. It determines whether the run is in the training,
@@ -167,18 +170,18 @@ convergence, or production phase, then performs the run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>tpr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – path to tpr. Must be gmx 2017 compatible.</p></li>
-<li><p><strong>ensemble_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – path to top directory which contains the full ensemble.</p></li>
-<li><p><strong>ensemble_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>, </em><em>optional</em>) – the ensemble member to run, by default 1</p></li>
-<li><p><strong>pairs_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – path to file containing <em>ALL</em> the pair metadata.
+<li><p><strong>tpr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – path to tpr. Must be gmx 2017 compatible.</p></li>
+<li><p><strong>ensemble_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – path to top directory which contains the full ensemble.</p></li>
+<li><p><strong>ensemble_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – the ensemble member to run, by default 1</p></li>
+<li><p><strong>pairs_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – path to file containing <em>ALL</em> the pair metadata.
 An example of what such a file should look like is provided in the data directory,
 by default ‘pair_data.json’</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_config.RunConfig.build_plugins">
-<code class="sig-name descname">build_plugins</code><span class="sig-paren">(</span><em class="sig-param">plugin_config: run_brer.plugin_configs.PluginConfig</em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_config.RunConfig.build_plugins" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">build_plugins</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plugin_config</span><span class="p">:</span> <span class="n"><a class="reference internal" href="developer_api.html#run_brer.plugin_configs.PluginConfig" title="run_brer.plugin_configs.PluginConfig">run_brer.plugin_configs.PluginConfig</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_config.RunConfig.build_plugins" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds the plugin configuration. For each pair-wise restraint,
 populate the plugin with data: both the “general” data and the data
 unique to that restraint.</p>
@@ -189,10 +192,11 @@ unique to that restraint.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_config.RunConfig.run">
 <code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_config.RunConfig.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform the MD simulations.</p>
+<p>Each Python interpreter process runs a separate ensemble member.</p>
 </dd></dl>
 
 </dd></dl>
@@ -201,14 +205,14 @@ unique to that restraint.</p>
 <div class="section" id="module-run_brer.run_data">
 <span id="run-config"></span><h2>run_config<a class="headerlink" href="#module-run_brer.run_data" title="Permalink to this headline">¶</a></h2>
 <p>Class that handles the simulation data for BRER simulations.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="run_brer.run_data.RunData">
 <em class="property">class </em><code class="sig-prename descclassname">run_brer.run_data.</code><code class="sig-name descname">RunData</code><a class="headerlink" href="#run_brer.run_data.RunData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stores (and manipulates, to a lesser extent) all the metadata for a BRER
 run.</p>
 <p>The full set of metadata for a single BRER run include both the
 general parameters and the pair-specific parameters.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_data.RunData.as_dictionary">
 <code class="sig-name descname">as_dictionary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.as_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the run metadata as a heirarchical dictionary:</p>
@@ -217,11 +221,11 @@ general parameters and the pair-specific parameters.</p>
 <dd class="field-odd"><p>heirarchical dictionary of metadata</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.7)">type</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.9)">type</a></p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; ├── pair parameters
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; ├── pair parameters
 &gt;&gt;&gt; │   ├── name of pair 1
 &gt;&gt;&gt; │   │   ├── alpha
 &gt;&gt;&gt; │   │   ├── target
@@ -236,26 +240,26 @@ general parameters and the pair-specific parameters.</p>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_data.RunData.clear_pair_data">
 <code class="sig-name descname">clear_pair_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.clear_pair_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes all the pair parameters, replace with empty dict.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_data.RunData.from_dictionary">
-<code class="sig-name descname">from_dictionary</code><span class="sig-paren">(</span><em class="sig-param">data: dict</em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.from_dictionary" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">from_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.from_dictionary" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads metadata into the class from a dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – RunData metadata as a dictionary.</p>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – RunData metadata as a dictionary.</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_data.RunData.from_pair_data">
-<code class="sig-name descname">from_pair_data</code><span class="sig-paren">(</span><em class="sig-param">pd: run_brer.pair_data.PairData</em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.from_pair_data" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">from_pair_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pd</span><span class="p">:</span> <span class="n"><a class="reference internal" href="developer_api.html#run_brer.pair_data.PairData" title="run_brer.pair_data.PairData">run_brer.pair_data.PairData</a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.from_pair_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load some of the run metadata from a PairData object. Useful at the
 beginning of a run.</p>
 <dl class="field-list simple">
@@ -265,59 +269,59 @@ beginning of a run.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_data.RunData.get">
-<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param">key</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.get" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>get either a general or a pair-specific parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – the parameter to get.</p></li>
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – if getting a pair-specific parameter, specify the restraint name. (Default value = None)</p></li>
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – the parameter to get.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – if getting a pair-specific parameter, specify the restraint name. (Default value = None)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>the parameter value.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.7)">type</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.9)">type</a></p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_data.RunData.load_config">
-<code class="sig-name descname">load_config</code><span class="sig-paren">(</span><em class="sig-param">fnm='state.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.load_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">load_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fnm</span><span class="o">=</span><span class="default_value">'state.json'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.load_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load state parameters from file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>fnm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – log file of state parameters, by default ‘state.json’</p>
+<dd class="field-odd"><p><strong>fnm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – log file of state parameters, by default ‘state.json’</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_data.RunData.save_config">
-<code class="sig-name descname">save_config</code><span class="sig-paren">(</span><em class="sig-param">fnm='state.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.save_config" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">save_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fnm</span><span class="o">=</span><span class="default_value">'state.json'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.save_config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves the run parameters to a log file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>fnm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – log file for state parameters, by default ‘state.json’</p>
+<dd class="field-odd"><p><strong>fnm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – log file for state parameters, by default ‘state.json’</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="run_brer.run_data.RunData.set">
-<code class="sig-name descname">set</code><span class="sig-paren">(</span><em class="sig-param">name=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.set" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#run_brer.run_data.RunData.set" title="Permalink to this definition">¶</a></dt>
 <dd><p>method used to set either general or a pair-specific parameter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – restraint name.
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – restraint name.
 These are the same identifiers that are used in the RunConfig, by default None</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – if you provide a name and try to set a general parameter or
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.9)"><strong>ValueError</strong></a> – if you provide a name and try to set a general parameter or
     don’t provide a name and try to set a pair-specific parameter.</p>
 </dd>
 </dl>
@@ -348,11 +352,19 @@ These are the same identifiers that are used in the RunConfig, by default None</
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2019, Jennifer M. Hays
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -363,7 +375,6 @@ These are the same identifiers that are used in the RunConfig, by default None</
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

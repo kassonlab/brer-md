@@ -255,6 +255,8 @@ class RunConfig:
 
     def run(self):
         """Perform the MD simulations.
+
+        Each Python interpreter process runs a separate ensemble member.
         """
         phase = self.run_data.get('phase')
 
