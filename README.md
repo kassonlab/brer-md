@@ -1,12 +1,15 @@
 # run_brer
 
-
-![Documentation Status](https://readthedocs.org/projects/run-brer/badge/?version=latest)
 ![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
 ![Total alerts](https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
 
 [![Build Status](https://travis-ci.com/kassonlab/run_brer.svg?branch=master)](https://travis-ci.com/kassonlab/run_brer)
 ![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)
+
+This project is hosted in a git repository at https://github.com/kassonlab/run_brer
+
+Project documentation is available in the repository or
+[on the web](https://kassonlab.github.io/run_brer/).
 
 Set of scripts for running BRER simulations using gmxapi. Details of this method may be found at:
 
