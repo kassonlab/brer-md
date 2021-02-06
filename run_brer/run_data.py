@@ -129,7 +129,6 @@ class RunData:
 
         Returns
         -------
-        type
             the parameter value.
         """
         if key in self.general_params.get_requirements():

@@ -126,12 +126,36 @@ class RunConfig:
         dir_help.change_dir('phase')
 
     def __move_cpt(self):
-        current_iter = self.run_data.get('iteration')
-        ens_num = self.run_data.get('ensemble_num')
-        phase = self.run_data.get('phase')
 
+        def safe_copy(src, dst):
+            if not os.path.exists(src):
+                raise RuntimeError('Missing checkpoint file from previous iteration: {}'.format(src))
+            if os.path.exists(dst):
+                raise RuntimeError('Destination file already exists: {}'.format(dst))
+            size = os.stat(src).st_size
+            if size == 0:
+                raise RuntimeError('Source file has zero size: {}'.format(src))
+            target_tmp = dst + '.tmp'
+            try:
+                shutil.copy(src, target_tmp)
+            except Exception as e:
+                if os.path.exists(target_tmp):
+                    os.unlink(target_tmp)
+                raise e
+            os.rename(target_tmp, dst)
+            assert os.stat(dst).st_size > 0
+
+        current_iter = int(self.run_data.get('iteration'))
+        ens_num = int(self.run_data.get('ensemble_num'))
+        phase: str = self.run_data.get('phase')
+
+        # Check logic implicit in prior revisions.
+        assert os.path.abspath('{}/mem_{}/{}/{}'.format(self.ens_dir, ens_num, current_iter, phase)) == os.getcwd()
+
+        target_dir = os.getcwd()
+        target = os.path.join(target_dir, 'state.cpt')
         # If the cpt already exists, don't overwrite it
-        if os.path.exists('{}/mem_{}/{}/{}/state.cpt'.format(self.ens_dir, ens_num, current_iter, phase)):
+        if os.path.exists(target):
             self._logger.info("Phase is {} and state.cpt already exists: not moving any files".format(phase))
 
         else:
@@ -141,16 +165,20 @@ class RunConfig:
             if phase in ['training', 'convergence']:
                 if prev_iter > -1:
                     # Get the production cpt from previous iteration
-                    gmx_cpt = '{}/{}/production/state.cpt'.format(member_dir, prev_iter)
-                    shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
+                    source = '{}/{}/production/state.cpt'.format(member_dir, prev_iter)
+                    if not os.path.exists(source):
+                        raise RuntimeError('Missing checkpoint file from previous iteration: {}'.format(source))
+                    safe_copy(source, target)
 
                 else:
-                    pass  # Do nothing
+                    pass  # Do nothing. Let mdrun generate the initial checkpoint file.
 
             else:
                 # Get the convergence cpt from current iteration
-                gmx_cpt = '{}/{}/convergence/state.cpt'.format(member_dir, current_iter)
-                shutil.copy(gmx_cpt, '{}/state.cpt'.format(os.getcwd()))
+                source = '{}/{}/convergence/state.cpt'.format(member_dir, current_iter)
+                if not os.path.exists(source):
+                    raise RuntimeError('Missing checkpoint file from convergence phase: {}'.format(source))
+                safe_copy(source, target)
 
     def __train(self):
 

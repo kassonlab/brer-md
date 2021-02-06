@@ -19,7 +19,7 @@ class MetaData(ABC):
             Give your MetaData class a descriptive name.
         """
         self.__name = name
-        self.__required_parameters = []
+        self.__required_parameters = ()
         self._metadata = {}
 
     @property
@@ -66,7 +66,7 @@ class MetaData(ABC):
         list_of_requirements : list
             list of required parameters for the class (a list of strings)
         """
-        self.__required_parameters = list_of_requirements
+        self.__required_parameters = tuple(list_of_requirements)
 
     def get_requirements(self):
         """Gets the set of required parameters for the class. This is quite
