@@ -2,7 +2,7 @@
 
 import pytest
 from run_brer.run_data import GeneralParams, PairParams, RunData
-from run_brer.pair_data import MultiPair, PairData
+from run_brer.pair_data import PairData
 
 
 def test_general_parameters():
@@ -55,6 +55,8 @@ def test_run_data(tmpdir, raw_pair_data):
 
     assert not rd.general_params.get_missing_keys()
 
+    # Get an arbitrary but valid name.
+    name = tuple(raw_pair_data.keys())[-1]
     # Test the setting function
     with pytest.raises(ValueError):
         rd.set(tau=0.1, name=name)
