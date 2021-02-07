@@ -4,10 +4,5 @@
 # framework or the Googletest framework.
 add_subdirectory(cpp)
 
-
-# Import the third-party software
-add_subdirectory(external)
-
-
 # Build a Python extension package from our new library.
 add_subdirectory(pythonmodule)

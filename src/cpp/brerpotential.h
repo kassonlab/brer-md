@@ -10,6 +10,7 @@
  */
 #include <array>
 #include <iostream>
+#include <memory>
 #include <mutex>
 #include <vector>
 
@@ -20,7 +21,6 @@
 #include "gromacs/restraint/restraintpotential.h"
 #include "gromacs/utility/real.h"
 
-#include "make_unique.h"
 #include "sessionresources.h"
 
 namespace plugin {
@@ -92,7 +92,7 @@ public:
   // An update function to be called on the simulation master rank/thread
   // periodically by the Restraint framework.
   void callback(gmx::Vector v, gmx::Vector v0, double t,
-                const EnsembleResources &resources);
+                const Resources &resources);
 
   double getAlphaMax() { return alpha_max_; }
   double getTarget() { return target_; }
@@ -143,7 +143,7 @@ class BRERRestraint : public ::gmx::IRestraintPotential, private BRER {
 public:
   using BRER::input_param_type;
   BRERRestraint(std::vector<int> sites, const input_param_type &params,
-                std::shared_ptr<EnsembleResources> resources)
+                std::shared_ptr<Resources> resources)
       : BRER(params), sites_{std::move(sites)}, resources_{
                                                     std::move(resources)} {}
   ~BRERRestraint() override = default;
@@ -176,7 +176,7 @@ public:
     resources_->setSession(session);
   }
 
-  void setResources(std::unique_ptr<EnsembleResources> &&resources) {
+  void setResources(std::unique_ptr<Resources> &&resources) {
     resources_ = std::move(resources);
   }
 
@@ -187,7 +187,7 @@ private:
   std::vector<int> sites_;
   //        double callbackPeriod_;
   //        double nextCallback_;
-  std::shared_ptr<EnsembleResources> resources_;
+  std::shared_ptr<Resources> resources_;
 };
 
 // Just declare the template instantiation here for client code.

@@ -10,7 +10,7 @@ namespace plugin {
 std::unique_ptr<linear_input_param_type>
 makeLinearParams(double alpha, double target, double samplePeriod,
                  std::string logging_filename) {
-  using gmx::compat::make_unique;
+  using std::make_unique;
   auto params = make_unique<linear_input_param_type>();
   params->alpha = alpha;
   params->target = target;
@@ -35,7 +35,7 @@ void Linear::writeparameters(double t, const double R) {
 }
 
 void Linear::callback(gmx::Vector v, gmx::Vector v0, double t,
-                      const EnsembleResources &resources) {
+                      const Resources &resources) {
 
   // Update distance
   auto rdiff = v - v0;
@@ -47,7 +47,7 @@ void Linear::callback(gmx::Vector v, gmx::Vector v0, double t,
     startTime_ = t;
     nextSampleTime_ = startTime_ + samplePeriod_;
     logging_file_ =
-        gmx::compat::make_unique<RAIIFile>(logging_filename_.c_str(), "w");
+        std::make_unique<RAIIFile>(logging_filename_.c_str(), "w");
     if (logging_file_) {
       fprintf(logging_file_->fh(), "time\tR\ttarget\talpha\n");
       writeparameters(t, R);

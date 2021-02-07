@@ -3,6 +3,7 @@
 
 #include <array>
 #include <iostream>
+#include <memory>
 #include <mutex>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "gromacs/restraint/restraintpotential.h"
 #include "gromacs/utility/real.h"
 
-#include "make_unique.h"
 #include "sessionresources.h"
 
 namespace plugin {
@@ -44,7 +44,7 @@ public:
   void writeparameters(double t, const double R);
 
   void callback(gmx::Vector v, gmx::Vector v0, double t,
-                const EnsembleResources &resources);
+                const Resources &resources);
 
 private:
   bool initialized_{FALSE};
@@ -68,7 +68,7 @@ public:
   using Linear::input_param_type;
 
   LinearRestraint(const std::vector<int> &sites, const input_param_type &params,
-                  std::shared_ptr<EnsembleResources> resources)
+                  std::shared_ptr<Resources> resources)
       : Linear(params), sites_{sites}, resources_{std::move(resources)} {}
 
   std::vector<int> sites() const override { return sites_; }
@@ -87,13 +87,13 @@ public:
     resources_->setSession(session);
   }
 
-  void setResources(std::unique_ptr<EnsembleResources> &&resources) {
+  void setResources(std::unique_ptr<Resources> &&resources) {
     resources_ = std::move(resources);
   }
 
 private:
   std::vector<int> sites_;
-  std::shared_ptr<EnsembleResources> resources_;
+  std::shared_ptr<Resources> resources_;
 };
 
 extern template class RestraintModule<LinearRestraint>;

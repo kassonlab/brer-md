@@ -52,7 +52,7 @@ void BRER::writeparameters(double t, const double R) {
 }
 
 void BRER::callback(gmx::Vector v, gmx::Vector v0, double t,
-                    const EnsembleResources &resources) {
+                    const Resources &resources) {
 
   if (!converged_) {
     auto rdiff = v - v0;
@@ -73,7 +73,7 @@ void BRER::callback(gmx::Vector v, gmx::Vector v0, double t,
       tolerance_ *= A_;
 
       parameter_file_ =
-          gmx::compat::make_unique<RAIIFile>(parameter_filename_.c_str(), "w");
+          std::make_unique<RAIIFile>(parameter_filename_.c_str(), "w");
       if (parameter_file_) {
         fprintf(parameter_file_->fh(),
                 "time\tR\ttarget\tconverged\talpha\talpha_max\tg\teta\n");
@@ -165,7 +165,7 @@ gmx::PotentialPointData BRER::calculate(gmx::Vector v, gmx::Vector v0,
 std::unique_ptr<BRER_input_param_type>
 makeBRERParams(double A, double tau, double tolerance, double target,
                unsigned int nSamples, std::string parameter_filename) {
-  using gmx::compat::make_unique;
+  using std::make_unique;
   auto params = make_unique<BRER_input_param_type>();
   params->A = A;
   params->tau = tau;

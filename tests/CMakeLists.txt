@@ -1,7 +1,3 @@
-# Activate the CTest module for this directory.
-enable_testing()
-
-
 if(DOWNLOAD_GOOGLETEST)
     # Download and unpack googletest at configure time
     configure_file(CMakeLists.gtest.in googletest-download/CMakeLists.txt)
@@ -25,10 +21,27 @@ if(DOWNLOAD_GOOGLETEST)
     add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
                      ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
                      EXCLUDE_FROM_ALL)
-
+    add_library(GTest::GTest ALIAS gtest)
+    add_library(GTest::Main ALIAS gtest_main)
 else()
-    # use googletest git subtree from the current repository
-    # subdirectory already included in src/external/CMakeLists.txt
+    if(GMXAPI_EXTENSION_MASTER_PROJECT)
+        # TODO: Update upstream: standalone project will have bundled gtest source.
+        if(NOT TARGET gtest)
+            find_package(GTest REQUIRED)
+        endif()
+    endif()
+    if(TARGET gtest)
+        add_library(GTest::GTest ALIAS gtest)
+        add_library(GTest::Main ALIAS gtest_main)
+    else()
+        find_package(GTest)
+    endif()
+    if(NOT TARGET GTest::GTest)
+        message(FATAL_ERROR "GTest::GTest target should have been supplied by the parent project.")
+    endif()
+    if(NOT TARGET GTest::Main)
+        message(FATAL_ERROR "GTest::Main target should have been supplied by the parent project.")
+    endif()
 endif() # DOWNLOAD_GOOGLETEST
 
 #
@@ -40,62 +53,59 @@ endif() # DOWNLOAD_GOOGLETEST
 configure_file(data/topol.tpr topol.tpr COPYONLY)
 configure_file(data/water.gro water.gro COPYONLY)
 
+# Note: Expects topol.tpr to be in CURRENT_BINARY_DUR
 configure_file(testingconfiguration.in.h testingconfiguration.h)
 
 # Test that the library can access its dependencies and build.
-add_executable(library-test test_binding.cpp)
-add_test(BasicPlugin library-test)
+add_executable(gmxapi_extension_library-test test_binding.cpp)
 
-target_include_directories(library-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(library-test Gromacs::gmxapi gtest_main)
+target_include_directories(gmxapi_extension_library-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(gmxapi_extension_library-test Gromacs::gmxapi gtest_main)
 
-set_tests_properties(BasicPlugin PROPERTIES
-                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                     COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
-                     COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
+gtest_add_tests(TARGET gmxapi_extension_library-test
+                TEST_LIST BasicPlugin)
 
-
-# # Test the C++ code implementing the basic harmonic potential.
-# add_executable(harmonic-test test_harmonic.cpp)
-# add_test(HarmonicPotentialPlugin harmonic-test)
+## Test the C++ code implementing the basic harmonic potential.
+#add_executable(harmonic-test test_harmonic.cpp)
+#add_test(HarmonicPotentialPlugin harmonic-test)
 #
-# target_include_directories(harmonic-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+#target_include_directories(harmonic-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 #
-# set_target_properties(harmonic-test PROPERTIES SKIP_BUILD_RPATH FALSE)
-# target_link_libraries(harmonic-test harmonicpotential Gromacs::gmxapi
-#                       gtest_main)
+#set_target_properties(harmonic-test PROPERTIES SKIP_BUILD_RPATH FALSE)
+#target_link_libraries(harmonic-test harmonicpotential Gromacs::gmxapi
+#                      gtest_main)
 #
-# set_tests_properties(HarmonicPotentialPlugin PROPERTIES
-#                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#                      COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
-#                      COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
+#set_tests_properties(HarmonicPotentialPlugin PROPERTIES
+#                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#                     COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
+#                     COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
 #
-# # Test the C++ force evaluation for the restrained-ensemble biasing potential.
-# add_executable(histogram-test test_histogram.cpp)
-# add_test(EnsembleHistogramPotentialPlugin histogram-test)
+## Test the C++ force evaluation for the restrained-ensemble biasing potential.
+#add_executable(histogram-test test_histogram.cpp)
+#add_test(EnsembleHistogramPotentialPlugin histogram-test)
 #
-# target_include_directories(histogram-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+#target_include_directories(histogram-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 #
-# set_target_properties(histogram-test PROPERTIES SKIP_BUILD_RPATH FALSE)
-# target_link_libraries(histogram-test ensemblepotential Gromacs::gmxapi
-#                       gtest_main)
+#set_target_properties(histogram-test PROPERTIES SKIP_BUILD_RPATH FALSE)
+#target_link_libraries(histogram-test ensemblepotential Gromacs::gmxapi
+#                      gtest_main)
 #
-# set_tests_properties(EnsembleHistogramPotentialPlugin PROPERTIES
-#                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#                      COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
-#                      COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
+#set_tests_properties(EnsembleHistogramPotentialPlugin PROPERTIES
+#                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#                     COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
+#                     COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
 #
-# # Test the flat-bottom bounding potential built in to the ensemble restraint.
-# add_executable(bounding-test test_bounding_restraint.cpp)
-# add_test(EnsembleBoundingPotentialPlugin bounding-test)
+## Test the flat-bottom bounding potential built in to the ensemble restraint.
+#add_executable(bounding-test test_bounding_restraint.cpp)
+#add_test(EnsembleBoundingPotentialPlugin bounding-test)
 #
-# target_include_directories(bounding-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+#target_include_directories(bounding-test PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 #
-# set_target_properties(bounding-test PROPERTIES SKIP_BUILD_RPATH FALSE)
-# target_link_libraries(bounding-test ensemblepotential Gromacs::gmxapi
-#                       gtest_main)
+#set_target_properties(bounding-test PROPERTIES SKIP_BUILD_RPATH FALSE)
+#target_link_libraries(bounding-test ensemblepotential Gromacs::gmxapi
+#                      gtest_main)
 #
-# set_tests_properties(EnsembleBoundingPotentialPlugin PROPERTIES
-#                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#                      COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
-#                      COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")
+#set_tests_properties(EnsembleBoundingPotentialPlugin PROPERTIES
+#                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#                     COMPILE_DEFINITIONS "${GMOCK_COMPILE_DEFINITIONS}"
+#                     COMPILE_FLAGS "${GMOCK_COMPILE_FLAGS}")

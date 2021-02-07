@@ -8,6 +8,8 @@
 
 #include <cassert>
 
+#include <memory>
+
 #include "gmxapi/exceptions.h"
 #include "gmxapi/gmxapi.h"
 #include "gmxapi/md.h"
@@ -16,7 +18,6 @@
 #include "brerpotential.h"
 #include "linearpotential.h"
 #include "linearstoppotential.h"
-#include "make_unique.h"
 
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
@@ -256,7 +257,7 @@ public:
     // Python buffer-like object, so we will create one here. Note: it looks
     // like the SharedData element will be useful after all.
     auto resources =
-        std::make_shared<plugin::EnsembleResources>(std::move(functor));
+        std::make_shared<plugin::Resources>(std::move(functor));
 
     auto potential =
         PyRestraint<plugin::RestraintModule<plugin::LinearRestraint>>::create(
@@ -292,7 +293,7 @@ public:
 std::unique_ptr<LinearRestraintBuilder>
 createLinearBuilder(const py::object element)
 {
-  using gmx::compat::make_unique;
+  using std::make_unique;
   auto builder = make_unique<LinearRestraintBuilder>(element);
   return builder;
 }
@@ -338,6 +339,13 @@ public:
     context_ = workspec.attr("_context");
   }
 
+/*!
+ * \brief Add node(s) to graph for the work element.
+ *
+ * \param graph networkx.DiGraph object still evolving in gmx.context.
+ *
+ * \todo This may not follow the latest graph building protocol as described.
+ */
   void build(py::object graph)
   {
     // Temporarily subvert things to get quick-and-dirty solution for testing.
@@ -371,7 +379,7 @@ public:
     // Python buffer-like object, so we will create one here. Note: it looks
     // like the SharedData element will be useful after all.
     auto resources =
-        std::make_shared<plugin::EnsembleResources>(std::move(functor));
+        std::make_shared<plugin::Resources>(std::move(functor));
 
     auto potential =
         PyRestraint<plugin::RestraintModule<plugin::LinearStopRestraint>>::
@@ -407,7 +415,7 @@ public:
 std::unique_ptr<LinearStopRestraintBuilder>
 createLinearStopBuilder(const py::object element)
 {
-  using gmx::compat::make_unique;
+  using std::make_unique;
   auto builder = make_unique<LinearStopRestraintBuilder>(element);
   return builder;
 }
@@ -489,7 +497,7 @@ public:
     // Python buffer-like object, so we will create one here. Note: it looks
     // like the SharedData element will be useful after all.
     auto resources =
-        std::make_shared<plugin::EnsembleResources>(std::move(functor));
+        std::make_shared<plugin::Resources>(std::move(functor));
 
     auto potential =
         PyRestraint<plugin::RestraintModule<plugin::BRERRestraint>>::create(
@@ -525,13 +533,35 @@ public:
 std::unique_ptr<BRERRestraintBuilder>
 createBRERBuilder(const py::object element)
 {
-  using gmx::compat::make_unique;
+  using std::make_unique;
   auto builder = make_unique<BRERRestraintBuilder>(element);
   return builder;
 }
 
-PYBIND11_MODULE(myplugin, m)
-{
+
+////////////////////////////////////////////////////////////////////////////////////////////
+// New potentials modeled after EnsembleRestraint should define a Builder class and define a
+// factory function here, following the previous two examples. The factory function should be
+// exposed to Python following the examples near the end of the PYBIND11_MODULE block.
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// The PYBIND11_MODULE block uses the pybind11 framework (ref https://github.com/pybind/pybind11 )
+// to generate Python bindings to the C++ code elsewhere in this repository. A copy of the pybind11
+// source code is included with this repository. Use syntax from the examples below when exposing
+// a new potential, along with its builder and parameters structure. In future releases, there will
+// be less code to include elsewhere, but more syntax in the block below to define and export the
+// interface to a plugin. pybind11 is not required to write a GROMACS extension module or for
+// compatibility with the ``gmx`` module provided with gmxapi. It is sufficient to implement the
+// various protocols, C API and Python function names, but we do not provide example code
+// for other Python bindings frameworks.
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+// The first argument is the name of the module when importing to Python. This should be the same as the name specified
+// as the OUTPUT_NAME for the shared object library in the CMakeLists.txt file. The second argument, 'm', can be anything
+// but it might as well be short since we use it to refer to aspects of the module we are defining.
+PYBIND11_MODULE(brer, m){
   m.doc() = "sample plugin"; // This will be the text of the module's docstring.
 
   // Matrix utility class (temporary). Borrowed from

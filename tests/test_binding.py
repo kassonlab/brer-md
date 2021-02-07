@@ -6,10 +6,6 @@
 # This test is not currently run automatically in any way. Build the module, point your PYTHONPATH at it,
 # and run pytest in the tests directory.
 
-import pytest
-
-# from tests.conftest import withmpi_only
-
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
 # create console handler
@@ -34,8 +30,8 @@ def test_dependencies():
 
 
 def test_imports():
-    import myplugin
-    assert myplugin
+    import brer
+    assert brer
     import gmx.core
     import gmx
 

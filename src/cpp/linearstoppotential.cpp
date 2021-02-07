@@ -14,7 +14,7 @@ namespace plugin {
 std::unique_ptr<linearstop_input_param_type>
 makeLinearStopParams(double alpha, double target, double tolerance,
                      double samplePeriod, std::string logging_filename) {
-  using gmx::compat::make_unique;
+  using std::make_unique;
   auto params = make_unique<linearstop_input_param_type>();
   params->alpha = alpha;
   params->tolerance = tolerance;
@@ -41,7 +41,7 @@ void LinearStop::writeparameters(double t, const double R) {
 }
 
 void LinearStop::callback(gmx::Vector v, gmx::Vector v0, double t,
-                          const EnsembleResources &resources) {
+                          const Resources &resources) {
 
   // Update distance
   auto rdiff = v - v0;
@@ -61,7 +61,7 @@ void LinearStop::callback(gmx::Vector v, gmx::Vector v0, double t,
     //            %f\n",
     //                   startTime_, nextSampleTime_, samplePeriod_);
     logging_file_ =
-        gmx::compat::make_unique<RAIIFile>(logging_filename_.c_str(), "w");
+        std::make_unique<RAIIFile>(logging_filename_.c_str(), "w");
     if (logging_file_) {
       fprintf(logging_file_->fh(), "time\tR\ttarget\talpha\n");
       writeparameters(t, R);
