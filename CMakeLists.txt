@@ -23,13 +23,20 @@ endif()
 # the parent project CMake configuration.
 # Also reference https://redmine.gromacs.org/issues/2896
 if(GMXAPI_EXTENSION_MASTER_PROJECT)
-    # TODO: (Issue #3027) Handle locally available sources.
-    set(GMXAPI_EXTENSION_USE_BUNDLED_PYBIND ON CACHE BOOL
-        "Use pybind11 headers bundled with this repository. If OFF, CMake does `find_package(pybind11)`.")
+    option(GMXAPI_EXTENSION_DOWNLOAD_PYBIND
+           "Use the latest version of pybind (to be downloaded by CMake)."
+           OFF)
+    include(CMakeDependentOption)
+    cmake_dependent_option(
+        GMXAPI_EXTENSION_USE_BUNDLED_PYBIND
+        "Use pybind11 headers bundled with this repository. If OFF, CMake does `find_package(pybind11)`."
+        ON
+        "NOT GMXAPI_EXTENSION_DOWNLOAD_PYBIND"
+        OFF
+    )
     if(GMXAPI_EXTENSION_USE_BUNDLED_PYBIND)
         add_subdirectory(external/pybind)
     else()
-        option(GMXAPI_EXTENSION_DOWNLOAD_PYBIND ON)
         if(GMXAPI_EXTENSION_DOWNLOAD_PYBIND)
             configure_file(CMakeLists.pybind.in pybind-download/CMakeLists.txt)
             execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -46,6 +53,7 @@ if(GMXAPI_EXTENSION_MASTER_PROJECT)
             endif()
             add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/pybind-src)
         else()
+            # TODO: (Issue #3027) Handle locally available sources.
             find_package(pybind11 2.2 REQUIRED)
         endif()
     endif()
@@ -73,7 +81,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Gromacs::gmxapi
 if(GMXAPI_EXTENSION_MASTER_PROJECT)
     find_package(gmxapi
-                 0.0.8 REQUIRED CONFIG
+                 0.0.7 REQUIRED CONFIG
                  PATHS "$ENV{gmxapi_DIR}" "${gmxapi_DIR}" "$ENV{GROMACS_DIR}" "${GROMACS_DIR}"
                  )
 
