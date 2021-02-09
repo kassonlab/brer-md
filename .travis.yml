@@ -21,9 +21,10 @@ cache:
 compiler: gcc
 
 env:
-  - PY=3.6
-  - PY=3.7
-  - PY=3.8
+  - PY=3.6 GROMACS=2019 GMX_MPI=OFF GMX_THREAD_MPI=ON
+  - PY=3.7 GROMACS=2020 GMX_MPI=OFF GMX_THREAD_MPI=ON
+  - PY=3.8 GROMACS=2021 GMX_MPI=OFF GMX_THREAD_MPI=ON
+  - PY=3.8 GROMACS=2021 GMX_MPI=ON GMX_THREAD_MPI=OFF
 
 addons:
   apt:
@@ -71,8 +72,8 @@ before_install:
 
 install:
   - ccache -s
-  - ./ci_scripts/install_gromacs_2020.sh
-  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
+  - ./ci_scripts/install_gromacs_${GROMACS}.sh
+#  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
 
 before_script:
   - ccache -s
@@ -82,11 +83,18 @@ before_script:
   - $PYTHON -m pip install pytest numpy networkx sphinx
 
 script:
-  - source $HOME/install/gromacs_2020/bin/GMXRC && $PYTHON -m pip install gmxapi
-  - ./ci_scripts/sample_restraint.sh
   - |
-    if [ "${TRAVIS_BRANCH}" != master ] ; then
-      source $HOME/install/gromacs_devel/bin/GMXRC
-      $PYTHON -m pip install --upgrade --pre --force-reinstall gmxapi
-      ./ci_scripts/sample_restraint.sh
+    if [ "${GROMACS}" == 2019 ] ; then
+      source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
+    elif [ "${GROMACS}" == 2020 ] ; then
+      source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && $PYTHON -m pip install 'gmxapi<0.2'
+    else
+      source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && $PYTHON -m pip install gmxapi
     fi
+  - ./ci_scripts/sample_restraint.sh
+#  - |
+#    if [ "${TRAVIS_BRANCH}" != master ] ; then
+#      source $HOME/install/gromacs_devel/bin/GMXRC
+#      $PYTHON -m pip install --upgrade --pre --force-reinstall gmxapi
+#      ./ci_scripts/sample_restraint.sh
+#    fi
