@@ -16,22 +16,21 @@ try:
     from gmxapi.simulation.context import Context as _context
     from gmxapi.simulation.workflow import WorkElement, from_tpr
     from gmxapi.version import api_is_at_least
-    from gmxapi.testsupport import withmpi_only
 except (ImportError, ModuleNotFoundError):
     import gmx
     from gmx import get_context as _context
     from gmx.version import api_is_at_least
     from gmx.workflow import from_tpr, WorkElement
 
-    try:
-        from mpi4py import MPI
+try:
+    from mpi4py import MPI
 
-        withmpi_only = pytest.mark.skipif(
-            not MPI.Is_initialized() or MPI.COMM_WORLD.Get_size() < 2,
-            reason="Test requires at least 2 MPI ranks, but MPI is not initialized or too small.")
-    except ImportError:
-        withmpi_only = pytest.mark.skip(
-            reason="Test requires at least 2 MPI ranks, but mpi4py is not available.")
+    withmpi_only = pytest.mark.skipif(
+        not MPI.Is_initialized() or MPI.COMM_WORLD.Get_size() < 2,
+        reason="Test requires at least 2 MPI ranks, but MPI is not initialized or too small.")
+except (ImportError, ModuleNotFoundError):
+    withmpi_only = pytest.mark.skip(
+        reason="Test requires at least 2 MPI ranks, but mpi4py is not available.")
 
 
 logging.getLogger().setLevel(logging.DEBUG)
