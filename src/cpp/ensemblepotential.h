@@ -156,7 +156,7 @@ class EnsemblePotential
         // function that receives the current restraint as an argument.
         gmx::PotentialPointData calculate(gmx::Vector v,
                                           gmx::Vector v0,
-                                          gmx_unused double t);
+                                          double t);
 
         /*!
          * \brief An update function to be called on the simulation master rank/thread periodically by the Restraint framework.
