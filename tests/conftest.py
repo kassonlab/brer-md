@@ -44,6 +44,15 @@ from contextlib import contextmanager
 
 import pytest
 
+# Need to monkey-patch subprocess.run until gmxapi can be fixed.
+# MPI-related environment variables will cause GROMACS command line tools to
+# try to MPI_Init_thread (and fail) even though mpi4py has already called MPI_Init.
+import functools
+import subprocess
+env = {key: value for key, value in os.environ.items() if key.startswith('GMX')}
+env['PATH'] = os.getenv('PATH')
+subprocess.run = functools.partial(subprocess.run, env=env)
+
 
 def pytest_addoption(parser):
     """Add a command-line user option for the pytest invocation."""
@@ -238,10 +247,12 @@ def spc_water_box(gmxcli, remove_tempdir):
                                                               '-o': structurefile,
                                                               }
                                                 )
-            assert os.path.exists(topfile)
+            if not os.path.exists(topfile):
+                raise RuntimeError(f'{topfile} does not exist.')
 
+            logging.debug('Running solvate.')
             if solvate.output.returncode.result() != 0:
-                logging.debug(solvate.output.erroroutput.result())
+                logging.debug('Solvate error output: ' + solvate.output.erroroutput.result())
                 raise RuntimeError('solvate failed in spc_water_box testing fixture.')
 
             # Choose an exactly representable dt of 2^-9 ps (approximately 0.002)
@@ -281,5 +292,7 @@ def spc_water_box(gmxcli, remove_tempdir):
                 raise RuntimeError('grompp failed in spc_water_box testing fixture.')
 
             # TODO: more inspection of grompp errors...
-            assert os.path.exists(tprfilename)
+            if not os.path.exists(tprfilename):
+                raise RuntimeError(f'Failed to produce {tprfilename}')
+
             yield tprfilename

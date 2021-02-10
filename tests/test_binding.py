@@ -22,23 +22,31 @@ except (ImportError, ModuleNotFoundError):
     from gmx.version import api_is_at_least
     from gmx.workflow import from_tpr, WorkElement
 
+nompi = lambda f: f
 try:
     from mpi4py import MPI
+    if MPI.Is_initialized():
+        rank = MPI.COMM_WORLD.Get_rank()
+        if MPI.COMM_WORLD.Get_size() > 1:
+            nompi = pytest.mark.skip(reason='Test cannot run in a multirank MPI environment.')
+    else:
+        rank = 0
 
+    # Get a fixture for tests that should only run with 2 MPI ranks.
     withmpi_only = pytest.mark.skipif(
         not MPI.Is_initialized() or MPI.COMM_WORLD.Get_size() < 2,
         reason="Test requires at least 2 MPI ranks, but MPI is not initialized or too small.")
 except (ImportError, ModuleNotFoundError):
     withmpi_only = pytest.mark.skip(
         reason="Test requires at least 2 MPI ranks, but mpi4py is not available.")
-
+    rank = ''
 
 logging.getLogger().setLevel(logging.DEBUG)
 # create console handler
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 # create formatter and add it to the handler
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+formatter = logging.Formatter(f'%(asctime)s:%(name)s:%(levelname)s:{rank} %(message)s')
 ch.setFormatter(formatter)
 # add the handlers to the logger
 logging.getLogger().addHandler(ch)
@@ -53,6 +61,7 @@ def test_import():
     assert myplugin
 
 
+@nompi
 @pytest.mark.usefixtures("cleandir")
 def test_ensemble_potential_nompi(spc_water_box):
     """Test ensemble potential without an ensemble.
