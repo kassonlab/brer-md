@@ -7,7 +7,7 @@ pushd build
  cmake .. -DPYTHON_EXECUTABLE=$PYTHON
  make -j2 install
  make -j2 test
- $PYTHON -c "import myplugin"
+ $PYTHON -c "import brer"
 popd
 pushd tests
  $PYTHON -m pytest

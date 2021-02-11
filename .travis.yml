@@ -91,10 +91,10 @@ script:
     else
       source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && $PYTHON -m pip install gmxapi
     fi
-  - ./ci_scripts/sample_restraint.sh
+  - ./ci_scripts/brer_restraint.sh
 #  - |
 #    if [ "${TRAVIS_BRANCH}" != master ] ; then
 #      source $HOME/install/gromacs_devel/bin/GMXRC
 #      $PYTHON -m pip install --upgrade --pre --force-reinstall gmxapi
-#      ./ci_scripts/sample_restraint.sh
+#      ./ci_scripts/brer_restraint.sh
 #    fi
