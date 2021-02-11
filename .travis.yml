@@ -21,9 +21,10 @@ cache:
 compiler: gcc
 
 env:
-  - PY=3.6
-  - PY=3.7
-  - PY=3.8
+  - PY=3.6 GROMACS=2019 GMX_MPI=OFF GMX_THREAD_MPI=ON
+  - PY=3.7 GROMACS=2020 GMX_MPI=OFF GMX_THREAD_MPI=ON
+  - PY=3.8 GROMACS=2021 GMX_MPI=OFF GMX_THREAD_MPI=ON
+  - PY=3.8 GROMACS=2021 GMX_MPI=ON GMX_THREAD_MPI=OFF
 
 addons:
   apt:
@@ -47,11 +48,32 @@ before_install:
   - pyenv prefix ${PY_VER} && export PYTHON_PREFIX=`pyenv prefix ${PY_VER}`
   - pyenv which python && export PYTHON=`pyenv which python`
   - source ./ci_scripts/set_compilers
+  - export CCACHE_DIR=$HOME/.ccache
+  # Ref https://riptutorial.com/cmake/example/4723/configure-travis-ci-with-newest-cmake
+  # first we create a directory for the CMake binaries
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir ${DEPS_DIR} && cd ${DEPS_DIR}
+  # we use wget to fetch the cmake binaries
+  - travis_retry wget --no-check-certificate https://github.com/Kitware/CMake/releases/download/v3.17.1/cmake-3.17.1-Linux-x86_64.tar.gz
+  # this is optional, but useful:
+  # do a quick checksum to ensure that the archive we downloaded did not get compromised
+  - echo "23dd30da0bacf0e644d82298907b8e03edbc59c4ed40839afdeeb3b86e66bc93  cmake-3.17.1-Linux-x86_64.tar.gz" > cmake_sha256.txt
+  - sha256sum -c cmake_sha256.txt
+  # extract the binaries; the output here is quite lengthy,
+  # so we swallow it to not clutter up the travis console
+  - tar -xvf cmake-3.17.1-Linux-x86_64.tar.gz > /dev/null
+  - mv cmake-3.17.1-Linux-x86_64 cmake-install
+  # add both the top-level directory and the bin directory from the archive
+  # to the system PATH. By adding it to the front of the path we hide the
+  # preinstalled CMake with our own.
+  - PATH=${DEPS_DIR}/cmake-install:${DEPS_DIR}/cmake-install/bin:$PATH
+  # don't forget to switch back to the main build directory once you are done
+  - cd ${TRAVIS_BUILD_DIR}
 
 install:
   - ccache -s
-  - ./ci_scripts/install_gromacs_2020.sh
-    #- if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
+  - ./ci_scripts/install_gromacs_${GROMACS}.sh
+#  - if [ "${TRAVIS_BRANCH}" != "master" ] ; then ./ci_scripts/install_gromacs_devel.sh ; fi
 
 before_script:
   - ccache -s
@@ -61,7 +83,14 @@ before_script:
   - $PYTHON -m pip install pytest numpy networkx sphinx
 
 script:
-  - source $HOME/install/gromacs_2020/bin/GMXRC && $PYTHON -m pip install gmxapi
+  - |
+    if [ "${GROMACS}" == 2019 ] ; then
+      source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
+    elif [ "${GROMACS}" == 2020 ] ; then
+      source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && $PYTHON -m pip install 'gmxapi<0.2'
+    else
+      source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && $PYTHON -m pip install gmxapi
+    fi
   - ./ci_scripts/sample_restraint.sh
 #  - |
 #    if [ "${TRAVIS_BRANCH}" != master ] ; then

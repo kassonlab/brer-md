@@ -30,11 +30,14 @@ RUN conda install mdanalysis
 
 # This is a bit risky and troublesome, but I want to test the current repo state without committing.
 # Another problem is that changes to directories do not trigger build cache invalidation!
-COPY --chown=1000 CMakeLists.txt README.md /home/jovyan/sample_restraint/
+COPY --chown=1000 CMakeLists.* README.md /home/jovyan/sample_restraint/
 COPY --chown=1000 cmake/ /home/jovyan/sample_restraint/cmake/
 COPY --chown=1000 docs/ /home/jovyan/sample_restraint/docs/
+COPY --chown=1000 external/ /home/jovyan/sample_restraint/external/
 COPY --chown=1000 src/ /home/jovyan/sample_restraint/src/
+COPY --chown=1000 external/ /home/jovyan/sample_restraint/external/
 COPY --chown=1000 tests/ /home/jovyan/sample_restraint/tests/
+
 COPY --chown=1000 examples/example.ipynb /home/jovyan/sample_restraint/examples/
 COPY --chown=1000 examples/job.sh /home/jovyan/sample_restraint/examples/
 COPY --chown=1000 examples/restrained-ensemble.py /home/jovyan/sample_restraint/examples/
@@ -47,12 +50,22 @@ RUN find /home/jovyan -name __pycache__ -exec rm -rf \{\} \; -prune
 RUN mkdir /home/jovyan/plugin-build && \
     (cd /home/jovyan/plugin-build && \
     GROMACS_DIR=/home/jovyan/install/gromacs gmxapi_DIR=/home/jovyan/install/gromacs \
-        cmake ../sample_restraint -DPYTHON_EXECUTABLE=/opt/conda/bin/python && \
+        cmake ../sample_restraint \
+            -DPYTHON_EXECUTABLE=/opt/conda/bin/python && \
     LD_LIBRARY_PATH=/opt/conda/lib make && \
-    make test && \
-    make install) && \
-    PYTHONPATH=plugin-build/src/pythonmodule CONDA_DIR=/opt/conda \
+    GROMACS_DIR=/home/jovyan/install/gromacs make test && \
+    make install)
+
+RUN GROMACS_DIR=/home/jovyan/install/gromacs \
+    PYTHONPATH=plugin-build/src/pythonmodule \
+    CONDA_DIR=/opt/conda \
         /opt/conda/bin/python -m pytest sample_restraint/tests --verbose
+
+RUN GROMACS_DIR=/home/jovyan/install/gromacs \
+    PYTHONPATH=plugin-build/src/pythonmodule \
+    CONDA_DIR=/opt/conda \
+        mpiexec -n 2 /opt/conda/bin/python -m mpi4py -m pytest sample_restraint/tests --verbose
+
 
 # The jupyter notebook server might not pick this up, but we can make it a little easier to find the
 # `gmx` binary from the default user shell.

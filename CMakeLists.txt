@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9.6)
 # If you are using this repository as a template, you should probably change the
 # project name and adopt your own versioning scheme.
-project(sample_restraint VERSION 0.0.8)
+project(brer_restraint VERSION 0.0.8)
 
 find_package(PythonInterp)
 
@@ -23,13 +23,20 @@ endif()
 # the parent project CMake configuration.
 # Also reference https://redmine.gromacs.org/issues/2896
 if(GMXAPI_EXTENSION_MASTER_PROJECT)
-    # TODO: (Issue #3027) Handle locally available sources.
-    set(GMXAPI_EXTENSION_USE_BUNDLED_PYBIND ON CACHE BOOL
-        "Use pybind11 headers bundled with this repository. If OFF, CMake does `find_package(pybind11)`.")
+    option(GMXAPI_EXTENSION_DOWNLOAD_PYBIND
+           "Use the latest version of pybind (to be downloaded by CMake)."
+           OFF)
+    include(CMakeDependentOption)
+    cmake_dependent_option(
+        GMXAPI_EXTENSION_USE_BUNDLED_PYBIND
+        "Use pybind11 headers bundled with this repository. If OFF, CMake does `find_package(pybind11)`."
+        ON
+        "NOT GMXAPI_EXTENSION_DOWNLOAD_PYBIND"
+        OFF
+    )
     if(GMXAPI_EXTENSION_USE_BUNDLED_PYBIND)
         add_subdirectory(external/pybind)
     else()
-        option(GMXAPI_EXTENSION_DOWNLOAD_PYBIND ON)
         if(GMXAPI_EXTENSION_DOWNLOAD_PYBIND)
             configure_file(CMakeLists.pybind.in pybind-download/CMakeLists.txt)
             execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -46,6 +53,7 @@ if(GMXAPI_EXTENSION_MASTER_PROJECT)
             endif()
             add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/pybind-src)
         else()
+            # TODO: (Issue #3027) Handle locally available sources.
             find_package(pybind11 2.2 REQUIRED)
         endif()
     endif()
@@ -81,6 +89,12 @@ if(GMXAPI_EXTENSION_MASTER_PROJECT)
 endif()
 
 if(GMXAPI_EXTENSION_MASTER_PROJECT)
+    # Note: This property only appears on the Gromacs::gmxapi target since GROMACS 2021.
+    # For earlier releases, `-DGMX_SUFFIX` can be set on the CMake command line.
+    get_target_property(_mpi Gromacs::gmxapi MPI)
+    if(_mpi AND _mpi STREQUAL "library")
+        set(_suffix "_mpi")
+    endif()
     ######################################################
     # The following is boiler-plate recommended by GROMACS
     ######################################################
@@ -89,7 +103,7 @@ if(GMXAPI_EXTENSION_MASTER_PROJECT)
     # user explicitly sets what they want to get, and then need to provide a suffix
     # to match.
     option(GMX_DOUBLE "Use double precision" OFF)
-    set(GMX_SUFFIX "" CACHE STRING "Suffix for the GROMACS installation to use (empty for default)")
+    set(GMX_SUFFIX "${_suffix}" CACHE STRING "Suffix for the GROMACS installation to use (empty for default)")
 
     # This does not allow for a non-suffixed double-precision libgromacs, but
     # that should be rare enough for demonstration purposes.
