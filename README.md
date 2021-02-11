@@ -3,8 +3,9 @@ BRER restraint plugin
 
 [![Build Status](https://travis-ci.com/kassonlab/brer_plugin.svg?branch=master)](https://travis-ci.com/kassonlab/brer_plugin)
 
-This [repository](https://github.com/kassonlab/brer_plugin)
-provides the GROMACS MD plugin for use with
+This is the [repository](https://github.com/kassonlab/brer_plugin)
+for the `brer` Python module,
+a C++ extension that provides the GROMACS MD plugin for use with
 https://github.com/kassonlab/run_brer
 
 References
