@@ -39,7 +39,7 @@ public:
          std::string filename);
 
   gmx::PotentialPointData calculate(gmx::Vector v, gmx::Vector v0,
-                                    gmx_unused double t);
+                                    double t);
 
   void writeparameters(double t, const double R);
 
@@ -47,7 +47,7 @@ public:
                 const Resources &resources);
 
 private:
-  bool initialized_{FALSE};
+  bool initialized_{false};
   double alpha_;
 
   /// target distance

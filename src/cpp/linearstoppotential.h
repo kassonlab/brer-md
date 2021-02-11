@@ -48,7 +48,7 @@ public:
   // be able to better optimize a free function that receives the current
   // restraint as an argument.
   gmx::PotentialPointData calculate(gmx::Vector v, gmx::Vector v0,
-                                    gmx_unused double t);
+                                    double t);
 
   void writeparameters(double t, const double R);
 

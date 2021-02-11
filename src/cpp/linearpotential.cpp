@@ -64,7 +64,7 @@ void Linear::callback(gmx::Vector v, gmx::Vector v0, double t,
 }
 
 gmx::PotentialPointData Linear::calculate(gmx::Vector v, gmx::Vector v0,
-                                          gmx_unused double t) {
+                                          double t) {
   // Our convention is to calculate the force that will be applied to v.
   // An equal and opposite force is applied to v0.
   auto rdiff = v - v0;

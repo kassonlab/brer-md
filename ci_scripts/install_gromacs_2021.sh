@@ -25,7 +25,7 @@ pushd $HOME
          -DGMX_DOUBLE=$GMX_DOUBLE \
          -DGMX_MPI=$GMX_MPI \
          -DGMX_THREAD_MPI=$GMX_THREAD_MPI \
-         -DGMXAPI=ON \
+         -DGMX_INSTALL_LEGACY_API=ON \
          -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs_2021 \
          ..
    make -j2 install
