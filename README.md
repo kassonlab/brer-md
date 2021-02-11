@@ -10,7 +10,10 @@ https://github.com/kassonlab/run_brer
 References
 ----------
 
-Hays, J. M., Cafiso, D. S., & Kasson, P. M. Hybrid Refinement of Heterogeneous Conformational Ensembles using Spectroscopic Data. *The Journal of Physical Chemistry Letters*. DOI: [10.1021/acs.jpclett.9b01407](https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407)
+Hays, J. M., Cafiso, D. S., & Kasson, P. M.
+Hybrid Refinement of Heterogeneous Conformational Ensembles using Spectroscopic Data.
+*The Journal of Physical Chemistry Letters* 2019.
+DOI: [10.1021/acs.jpclett.9b01407](https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407)
 
 Irrgang, M. E., Hays, J. M., & Kasson, P. M. gmxapi: a high-level
 interface for advanced control and extension of molecular dynamics
