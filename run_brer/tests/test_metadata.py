@@ -28,7 +28,7 @@ def test_multi_metadata(tmpdir):
     metadata.set_requirements(["param1", "param2"])
 
     with pytest.raises(IndexError):
-        multi.names
+        assert multi.names
     with pytest.raises(IndexError):
         multi.name_to_id("random name")
 

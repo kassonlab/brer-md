@@ -149,10 +149,10 @@ class RunConfig:
         ens_num = int(self.run_data.get('ensemble_num'))
         phase: str = self.run_data.get('phase')
 
-        # Check logic implicit in prior revisions.
-        assert os.path.abspath('{}/mem_{}/{}/{}'.format(self.ens_dir, ens_num, current_iter, phase)) == os.getcwd()
-
         target_dir = os.getcwd()
+        # Check logic implicit in prior revisions.
+        assert os.path.abspath('{}/mem_{}/{}/{}'.format(self.ens_dir, ens_num, current_iter, phase)) == target_dir
+
         target = os.path.join(target_dir, 'state.cpt')
         # If the cpt already exists, don't overwrite it
         if os.path.exists(target):
@@ -180,7 +180,10 @@ class RunConfig:
                     raise RuntimeError('Missing checkpoint file from convergence phase: {}'.format(source))
                 safe_copy(source, target)
 
-    def __train(self):
+    def __train(self, **kwargs):
+        for key in ('append_output',):
+            if key in kwargs:
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
 
         # do re-sampling
         targets = self.pairs.re_sample()
@@ -191,9 +194,11 @@ class RunConfig:
         # save the new targets to the BRER checkpoint file.
         self.run_data.save_config(fnm=self.state_json)
 
+        workdir = os.getcwd()
+
         # backup existing checkpoint.
         # TODO: Don't backup the cpt, actually use it!!
-        cpt = '{}/state.cpt'.format(os.getcwd())
+        cpt = '{}/state.cpt'.format(workdir)
         if os.path.exists(cpt):
             self._logger.warning('There is a checkpoint file in your current working directory, but you are '
                                  'training. The cpt will be backed up and the run will start over with new targets')
@@ -207,7 +212,7 @@ class RunConfig:
         sites_to_name = {}
 
         # Build the gmxapi session.
-        md = gmx.workflow.from_tpr(self.tpr, append_output=False)
+        md = gmx.workflow.from_tpr(self.tpr, append_output=False, **kwargs)
         self.build_plugins(TrainingPluginConfig())
         for plugin in self.__plugins:
             plugin_name = plugin.name
@@ -216,17 +221,18 @@ class RunConfig:
                 if run_data_sites == plugin_name:
                     sites_to_name[plugin_name] = name
             md.add_dependency(plugin)
-        context = gmx.context.ParallelArrayContext(md, workdir_list=[os.getcwd()])
+        context = gmx.context.ParallelArrayContext(md, workdir_list=[workdir])
+
+        self._logger.info("=====TRAINING INFO======\n")
+        self._logger.info(f'Working directory: {workdir}')
 
         # Run it.
         with context as session:
             session.run()
 
-        # In the future runs (convergence, production) we need the ABSOLUTE VALUE of alpha.
-        self._logger.info("=====TRAINING INFO======\n")
-
         for i in range(len(self.__names)):
             current_name = sites_to_name[context.potentials[i].name]
+            # In the future runs (convergence, production) we need the ABSOLUTE VALUE of alpha.
             current_alpha = context.potentials[i].alpha
             current_target = context.potentials[i].target
 
@@ -234,29 +240,39 @@ class RunConfig:
             self.run_data.set(name=current_name, target=current_target)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(current_name, current_alpha, current_target))
 
-    def __converge(self):
+    def __converge(self, **kwargs):
+        for key in ('append_output',):
+            if key in kwargs:
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
 
         self.__move_cpt()
 
-        md = gmx.workflow.from_tpr(self.tpr, append_output=False)
+        md = gmx.workflow.from_tpr(self.tpr, append_output=False, **kwargs)
         self.build_plugins(ConvergencePluginConfig())
         for plugin in self.__plugins:
             md.add_dependency(plugin)
-        context = gmx.context.ParallelArrayContext(md, workdir_list=[os.getcwd()])
+
+        workdir = os.getcwd()
+        self._logger.info("=====CONVERGENCE INFO======\n")
+        self._logger.info(f'Working directory: {workdir}')
+
+        context = gmx.context.ParallelArrayContext(md, workdir_list=[workdir])
         with context as session:
             session.run()
 
         # Get the absolute time (in ps) at which the convergence run finished.
         # This value will be needed if a production run needs to be restarted.
         self.run_data.set(start_time=context.potentials[0].time)
-
-        self._logger.info("=====CONVERGENCE INFO======\n")
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(name, current_alpha, current_target))
 
-    def __production(self):
+    def __production(self, **kwargs):
+
+        for key in ('append_output', 'end_time'):
+            if key in kwargs:
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
 
         # Get the checkpoint file from the convergence phase
         self.__move_cpt()
@@ -266,37 +282,43 @@ class RunConfig:
         # production simulation (specified by the user).
         end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
 
-        md = gmx.workflow.from_tpr(self.tpr, end_time=end_time, append_output=False)
+        md = gmx.workflow.from_tpr(self.tpr, end_time=end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
         for plugin in self.__plugins:
             md.add_dependency(plugin)
-        context = gmx.context.ParallelArrayContext(md, workdir_list=[os.getcwd()])
+
+        workdir = os.getcwd()
+        self._logger.info("=====PRODUCTION INFO======\n")
+        self._logger.info(f'Working directory: {workdir}')
+
+        context = gmx.context.ParallelArrayContext(md, workdir_list=[workdir])
         with context as session:
             session.run()
 
-        self._logger.info("=====PRODUCTION INFO======\n")
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(name, current_alpha, current_target))
 
-    def run(self):
+    def run(self, **kwargs):
         """Perform the MD simulations.
 
         Each Python interpreter process runs a separate ensemble member.
+
+        Key word arguments are passed on to the simulator.
         """
         phase = self.run_data.get('phase')
 
         self.__change_directory()
 
         if phase == 'training':
-            self.__train()
+            self.__train(**kwargs)
             self.run_data.set(phase='convergence')
         elif phase == 'convergence':
-            self.__converge()
+            self.__converge(**kwargs)
             self.run_data.set(phase='production')
         else:
-            self.__production()
+            self.__production(**kwargs)
             self.run_data.set(phase='training', start_time=0, iteration=(self.run_data.get('iteration') + 1))
         self.run_data.save_config(self.state_json)

@@ -111,7 +111,6 @@ class MetaData(ABC):
 
         Returns
         -------
-        type
             The value of the parameter associated with the key.
         """
         return self._metadata[key]
@@ -171,7 +170,7 @@ class MultiMetaData(ABC):
         list
             a list of names
         """
-        return self.__names
+        return list(self.__names)
 
     @names.setter
     def names(self, names: list):
@@ -181,7 +180,7 @@ class MultiMetaData(ABC):
         ----------
         names : list
         """
-        self.__names = names
+        self.__names = list(names)
 
     @names.getter
     def names(self):
@@ -201,7 +200,7 @@ class MultiMetaData(ABC):
             if not self._metadata_list:
                 raise IndexError('Must import a list of metadata before retrieving names')
             self.__names = [metadata.name for metadata in self._metadata_list]
-        return self.__names
+        return list(self.__names)
 
     def add_metadata(self, metadata: MetaData):
         """Appends new MetaData object to self._metadata.
@@ -283,7 +282,7 @@ class MultiMetaData(ABC):
         """
         # TODO: decide on expected behavior here if there's a pre-existing list of data. For now, overwrite
         self._metadata_list = []
-        self._names = []
+        self.__names = []
         data = json.load(open(filename, 'r'))
         for name, metadata in data.items():
             self.__names.append(name)
