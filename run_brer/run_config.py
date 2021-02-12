@@ -180,7 +180,10 @@ class RunConfig:
                     raise RuntimeError('Missing checkpoint file from convergence phase: {}'.format(source))
                 safe_copy(source, target)
 
-    def __train(self):
+    def __train(self, **kwargs):
+        for key in ('append_output',):
+            if key in kwargs:
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
 
         # do re-sampling
         targets = self.pairs.re_sample()
@@ -209,7 +212,7 @@ class RunConfig:
         sites_to_name = {}
 
         # Build the gmxapi session.
-        md = gmx.workflow.from_tpr(self.tpr, append_output=False)
+        md = gmx.workflow.from_tpr(self.tpr, append_output=False, **kwargs)
         self.build_plugins(TrainingPluginConfig())
         for plugin in self.__plugins:
             plugin_name = plugin.name
@@ -237,11 +240,14 @@ class RunConfig:
             self.run_data.set(name=current_name, target=current_target)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(current_name, current_alpha, current_target))
 
-    def __converge(self):
+    def __converge(self, **kwargs):
+        for key in ('append_output',):
+            if key in kwargs:
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
 
         self.__move_cpt()
 
-        md = gmx.workflow.from_tpr(self.tpr, append_output=False)
+        md = gmx.workflow.from_tpr(self.tpr, append_output=False, **kwargs)
         self.build_plugins(ConvergencePluginConfig())
         for plugin in self.__plugins:
             md.add_dependency(plugin)
@@ -262,7 +268,11 @@ class RunConfig:
             current_target = self.run_data.get('target', name=name)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(name, current_alpha, current_target))
 
-    def __production(self):
+    def __production(self, **kwargs):
+
+        for key in ('append_output', 'end_time'):
+            if key in kwargs:
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
 
         # Get the checkpoint file from the convergence phase
         self.__move_cpt()
@@ -272,7 +282,7 @@ class RunConfig:
         # production simulation (specified by the user).
         end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
 
-        md = gmx.workflow.from_tpr(self.tpr, end_time=end_time, append_output=False)
+        md = gmx.workflow.from_tpr(self.tpr, end_time=end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
         for plugin in self.__plugins:
