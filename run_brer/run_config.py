@@ -180,6 +180,15 @@ class RunConfig:
                     raise RuntimeError('Missing checkpoint file from convergence phase: {}'.format(source))
                 safe_copy(source, target)
 
+    def __prep_input(self, tpr_file: str = None):
+        if tpr_file is None:
+            tpr_file = self.tpr
+            # Get the checkpoint file from the previous phase
+            self.__move_cpt()
+        if not os.path.exists(tpr_file):
+            raise RuntimeError('Missing input file: {}'.format(tpr_file))
+        return tpr_file
+
     def __train(self, **kwargs):
         for key in ('append_output',):
             if key in kwargs:
@@ -206,7 +215,7 @@ class RunConfig:
 
         # If this is not the first BRER iteration, grab the checkpoint from the production
         # phase of the last round
-        self.__move_cpt()
+        self.__prep_input(kwargs.pop('tpr_file', None))
 
         # Set up a dictionary to go from plugin name -> restraint name
         sites_to_name = {}
@@ -240,12 +249,14 @@ class RunConfig:
             self.run_data.set(name=current_name, target=current_target)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(current_name, current_alpha, current_target))
 
+        return context
+
     def __converge(self, **kwargs):
         for key in ('append_output',):
             if key in kwargs:
                 raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
 
-        self.__move_cpt()
+        self.__prep_input(kwargs.pop('tpr_file', None))
 
         md = gmx.workflow.from_tpr(self.tpr, append_output=False, **kwargs)
         self.build_plugins(ConvergencePluginConfig())
@@ -268,21 +279,22 @@ class RunConfig:
             current_target = self.run_data.get('target', name=name)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(name, current_alpha, current_target))
 
+        return context
+
     def __production(self, **kwargs):
 
         for key in ('append_output', 'end_time'):
             if key in kwargs:
                 raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
 
-        # Get the checkpoint file from the convergence phase
-        self.__move_cpt()
+        run_input = self.__prep_input(kwargs.pop('tpr_file', None))
 
         # Calculate the time (in ps) at which the BRER iteration should finish.
         # This should be: the end time of the convergence run + the amount of time for
         # production simulation (specified by the user).
         end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
 
-        md = gmx.workflow.from_tpr(self.tpr, end_time=end_time, append_output=False, **kwargs)
+        md = gmx.workflow.from_tpr(run_input, end_time=end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
         for plugin in self.__plugins:
@@ -301,24 +313,35 @@ class RunConfig:
             current_target = self.run_data.get('target', name=name)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(name, current_alpha, current_target))
 
+        return context
+
+
     def run(self, **kwargs):
         """Perform the MD simulations.
 
         Each Python interpreter process runs a separate ensemble member.
 
-        Key word arguments are passed on to the simulator.
+        Parameters
+        ----------
+        tpr_file : str, optional
+            If provided, use this input file instead of the input from the main configuration.
+            Where applicable, the trajectory is also prevented from continuing from an earlier phase.
+            This can be helpful if a checkpoint file is corrupted or unavailable.
+
+        Additional key word arguments are passed on to the simulator.
         """
         phase = self.run_data.get('phase')
 
         self.__change_directory()
 
         if phase == 'training':
-            self.__train(**kwargs)
+            context = self.__train(**kwargs)
             self.run_data.set(phase='convergence')
         elif phase == 'convergence':
-            self.__converge(**kwargs)
+            context = self.__converge(**kwargs)
             self.run_data.set(phase='production')
         else:
-            self.__production(**kwargs)
+            context = self.__production(**kwargs)
             self.run_data.set(phase='training', start_time=0, iteration=(self.run_data.get('iteration') + 1))
         self.run_data.save_config(self.state_json)
+        return context
