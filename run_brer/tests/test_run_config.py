@@ -27,8 +27,17 @@ def test_run_config(tmpdir, data_dir):
         os.makedirs("{}/mem_{}".format(tmpdir, config_params["ensemble_num"]))
         rc = RunConfig(**config_params)
         rc.run_data.set(A=5, tau=0.1, tolerance=100, num_samples=2, sample_period=0.1, production_time=0.2)
+
+        # Training phase.
+        # Include a test for kwarg handling.
         rc.run(threads=2)
+
+        # Convergence phase.
         rc.run()
+
+        # Production phase.
         with pytest.raises(TypeError):
+            # Test handling of kwarg collisions.
             rc.run(end_time=1.0)
+        # Test another kwarg.
         rc.run(max_hours=0.1)
