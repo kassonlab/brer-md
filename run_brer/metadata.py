@@ -92,7 +92,7 @@ class MetaData(ABC):
         value : any, optional
             parameter value, by default None
         """
-        if key and value:
+        if key is not None and value is not None:
             if key not in self.__required_parameters and key != "name":
                 warnings.warn("{} is not a required parameter of {}: setting anyway".format(key, self.name))
             self._metadata[key] = value
