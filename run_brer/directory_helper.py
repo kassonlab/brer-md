@@ -53,14 +53,14 @@ class DirectoryHelper:
 
         """
 
-        self._top_dir = top_dir
+        self._top_dir = str(top_dir)
         self._required_parameters = ['ensemble_num', 'iteration', 'phase']
         for required in self._required_parameters:
             if required not in param_dict:
                 raise ValueError('Must define {}'.format(required))
         self._param_dict = param_dict
 
-    def get_dir(self, level):
+    def get_dir(self, level: str) -> str:
         """Get the directory for however far you want to go down the directory
         tree.
 
@@ -72,7 +72,6 @@ class DirectoryHelper:
 
         Returns
         -------
-        type
             the path to the specified directory 'level' as a str.
         """
         pdict = self._param_dict
@@ -109,4 +108,6 @@ class DirectoryHelper:
             How far to go down the directory tree.
             Can be one of 'top', 'ensemble_num', 'iteration', or 'phase'.
         """
-        os.chdir(self.get_dir(level))
+        next_dir = self.get_dir(level)
+        os.chdir(next_dir)
+        return next_dir
