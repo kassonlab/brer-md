@@ -14,6 +14,7 @@ How the directory structure is organized:
 """
 
 import os
+import pathlib
 
 
 class DirectoryHelper:
@@ -92,12 +93,8 @@ class DirectoryHelper:
         """Checks to see if the working directory for current state of BRER
         simulation exists. If it does not, creates the directory.
         """
-        if not os.path.exists(self.get_dir('phase')):
-            tree = [self.get_dir('ensemble_num'), self.get_dir('iteration')]
-            for leaf in tree:
-                if not os.path.exists(leaf):
-                    os.mkdir(leaf)
-            os.mkdir(self.get_dir('phase'))
+        phase_dir = pathlib.Path(self.get_dir('phase')).absolute()
+        os.makedirs(phase_dir, mode=0o755, exist_ok=True)
 
     def change_dir(self, level):
         """Change to directory specified by level.
