@@ -86,7 +86,7 @@ class TrainingPluginConfig(PluginConfig):
 
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="myplugin",
+        potential = gmx.workflow.WorkElement(namespace="brer",
                                              operation="brer_restraint",
                                              depends=[],
                                              params=self.get_as_dictionary())
@@ -115,7 +115,7 @@ class ConvergencePluginConfig(PluginConfig):
         """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="myplugin",
+        potential = gmx.workflow.WorkElement(namespace="brer",
                                              operation="linearstop_restraint",
                                              depends=[],
                                              params=self.get_as_dictionary())
@@ -144,7 +144,7 @@ class ProductionPluginConfig(PluginConfig):
         """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="myplugin",
+        potential = gmx.workflow.WorkElement(namespace="brer",
                                              operation="linear_restraint",
                                              depends=[],
                                              params=self.get_as_dictionary())
