@@ -57,6 +57,7 @@ def test_run_config(tmpdir, data_dir):
         rc.run_data.set(A=5, tau=0.1, tolerance=100, num_samples=2, sample_period=0.1, production_time=0.2)
 
         # Training phase.
+        assert rc.run_data.get('iteration') == 0
         assert rc.run_data.get('phase') == 'training'
         # Include a test for kwarg handling.
         rc.run(threads=2)
