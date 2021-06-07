@@ -5,7 +5,7 @@ restraint."""
 from abc import abstractmethod
 
 try:
-    from gmx.workflow import WorkElement
+    from gmxapi.simulation.workflow import WorkElement
 except (ImportError, ModuleNotFoundError):
     from gmx.workflow import WorkElement
 
