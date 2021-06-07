@@ -182,7 +182,7 @@ class RunConfig:
                 source = '{}/{}/convergence/state.cpt'.format(member_dir, current_iter)
                 if not os.path.exists(source):
                     self._logger.error(f'os.path.exists({source}) is False! Getting directory listing.')
-                    self._logger.error(str(os.path.listdir(os.path.dirname(source))))
+                    self._logger.error(str(os.listdir(os.path.dirname(source))))
                     raise RuntimeError('Missing checkpoint file from convergence phase: {}'.format(source))
                 safe_copy(source, target)
 
