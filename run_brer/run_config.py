@@ -6,7 +6,12 @@ import os
 import shutil
 from copy import deepcopy
 
-import gmx
+try:
+    from gmxapi.simulation.context import Context as _context
+    from gmxapi.simulation.workflow import WorkElement, from_tpr
+except (ImportError, ModuleNotFoundError):
+    from gmx.context import Context as _context
+    from gmx.workflow import from_tpr, WorkElement
 
 from run_brer.directory_helper import DirectoryHelper
 from run_brer.pair_data import MultiPair
@@ -227,7 +232,7 @@ class RunConfig:
         sites_to_name = {}
 
         # Build the gmxapi session.
-        md = gmx.workflow.from_tpr(self.tpr, append_output=False, **kwargs)
+        md = from_tpr(self.tpr, append_output=False, **kwargs)
         self.build_plugins(TrainingPluginConfig())
         for plugin in self.__plugins:
             plugin_name = plugin.name
@@ -236,7 +241,7 @@ class RunConfig:
                 if run_data_sites == plugin_name:
                     sites_to_name[plugin_name] = name
             md.add_dependency(plugin)
-        context = gmx.context.ParallelArrayContext(md, workdir_list=[workdir])
+        context = _context(md, workdir_list=[workdir])
 
         self._logger.info("=====TRAINING INFO======\n")
         self._logger.info(f'Working directory: {workdir}')
@@ -264,7 +269,7 @@ class RunConfig:
 
         self.__prep_input(kwargs.pop('tpr_file', None))
 
-        md = gmx.workflow.from_tpr(self.tpr, append_output=False, **kwargs)
+        md = from_tpr(self.tpr, append_output=False, **kwargs)
         self.build_plugins(ConvergencePluginConfig())
         for plugin in self.__plugins:
             md.add_dependency(plugin)
@@ -273,7 +278,7 @@ class RunConfig:
         self._logger.info("=====CONVERGENCE INFO======\n")
         self._logger.info(f'Working directory: {workdir}')
 
-        context = gmx.context.ParallelArrayContext(md, workdir_list=[workdir])
+        context = _context(md, workdir_list=[workdir])
         with context as session:
             session.run()
 
@@ -300,7 +305,7 @@ class RunConfig:
         # production simulation (specified by the user).
         end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
 
-        md = gmx.workflow.from_tpr(run_input, end_time=end_time, append_output=False, **kwargs)
+        md = from_tpr(run_input, end_time=end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
         for plugin in self.__plugins:
@@ -310,7 +315,7 @@ class RunConfig:
         self._logger.info("=====PRODUCTION INFO======\n")
         self._logger.info(f'Working directory: {workdir}')
 
-        context = gmx.context.ParallelArrayContext(md, workdir_list=[workdir])
+        context = _context(md, workdir_list=[workdir])
         with context as session:
             session.run()
 

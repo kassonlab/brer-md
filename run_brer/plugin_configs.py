@@ -2,9 +2,14 @@
 class corresponds to ONE restraint since gmxapi plugins each correspond to one
 restraint."""
 
-from run_brer.metadata import MetaData
 from abc import abstractmethod
-import gmx
+
+try:
+    from gmx.workflow import WorkElement
+except (ImportError, ModuleNotFoundError):
+    from gmx.workflow import WorkElement
+
+from run_brer.metadata import MetaData
 
 
 class PluginConfig(MetaData):
@@ -68,7 +73,8 @@ class TrainingPluginConfig(PluginConfig):
     def __init__(self):
         super().__init__()
         self.name = 'training'
-        self.set_requirements(['sites', 'target', 'A', 'tau', 'tolerance', 'num_samples', 'logging_filename'])
+        self.set_requirements(['sites', 'target', 'A', 'tau', 'tolerance', 'num_samples',
+                               'logging_filename'])
 
     def build_plugin(self):
         """Builds training phase plugin for BRER simulations.
@@ -86,10 +92,11 @@ class TrainingPluginConfig(PluginConfig):
 
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="brer",
-                                             operation="brer_restraint",
-                                             depends=[],
-                                             params=self.get_as_dictionary())
+        potential = WorkElement(
+            namespace="brer",
+            operation="brer_restraint",
+            depends=[],
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential
 
@@ -115,10 +122,11 @@ class ConvergencePluginConfig(PluginConfig):
         """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="brer",
-                                             operation="linearstop_restraint",
-                                             depends=[],
-                                             params=self.get_as_dictionary())
+        potential = WorkElement(
+            namespace="brer",
+            operation="linearstop_restraint",
+            depends=[],
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential
 
@@ -127,7 +135,8 @@ class ProductionPluginConfig(PluginConfig):
     def __init__(self):
         super().__init__()
         self.name = 'production'
-        self.set_requirements(['sites', 'target', 'alpha', 'sample_period', 'logging_filename'])
+        self.set_requirements(['sites', 'target', 'alpha', 'sample_period',
+                               'logging_filename'])
 
     def build_plugin(self):
         """Builds production phase plugin for BRER simulations.
@@ -144,9 +153,10 @@ class ProductionPluginConfig(PluginConfig):
         """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="brer",
-                                             operation="linear_restraint",
-                                             depends=[],
-                                             params=self.get_as_dictionary())
+        potential = WorkElement(
+            namespace="brer",
+            operation="linear_restraint",
+            depends=[],
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential
