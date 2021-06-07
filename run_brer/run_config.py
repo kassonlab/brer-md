@@ -133,7 +133,7 @@ class RunConfig:
 
         def safe_copy(src, dst):
             if not os.path.exists(src):
-                raise RuntimeError('Missing checkpoint file from previous iteration: {}'.format(src))
+                raise RuntimeError('Missing file: {}'.format(src))
             if os.path.exists(dst):
                 raise RuntimeError('Destination file already exists: {}'.format(dst))
             size = os.stat(src).st_size
@@ -181,6 +181,8 @@ class RunConfig:
                 # Get the convergence cpt from current iteration
                 source = '{}/{}/convergence/state.cpt'.format(member_dir, current_iter)
                 if not os.path.exists(source):
+                    self._logger.error(f'os.path.exists({source}) is False! Getting directory listing.')
+                    self._logger.error(str(os.path.listdir(os.path.dirname(source))))
                     raise RuntimeError('Missing checkpoint file from convergence phase: {}'.format(source))
                 safe_copy(source, target)
 
