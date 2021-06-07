@@ -9,7 +9,12 @@ import warnings
 from copy import deepcopy
 from typing import Union, Sequence
 
-import gmx
+try:
+    from gmxapi.simulation.context import Context as _context
+    from gmxapi.simulation.workflow import WorkElement, from_tpr
+except (ImportError, ModuleNotFoundError):
+    from gmx.context import Context as _context
+    from gmx.workflow import from_tpr, WorkElement
 
 from run_brer.directory_helper import DirectoryHelper
 from run_brer.pair_data import MultiPair
@@ -246,7 +251,7 @@ class RunConfig:
                 source = '{}/{}/convergence/state.cpt'.format(member_dir, current_iter)
                 if not os.path.exists(source):
                     self._logger.error(f'os.path.exists({source}) is False! Getting directory listing.')
-                    self._logger.error(str(os.path.listdir(os.path.dirname(source))))
+                    self._logger.error(str(os.listdir(os.path.dirname(source))))
                     raise RuntimeError('Missing checkpoint file from convergence phase: {}'.format(source))
                 safe_copy(source, target)
 
@@ -292,7 +297,7 @@ class RunConfig:
 
         # Build the gmxapi session.
         tpr_list: Sequence[str] = self._tprs
-        md = gmx.workflow.from_tpr(tpr_list, append_output=False, **kwargs)
+        md = from_tpr(tpr_list, append_output=False, **kwargs)
         self.build_plugins(TrainingPluginConfig())
         for plugin in self.__plugins:
             plugin_name = plugin.name
@@ -301,7 +306,7 @@ class RunConfig:
                 if run_data_sites == plugin_name:
                     sites_to_name[plugin_name] = name
             md.add_dependency(plugin)
-        context = gmx.context.ParallelArrayContext(md,
+        context = _context(md,
                                                    workdir_list=self.workdirs,
                                                    communicator=self._communicator)
 
@@ -333,7 +338,7 @@ class RunConfig:
 
         self.__prep_input(kwargs.pop('tpr_file', None))
 
-        md = gmx.workflow.from_tpr(self._tprs, append_output=False, **kwargs)
+        md = from_tpr(self._tprs, append_output=False, **kwargs)
         self.build_plugins(ConvergencePluginConfig())
         for plugin in self.__plugins:
             md.add_dependency(plugin)
@@ -342,7 +347,7 @@ class RunConfig:
         self._logger.info("=====CONVERGENCE INFO======\n")
         self._logger.info(f'Working directory: {workdir}')
 
-        context = gmx.context.ParallelArrayContext(md,
+        context = _context(md,
                                                    workdir_list=self.workdirs,
                                                    communicator=self._communicator)
         with context as session:
@@ -372,7 +377,7 @@ class RunConfig:
         # production simulation (specified by the user).
         end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
 
-        md = gmx.workflow.from_tpr(tpr_list, end_time=end_time, append_output=False, **kwargs)
+        md = from_tpr(tpr_list, end_time=end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
         for plugin in self.__plugins:
@@ -382,7 +387,7 @@ class RunConfig:
         self._logger.info("=====PRODUCTION INFO======\n")
         self._logger.info(f'Working directory: {workdir}')
 
-        context = gmx.context.ParallelArrayContext(md,
+        context = _context(md,
                                                    workdir_list=self.workdirs,
                                                    communicator = self._communicator
                                                    )
