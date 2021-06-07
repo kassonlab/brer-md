@@ -50,7 +50,7 @@ def test_run_config(tmpdir, data_dir):
         # This is an unspecified side effect, but we can use it for some additional inspection.
         assert len(os.listdir()) == 0
         # Test another kwarg.
-        rc.run(max_hours=0.1)
+        rc.run(max_hours=0.01)
 
 
 def test_production_bootstrap(tmpdir, data_dir):
