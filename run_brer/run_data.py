@@ -25,16 +25,16 @@ class GeneralParams(MetaData):
 
     def get_defaults(self):
         return {
+            'A': 50,
             'ensemble_num': 1,
             'iteration': 0,
+            'num_samples': 50,
             'phase': 'training',
+            'production_time': 10000,  # 10 ns
+            'sample_period': 100,
             'start_time': 0,
-            'A': 50,
             'tau': 50,
             'tolerance': 0.25,
-            'num_samples': 50,
-            'sample_period': 100,
-            'production_time': 10000  # 10 ns
         }
 
 
