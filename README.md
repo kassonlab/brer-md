@@ -22,11 +22,11 @@ Hays, J. M., Cafiso, D. S., & Kasson, P. M. Hybrid Refinement of Heterogeneous C
 If you're going to use a pip or a conda environment, you'll need:
 
 - Python 3.X
-- gmxapi for GROMACS 2019. See [recommended installation](https://gmxapi.readthedocs.io/en/release-0_0_7/install.html#installation), or
-    1. Install [GROMACS 2019](http://manual.gromacs.org/2019-current/index.html), configured with [`-DGMXAPI=ON`](http://manual.gromacs.org/2019-current/dev-manual/build-system.html#cmake-GMXAPI). Currently, `gmxapi` does not support domain decomposition with MPI, so if you want these simulations to run fast, be sure to compile with GPU support.
-    2. Install gmxapi 0.0.7 [Python package](https://github.com/kassonlab/gmxapi/tree/release-0_0_7). This code has only been tested with [Gromacs 2019](http://manual.gromacs.org/documentation/2019/index.html).
+- gmxapi for GROMACS 2019 or newer.
+    * Install [GROMACS 2019 and gmxapi 0.0.7](https://gmxapi.readthedocs.io/en/release-0_0_7/install.html#installation), or
+    * Install [current GROMACS and gmxapi >= 0.1](https://manual.gromacs.org/current/gmxapi/userguide/install.html)
 
-- The [plugin code](https://github.com/jmhays/sample_restraint/tree/brer) for BRER. Please make sure you install the `brer` branch, _*NOT*_ `master` .
+- The [plugin code](https://github.com/kassonlab/brer_plugin) for BRER.
 
 Otherwise, you can just use a Singularity container!
 
