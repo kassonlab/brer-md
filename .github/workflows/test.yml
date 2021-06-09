@@ -48,8 +48,7 @@ jobs:
         . ./ci_scripts/set_compilers
         ./ci_scripts/install_gromacs_2019.sh
     - name: Test
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      timeout-minutes: 8
       run: |
         . ./ci_scripts/set_compilers
         . $HOME/venv/bin/activate
@@ -99,8 +98,7 @@ jobs:
         . ./ci_scripts/set_compilers
         BRANCH="${GROMACS}" ./ci_scripts/install_gromacs_branch.sh
     - name: Test
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      timeout-minutes: 8
       run: |
         . ./ci_scripts/set_compilers
         . $HOME/venv/bin/activate
@@ -150,8 +148,7 @@ jobs:
         . ./ci_scripts/set_compilers
         BRANCH="${GROMACS}" ./ci_scripts/install_gromacs_branch.sh
     - name: Test
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      timeout-minutes: 8
       run: |
         . ./ci_scripts/set_compilers
         . $HOME/venv/bin/activate
