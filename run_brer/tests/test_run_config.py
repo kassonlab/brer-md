@@ -11,7 +11,7 @@ from run_brer.run_config import RunConfig
 
 # Try to get a reasonable number of threads to use.
 try:
-    num_cpus = os.sched_getaffinity(0)
+    num_cpus: int = len(os.sched_getaffinity(0))
 except Exception:
     num_cpus = 4
 

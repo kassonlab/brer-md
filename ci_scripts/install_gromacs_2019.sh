@@ -21,7 +21,8 @@ pushd $HOME
   rm -rf build
   mkdir build
   pushd build
-   cmake -DCMAKE_CXX_COMPILER=$CXX \
+   cmake -G Ninja \
+         -DCMAKE_CXX_COMPILER=$CXX \
          -DGMX_ENABLE_CCACHE=ON \
          -DCMAKE_C_COMPILER=$CC \
          -DGMX_DOUBLE=$GMX_DOUBLE \
@@ -30,7 +31,7 @@ pushd $HOME
          -DGMXAPI=ON \
          -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs-release-2019 \
          ..
-   make -j2 install
+   cmake --build . --target install
   popd
  popd
 popd

@@ -95,7 +95,7 @@ script:
     if [ "${GROMACS}" == release-2019 ] ; then
       source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
     else
-      source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && $PYTHON -m pip install gmxapi
+      source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && $PYTHON -m pip install ${GMXAPI}
     fi
   - ./ci_scripts/brer_restraint.sh
   - ./ci_scripts/run_brer.sh
