@@ -47,7 +47,16 @@ jobs:
       run: |
         . ./ci_scripts/set_compilers
         ./ci_scripts/install_gromacs_2019.sh
-
+    - name: Test
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: |
+        . ./ci_scripts/set_compilers
+        . $HOME/venv/bin/activate
+        export PYTHON=$HOME/venv/bin/python
+        source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
+        ./ci_scripts/brer_restraint.sh
+        ./ci_scripts/run_brer.sh
   gmx2020:
     runs-on: ubuntu-latest
     env:
@@ -89,7 +98,16 @@ jobs:
       run: |
         . ./ci_scripts/set_compilers
         BRANCH="${GROMACS}" ./ci_scripts/install_gromacs_branch.sh
-
+    - name: Test
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: |
+        . ./ci_scripts/set_compilers
+        . $HOME/venv/bin/activate
+        export PYTHON=$HOME/venv/bin/python
+        source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && $PYTHON -m pip install "${{ env.GMXAPI }}"
+        ./ci_scripts/brer_restraint.sh
+        ./ci_scripts/run_brer.sh
   gmx2021:
     runs-on: ubuntu-latest
     env:
@@ -131,4 +149,13 @@ jobs:
       run: |
         . ./ci_scripts/set_compilers
         BRANCH="${GROMACS}" ./ci_scripts/install_gromacs_branch.sh
-
+    - name: Test
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: |
+        . ./ci_scripts/set_compilers
+        . $HOME/venv/bin/activate
+        export PYTHON=$HOME/venv/bin/python
+        source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && $PYTHON -m pip install "${{ env.GMXAPI }}"
+        ./ci_scripts/brer_restraint.sh
+        ./ci_scripts/run_brer.sh
