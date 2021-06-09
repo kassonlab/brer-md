@@ -22,9 +22,10 @@ cache:
 compiler: gcc
 
 env:
-# Python 2.7 and 3.6 are the only generations provided by pyenv on Travis-CI out-of-the-box. We don't expect run_ebmetad to be compatible with 2.7
-  - PY=3.6 GROMACS=2019
-  - PY=3.7 GROMACS=2021
+  - PY=3.6 GROMACS=release-2019
+  - PY=3.7 GROMACS=release-2020 GMXAPI="gmxapi<0.2"
+#  - PY=3.7 GROMACS=release-2021 GMXAPI="gmxapi>=0.2"
+#  - PY=3.7 GROMACS=master GMXAPI="gmxapi>=0.2"
 
 addons:
   apt:
@@ -73,25 +74,28 @@ before_install:
 install:
   - export CCACHE_DIR=$HOME/.ccache_gromacs
   - ccache -s
-  - ./ci_scripts/install_gromacs_${GROMACS}.sh
+  - |
+    if [ "${GROMACS}" == release-2019 ] ; then
+      ./ci_scripts/install_gromacs_2019.sh
+    else
+      BRANCH="${GROMACS}" ./ci_scripts/install_gromacs_branch.sh
+    fi
   - pip install codecov
 
 before_script:
   - export CCACHE_DIR=$HOME/.ccache_py
   - ccache -s
-  - pip install --upgrade pip setuptools
+  - pip install --upgrade pip setuptools wheel
   - pip install --upgrade packaging scikit-build
   - pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
   - pip install pytest pytest-cov numpy networkx sphinx sphinx_rtd_theme
 
 script:
   - |
-    if [ "${GROMACS}" == 2019 ] ; then
-      source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
-    elif [ "${GROMACS}" == 2021 ] ; then
-      source $HOME/install/gromacs_${GROMACS}/bin/GMXRC && $PYTHON -m pip install gmxapi
+    if [ "${GROMACS}" == release-2019 ] ; then
+      source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && ./ci_scripts/pygmx_0_0_7.sh
     else
-      exit 1
+      source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && $PYTHON -m pip install gmxapi
     fi
   - ./ci_scripts/brer_restraint.sh
   - ./ci_scripts/run_brer.sh

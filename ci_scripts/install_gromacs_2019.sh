@@ -5,7 +5,7 @@ export GMX_DOUBLE=OFF
 export GMX_MPI=OFF
 export GMX_THREAD_MPI=ON
 
-export GMX_SRC_DIR=gromacs-2019
+export GMX_SRC_DIR=gromacs-release-2019
 
 ccache -s
 
@@ -28,7 +28,7 @@ pushd $HOME
          -DGMX_MPI=$GMX_MPI \
          -DGMX_THREAD_MPI=$GMX_THREAD_MPI \
          -DGMXAPI=ON \
-         -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs_2019 \
+         -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs-release-2019 \
          ..
    make -j2 install
   popd

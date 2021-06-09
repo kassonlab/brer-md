@@ -5,7 +5,7 @@ export GMX_DOUBLE=OFF
 export GMX_MPI=OFF
 export GMX_THREAD_MPI=ON
 
-export GMX_SRC_DIR=gromacs-2021
+export GMX_SRC_DIR=gromacs-$BRANCH
 
 ccache -s
 
@@ -13,7 +13,7 @@ pushd $HOME
  [ -d $GMX_SRC_DIR ] || \
     git clone \
         --depth=1 \
-        -b release-2021 \
+        -b $BRANCH \
         https://gitlab.com/gromacs/gromacs.git \
         ${GMX_SRC_DIR}
  pushd ${GMX_SRC_DIR}
@@ -28,7 +28,7 @@ pushd $HOME
          -DGMX_MPI=$GMX_MPI \
          -DGMX_THREAD_MPI=$GMX_THREAD_MPI \
          -DGMX_INSTALL_LEGACY_API=ON \
-         -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs_2021 \
+         -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs-$BRANCH \
          ..
    make -j2 install
   popd
