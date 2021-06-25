@@ -1,10 +1,6 @@
 # run_brer
 
-![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
-![Total alerts](https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18)
-
-[![Build Status](https://travis-ci.com/kassonlab/run_brer.svg?branch=master)](https://travis-ci.com/kassonlab/run_brer)
-![codecov](https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg)
+[![Build and test](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg)](https://github.com/kassonlab/run_brer/actions/workflows/test.yml)
 
 This project is hosted in a git repository at https://github.com/kassonlab/run_brer
 
