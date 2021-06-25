@@ -3,10 +3,9 @@
 State and PairData classes inherit from this class.
 """
 
-
-from abc import ABC
 import json
 import warnings
+from abc import ABC
 
 
 class MetaData(ABC):
@@ -94,11 +93,17 @@ class MetaData(ABC):
         """
         if key is not None and value is not None:
             if key not in self.__required_parameters and key != "name":
-                warnings.warn("{} is not a required parameter of {}: setting anyway".format(key, self.name))
+                warnings.warn("{} is not a required parameter of {}: setting "
+                              "anyway".format(
+                    key,
+                    self.name))
             self._metadata[key] = value
         for key, value in kwargs.items():
             if key not in self.__required_parameters and key != "name":
-                warnings.warn("{} is not a required parameter of {}: setting anyway".format(key, self.name))
+                warnings.warn("{} is not a required parameter of {}: setting "
+                              "anyway".format(
+                    key,
+                    self.name))
             self._metadata[key] = value
 
     def get(self, key):
@@ -280,7 +285,8 @@ class MultiMetaData(ABC):
         filename : str
              (Default value = 'state.json')
         """
-        # TODO: decide on expected behavior here if there's a pre-existing list of data. For now, overwrite
+        # TODO: decide on expected behavior here if there's a pre-existing list of
+        #  data. For now, overwrite
         self._metadata_list = []
         self.__names = []
         data = json.load(open(filename, 'r'))

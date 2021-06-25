@@ -1,9 +1,12 @@
 """Classes to handle 1) pair metadata 2) resampling from DEER distributions at
 each new BRER iteration."""
 
-import numpy as np
-from run_brer.metadata import MetaData, MultiMetaData
 import json
+
+import numpy as np
+
+from run_brer.metadata import MetaData
+from run_brer.metadata import MultiMetaData
 
 
 class PairData(MetaData):

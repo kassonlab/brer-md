@@ -1,6 +1,6 @@
 """Unit tests and regression for PairData classes."""
-from run_brer.pair_data import PairData, MultiPair
-import pytest
+from run_brer.pair_data import MultiPair
+from run_brer.pair_data import PairData
 
 
 def test_pair_data(data_dir, raw_pair_data):
@@ -23,7 +23,6 @@ def test_pair_data(data_dir, raw_pair_data):
 
     samples = mp.re_sample()
     assert list(samples.keys()) == mp.names
-    
 
 # def test_pair_data(multi_pair_data, raw_pair_data):
 #     """Ensures that multipair constructs multiple PairData objects.

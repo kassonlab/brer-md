@@ -1,7 +1,12 @@
 """Unit tests and regression for PluginConfig classes."""
-from run_brer.plugin_configs import TrainingPluginConfig, ConvergencePluginConfig, ProductionPluginConfig
-from run_brer.run_data import GeneralParams, PairParams
 import pytest
+
+from run_brer.plugin_configs import ConvergencePluginConfig
+from run_brer.plugin_configs import ProductionPluginConfig
+from run_brer.plugin_configs import TrainingPluginConfig
+from run_brer.run_data import GeneralParams
+from run_brer.run_data import PairParams
+
 
 def test_plugins(raw_pair_data):
     """Build all three test plugins and check that they have all the required
@@ -23,7 +28,7 @@ def test_plugins(raw_pair_data):
     sites = raw_pair_data[name]["sites"]
     pp = PairParams(name)
     pp.load_sites(sites)
-    #pp.set_to_defaults()
+    # pp.set_to_defaults()
 
     pair_param_dict = pp.get_as_dictionary()
 
@@ -53,7 +58,7 @@ def test_plugins(raw_pair_data):
     tpc.scan_metadata(pp)
     cpc.scan_metadata(pp)
     ppc.scan_metadata(pp)
-    
+
     tpc.build_plugin()
     cpc.build_plugin()
     ppc.build_plugin()
