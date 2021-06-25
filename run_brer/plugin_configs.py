@@ -105,7 +105,8 @@ class ConvergencePluginConfig(PluginConfig):
     def __init__(self):
         super().__init__()
         self.name = 'convergence'
-        self.set_requirements(['sites', 'alpha', 'target', 'tolerance', 'sample_period', 'logging_filename'])
+        self.set_requirements(['sites', 'alpha', 'target', 'tolerance', 'sample_period',
+                               'logging_filename'])
 
     def build_plugin(self):
         """Builds convergence phase plugin for BRER simulations.

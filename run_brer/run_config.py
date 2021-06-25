@@ -40,7 +40,8 @@ class RunConfig:
             the ensemble member to run, by default 1
         pairs_json : str, optional
             path to file containing *ALL* the pair metadata.
-            An example of what such a file should look like is provided in the data directory,
+            An example of what such a file should look like is provided in the data
+            directory,
             by default 'pair_data.json'
         """
         self.tpr = tpr
@@ -52,7 +53,8 @@ class RunConfig:
         # Load the pair data from a json. Use this to set up the run metadata
         self.pairs = MultiPair()
         self.pairs.read_from_json(pairs_json)
-        # use the same identifiers for the pairs here as those provided in the pair metadata
+        # use the same identifiers for the pairs here as those provided in the pair
+        # metadata
         # file this prevents mixing up pair data amongst the different pairs (i.e.,
         # accidentally applying the restraints for pair 1 to pair 2.)
         self.__names = self.pairs.names
@@ -60,12 +62,14 @@ class RunConfig:
         self.run_data = RunData()
         self.run_data.set(ensemble_num=ensemble_num)
 
-        self.state_json = '{}/mem_{}/state.json'.format(ensemble_dir, self.run_data.get('ensemble_num'))
+        self.state_json = '{}/mem_{}/state.json'.format(ensemble_dir,
+                                                        self.run_data.get('ensemble_num'))
         # If we're in the middle of a run, load the BRER checkpoint file and continue from
         # the current state.
         if os.path.exists(self.state_json):
             self.run_data.from_dictionary(json.load(open(self.state_json)))
-        # Otherwise, populate the state information using the pre-loaded pair data. Then save
+        # Otherwise, populate the state information using the pre-loaded pair data.
+        # Then save
         # the current state.
         else:
             for pd in self.pairs:
@@ -92,15 +96,18 @@ class RunConfig:
         self._logger.addHandler(fh)
         self._logger.addHandler(ch)
 
-        self._logger.info("Initialized the run configuration: {}".format(self.run_data.as_dictionary()))
+        self._logger.info("Initialized the run configuration: {}".format(
+            self.run_data.as_dictionary()))
         self._logger.info("Names of restraints: {}".format(self.__names))
 
-        # Need to cleanly handle cancelled jobs: write out a checkpoint of the state if the
+        # Need to cleanly handle cancelled jobs: write out a checkpoint of the state if
+        # the
         # job is exited.
         # def cleanup():
         #     """"""
         #     self.run_data.save_config(self.state_json)
-        #     self._logger.info("BRER received INT signal, stopping and saving data to {}".format(self.state_json))
+        #     self._logger.info("BRER received INT signal, stopping and saving data to
+        #     {}".format(self.state_json))
 
         # atexit.register(cleanup)
 
@@ -112,25 +119,32 @@ class RunConfig:
         Parameters
         ----------
         plugin_config : PluginConfig
-            the particular plugin configuration (Training, Convergence, Production) for the run.
+            the particular plugin configuration (Training, Convergence, Production) for
+            the run.
         """
 
         # One plugin per restraint.
-        # TODO: what is the expected behavior when a list of plugins exists? Probably wipe them.
+        # TODO: what is the expected behavior when a list of plugins exists? Probably
+        #  wipe them.
         self.__plugins = []
         general_params = self.run_data.general_params
-        # For each pair-wise restraint, populate the plugin with data: both the "general" data and
+        # For each pair-wise restraint, populate the plugin with data: both the
+        # "general" data and
         # the data unique to that restraint.
         for name in self.__names:
             pair_params = self.run_data.pair_params[name]
             new_restraint = deepcopy(plugin_config)
-            new_restraint.scan_metadata(general_params)  # load general data into current restraint
-            new_restraint.scan_metadata(pair_params)  # load pair-specific data into current restraint
+            new_restraint.scan_metadata(general_params)  # load general data into
+            # current restraint
+            new_restraint.scan_metadata(pair_params)  # load pair-specific data into
+            # current restraint
             self.__plugins.append(new_restraint.build_plugin())
 
     def __change_directory(self):
-        # change into the current working directory (ensemble_path/member_path/iteration/phase)
-        dir_help = DirectoryHelper(top_dir=self.ens_dir, param_dict=self.run_data.general_params.get_as_dictionary())
+        # change into the current working directory (
+        # ensemble_path/member_path/iteration/phase)
+        dir_help = DirectoryHelper(top_dir=self.ens_dir,
+                                   param_dict=self.run_data.general_params.get_as_dictionary())
         dir_help.build_working_dir()
         dir_help.change_dir('phase')
 
@@ -160,12 +174,17 @@ class RunConfig:
 
         target_dir = os.getcwd()
         # Check logic implicit in prior revisions.
-        assert os.path.abspath('{}/mem_{}/{}/{}'.format(self.ens_dir, ens_num, current_iter, phase)) == target_dir
+        assert os.path.abspath('{}/mem_{}/{}/{}'.format(self.ens_dir,
+                                                        ens_num,
+                                                        current_iter,
+                                                        phase)) == target_dir
 
         target = os.path.join(target_dir, 'state.cpt')
         # If the cpt already exists, don't overwrite it
         if os.path.exists(target):
-            self._logger.info("Phase is {} and state.cpt already exists: not moving any files".format(phase))
+            self._logger.info(
+                "Phase is {} and state.cpt already exists: not moving any files".format(
+                    phase))
 
         else:
             member_dir = '{}/mem_{}'.format(self.ens_dir, ens_num)
@@ -176,7 +195,9 @@ class RunConfig:
                     # Get the production cpt from previous iteration
                     source = '{}/{}/production/state.cpt'.format(member_dir, prev_iter)
                     if not os.path.exists(source):
-                        raise RuntimeError('Missing checkpoint file from previous iteration: {}'.format(source))
+                        raise RuntimeError(
+                            'Missing checkpoint file from previous iteration: {}'.format(
+                                source))
                     safe_copy(source, target)
 
                 else:
@@ -186,9 +207,12 @@ class RunConfig:
                 # Get the convergence cpt from current iteration
                 source = '{}/{}/convergence/state.cpt'.format(member_dir, current_iter)
                 if not os.path.exists(source):
-                    self._logger.error(f'os.path.exists({source}) is False! Getting directory listing.')
+                    self._logger.error(f'os.path.exists({source}) is False! Getting '
+                                       f'directory listing.')
                     self._logger.error(str(os.listdir(os.path.dirname(source))))
-                    raise RuntimeError('Missing checkpoint file from convergence phase: {}'.format(source))
+                    raise RuntimeError(
+                        'Missing checkpoint file from convergence phase: {}'.format(
+                            source))
                 safe_copy(source, target)
 
     def __prep_input(self, tpr_file: str = None):
@@ -203,7 +227,8 @@ class RunConfig:
     def __train(self, **kwargs):
         for key in ('append_output',):
             if key in kwargs:
-                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(
+                    key))
 
         # do re-sampling
         targets = self.pairs.re_sample()
@@ -220,8 +245,11 @@ class RunConfig:
         # TODO: Don't backup the cpt, actually use it!!
         cpt = '{}/state.cpt'.format(workdir)
         if os.path.exists(cpt):
-            self._logger.warning('There is a checkpoint file in your current working directory, but you are '
-                                 'training. The cpt will be backed up and the run will start over with new targets')
+            self._logger.warning(
+                'There is a checkpoint file in your current working directory, but you '
+                'are '
+                'training. The cpt will be backed up and the run will start over with '
+                'new targets')
             shutil.move(cpt, '{}.bak'.format(cpt))
 
         # If this is not the first BRER iteration, grab the checkpoint from the production
@@ -252,20 +280,24 @@ class RunConfig:
 
         for i in range(len(self.__names)):
             current_name = sites_to_name[context.potentials[i].name]
-            # In the future runs (convergence, production) we need the ABSOLUTE VALUE of alpha.
+            # In the future runs (convergence, production) we need the ABSOLUTE VALUE
+            # of alpha.
             current_alpha = context.potentials[i].alpha
             current_target = context.potentials[i].target
 
             self.run_data.set(name=current_name, alpha=current_alpha)
             self.run_data.set(name=current_name, target=current_target)
-            self._logger.info("Plugin {}: alpha = {}, target = {}".format(current_name, current_alpha, current_target))
+            self._logger.info("Plugin {}: alpha = {}, target = {}".format(current_name,
+                                                                          current_alpha,
+                                                                          current_target))
 
         return context
 
     def __converge(self, **kwargs):
         for key in ('append_output',):
             if key in kwargs:
-                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(
+                    key))
 
         self.__prep_input(kwargs.pop('tpr_file', None))
 
@@ -288,7 +320,9 @@ class RunConfig:
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
-            self._logger.info("Plugin {}: alpha = {}, target = {}".format(name, current_alpha, current_target))
+            self._logger.info("Plugin {}: alpha = {}, target = {}".format(name,
+                                                                          current_alpha,
+                                                                          current_target))
 
         return context
 
@@ -296,7 +330,8 @@ class RunConfig:
 
         for key in ('append_output', 'end_time'):
             if key in kwargs:
-                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(key))
+                raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(
+                    key))
 
         run_input = self.__prep_input(kwargs.pop('tpr_file', None))
 
@@ -322,7 +357,9 @@ class RunConfig:
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
-            self._logger.info("Plugin {}: alpha = {}, target = {}".format(name, current_alpha, current_target))
+            self._logger.info("Plugin {}: alpha = {}, target = {}".format(name,
+                                                                          current_alpha,
+                                                                          current_target))
 
         return context
 
@@ -334,22 +371,27 @@ class RunConfig:
         Parameters
         ----------
         tpr_file : str, optional
-            If provided, use this input file instead of the input from the main configuration.
+            If provided, use this input file instead of the input from the main
+            configuration.
 
         After the first "iteration", run_brer bootstraps the training and convergence
-        phase's trajectory with the checkpoint file from the previous iteration's production phase.
+        phase's trajectory with the checkpoint file from the previous iteration's
+        production phase.
 
         At the beginning of a production phase (when there is not yet a checkpoint file),
-        the checkpoint file from the convergence phase is used to start the production trajectory
+        the checkpoint file from the convergence phase is used to start the production
+        trajectory
         **unless** *tpr_file* is given.
 
-        When *tpr_file* is not None, run() does not look for a bootstrapping checkpoint file.
+        When *tpr_file* is not None, run() does not look for a bootstrapping checkpoint
+        file.
         This can be helpful if a checkpoint file is corrupted or unavailable.
         In general, this means that the *tpr_file* argument should include
         the starting configuration you intend for the phase that you are about to run().
         If you are providing the *tpr_file* because you are changing parameters that
         render existing checkpoints incompatible, you need to either generate the file
-        with the checkpoint from which you want to continue, or you may remove the checkpoint
+        with the checkpoint from which you want to continue, or you may remove the
+        checkpoint
         file from the phase directory and restart that phase.
 
         Additional key word arguments are passed on to the simulator.
@@ -383,6 +425,8 @@ class RunConfig:
             self.run_data.set(phase='production')
         else:
             context = self.__production(**kwargs)
-            self.run_data.set(phase='training', start_time=0, iteration=(self.run_data.get('iteration') + 1))
+            self.run_data.set(phase='training',
+                              start_time=0,
+                              iteration=(self.run_data.get('iteration') + 1))
         self.run_data.save_config(self.state_json)
         return context

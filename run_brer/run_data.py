@@ -1,8 +1,9 @@
 """Class that handles the simulation data for BRER simulations.
 """
+import json
+
 from run_brer.metadata import MetaData
 from run_brer.pair_data import PairData
-import json
 
 
 class GeneralParams(MetaData):
@@ -15,7 +16,8 @@ class GeneralParams(MetaData):
     def __init__(self):
         super().__init__('general')
         self.set_requirements([
-            'ensemble_num', 'iteration', 'phase', 'start_time', 'A', 'tau', 'tolerance', 'num_samples',
+            'ensemble_num', 'iteration', 'phase', 'start_time', 'A', 'tau', 'tolerance',
+            'num_samples',
             'sample_period', 'production_time'
         ])
 
@@ -93,13 +95,16 @@ class RunData:
         """
 
         for key, value in kwargs.items():
-            # If a restraint name is not specified, it is assumed that the parameter is a "general" parameter.
+            # If a restraint name is not specified, it is assumed that the parameter is
+            # a "general" parameter.
             if not name:
                 if key in self.general_params.get_requirements():
                     self.general_params.set(key, value)
                 else:
-                    raise ValueError('You have provided a name; this means you are probably trying to set a '
-                                     'pair-specific parameter. {} is not pair-specific'.format(key))
+                    raise ValueError(
+                        'You have provided a name; this means you are probably trying '
+                        'to set a '
+                        'pair-specific parameter. {} is not pair-specific'.format(key))
             else:
                 if key in self.pair_params[name].get_requirements():
                     self.pair_params[name].set(key, value)
@@ -114,7 +119,8 @@ class RunData:
         key : str
             the parameter to get.
         name : str
-            if getting a pair-specific parameter, specify the restraint name. (Default value = None)
+            if getting a pair-specific parameter, specify the restraint name. (Default
+            value = None)
 
         Returns
         -------
@@ -125,8 +131,10 @@ class RunData:
         elif name:
             return self.pair_params[name].get(key)
         else:
-            raise ValueError('You have not provided a name, but are trying to get a pair-specific parameter. '
-                             'Please provide a pair name')
+            raise ValueError(
+                'You have not provided a name, but are trying to get a pair-specific '
+                'parameter. '
+                'Please provide a pair name')
 
     def as_dictionary(self):
         """Get the run metadata as a heirarchical dictionary:
@@ -156,7 +164,10 @@ class RunData:
         for name in self.pair_params.keys():
             pair_param_dict[name] = self.pair_params[name].get_as_dictionary()
 
-        return {'general parameters': self.general_params.get_as_dictionary(), 'pair parameters': pair_param_dict}
+        return {
+            'general parameters': self.general_params.get_as_dictionary(),
+            'pair parameters': pair_param_dict
+        }
 
     def from_dictionary(self, data: dict):
         """Loads metadata into the class from a dictionary.

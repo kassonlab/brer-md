@@ -82,12 +82,18 @@ class DirectoryHelper:
         elif level == 'ensemble_num':
             return_dir = '{}/mem_{}'.format(self._top_dir, pdict['ensemble_num'])
         elif level == 'iteration':
-            return_dir = '{}/mem_{}/{}'.format(self._top_dir, pdict['ensemble_num'], pdict['iteration'])
+            return_dir = '{}/mem_{}/{}'.format(self._top_dir,
+                                               pdict['ensemble_num'],
+                                               pdict['iteration'])
         elif level == 'phase':
-            return_dir = '{}/mem_{}/{}/{}'.format(self._top_dir, pdict['ensemble_num'], pdict['iteration'],
+            return_dir = '{}/mem_{}/{}/{}'.format(self._top_dir,
+                                                  pdict['ensemble_num'],
+                                                  pdict['iteration'],
                                                   pdict['phase'])
         else:
-            raise ValueError('{} is not a valid directory type for BRER simulations'.format('type'))
+            raise ValueError('{} is not a valid directory type for BRER '
+                             'simulations'.format(
+                'type'))
         return return_dir
 
     def build_working_dir(self):

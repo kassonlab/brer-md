@@ -8,7 +8,6 @@ import pytest
 
 from run_brer.run_config import RunConfig
 
-
 # Try to get a reasonable number of threads to use.
 try:
     num_cpus: int = len(os.sched_getaffinity(0))
@@ -55,7 +54,8 @@ def test_run_config(tmpdir, data_dir):
             # Test handling of kwarg collisions.
             rc.run(end_time=1.0)
         # Note that rc.__production failed, but rc.run() will have changed directory.
-        # This is an unspecified side effect, but we can use it for some additional inspection.
+        # This is an unspecified side effect, but we can use it for some additional
+        # inspection.
         assert len(os.listdir()) == 0
         # Test another kwarg.
         rc.run(max_hours=0.001)
@@ -88,7 +88,8 @@ def test_production_bootstrap(tmpdir, data_dir):
         # Production phase.
         # It is a little bit difficult to test that the production phase actually
         # runs with a non-default TPR file.
-        # Warning: This may need some extra conditional logic to support more gmxapi versions.
+        # Warning: This may need some extra conditional logic to support more gmxapi
+        # versions.
 
         # Test production bootstrap option.
         # TODO: Merge with test_run_config once issue #19 is resolved.

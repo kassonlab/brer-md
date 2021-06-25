@@ -1,8 +1,9 @@
-import pytest
 # from run_brer.run_data import RunData
 # from run_brer.run_config import RunConfig
 # from run_brer.pair_data import MultiPair
 import os
+
+import pytest
 
 
 @pytest.fixture()
@@ -65,7 +66,7 @@ def raw_pair_data():
         "196_228": {
             "sites": [2721, 2994, 3237],
             "name":
-            "196_228",
+                "196_228",
             "distribution": [
                 3.0993964770242886e-55, 7.888491138010415e-49,
                 7.416505782548665e-43, 2.578706066633252e-37,
@@ -111,7 +112,7 @@ def raw_pair_data():
         "052_210": {
             "sites": [422, 1351, 1797, 2955],
             "name":
-            "052_210",
+                "052_210",
             "distribution": [
                 4.931761297093875e-53, 9.785571147358419e-47,
                 7.145660538193909e-41, 1.920698448733745e-35,
@@ -160,7 +161,7 @@ def raw_pair_data():
         "105_216": {
             "sites": [1287, 975, 3059],
             "name":
-            "105_216",
+                "105_216",
             "distribution": [
                 1.0297992663545551e-57, 3.4940214061895545e-51,
                 4.361180511740182e-45, 2.0025717355627283e-39,
