@@ -1,6 +1,7 @@
 """Unit tests and regression for DirectoryHelper class."""
-from run_brer.directory_helper import DirectoryHelper
 import os
+
+from run_brer.directory_helper import DirectoryHelper
 
 
 def test_directory(tmpdir):
@@ -13,7 +14,8 @@ def test_directory(tmpdir):
     """
     my_home = os.path.abspath(os.getcwd())
     top_dir = tmpdir.mkdir("top_directory")
-    dir_helper = DirectoryHelper(top_dir, {'ensemble_num': 1, 'iteration': 0, 'phase': 'training'})
+    dir_helper = DirectoryHelper(top_dir,
+                                 {'ensemble_num': 1, 'iteration': 0, 'phase': 'training'})
     dir_helper.build_working_dir()
     dir_helper.change_dir('phase')
     assert (os.getcwd() == '{}/mem_{}/{}/{}'.format(top_dir, 1, 0, 'training'))

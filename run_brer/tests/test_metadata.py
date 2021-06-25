@@ -2,7 +2,9 @@
 """
 
 import pytest
-from run_brer.metadata import MetaData, MultiMetaData
+
+from run_brer.metadata import MetaData
+from run_brer.metadata import MultiMetaData
 
 
 def test_metadata():
@@ -18,7 +20,11 @@ def test_metadata():
     with pytest.warns(Warning):
         metadata.set("bad_parameter", "bad")
 
-    assert metadata.get_as_dictionary() == {"param1": "string", "param2": 0., "bad_parameter": "bad"}
+    assert metadata.get_as_dictionary() == {
+        "param1": "string",
+        "param2": 0.,
+        "bad_parameter": "bad"
+    }
 
 
 def test_multi_metadata(tmpdir):

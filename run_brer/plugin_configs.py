@@ -2,9 +2,11 @@
 class corresponds to ONE restraint since gmxapi plugins each correspond to one
 restraint."""
 
-from run_brer.metadata import MetaData
 from abc import abstractmethod
+
 import gmx
+
+from run_brer.metadata import MetaData
 
 
 class PluginConfig(MetaData):
@@ -68,7 +70,8 @@ class TrainingPluginConfig(PluginConfig):
     def __init__(self):
         super().__init__()
         self.name = 'training'
-        self.set_requirements(['sites', 'target', 'A', 'tau', 'tolerance', 'num_samples', 'logging_filename'])
+        self.set_requirements(['sites', 'target', 'A', 'tau', 'tolerance', 'num_samples',
+                               'logging_filename'])
 
     def build_plugin(self):
         """Builds training phase plugin for BRER simulations.
@@ -98,7 +101,8 @@ class ConvergencePluginConfig(PluginConfig):
     def __init__(self):
         super().__init__()
         self.name = 'convergence'
-        self.set_requirements(['sites', 'alpha', 'target', 'tolerance', 'sample_period', 'logging_filename'])
+        self.set_requirements(['sites', 'alpha', 'target', 'tolerance', 'sample_period',
+                               'logging_filename'])
 
     def build_plugin(self):
         """Builds convergence phase plugin for BRER simulations.
@@ -127,7 +131,8 @@ class ProductionPluginConfig(PluginConfig):
     def __init__(self):
         super().__init__()
         self.name = 'production'
-        self.set_requirements(['sites', 'target', 'alpha', 'sample_period', 'logging_filename'])
+        self.set_requirements(['sites', 'target', 'alpha', 'sample_period',
+                               'logging_filename'])
 
     def build_plugin(self):
         """Builds production phase plugin for BRER simulations.

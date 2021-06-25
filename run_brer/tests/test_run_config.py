@@ -29,7 +29,12 @@ def test_run_config(tmpdir, data_dir):
         }
         os.makedirs("{}/mem_{}".format(tmpdir, config_params["ensemble_num"]))
         rc = RunConfig(**config_params)
-        rc.run_data.set(A=5, tau=0.1, tolerance=100, num_samples=2, sample_period=0.1, production_time=0.2)
+        rc.run_data.set(A=5,
+                        tau=0.1,
+                        tolerance=100,
+                        num_samples=2,
+                        sample_period=0.1,
+                        production_time=0.2)
 
         # Training phase.
         assert rc.run_data.get('phase') == 'training'
@@ -46,7 +51,8 @@ def test_run_config(tmpdir, data_dir):
             # Test handling of kwarg collisions.
             rc.run(end_time=1.0)
         # Note that rc.__production failed, but rc.run() will have changed directory.
-        # This is an unspecified side effect, but we can use it for some additional inspection.
+        # This is an unspecified side effect, but we can use it for some additional
+        # inspection.
         assert len(os.listdir()) == 0
         # Test another kwarg.
         rc.run(max_hours=0.1)
@@ -62,7 +68,12 @@ def test_production_bootstrap(tmpdir, data_dir):
         }
         os.makedirs("{}/mem_{}".format(tmpdir, config_params["ensemble_num"]))
         rc = RunConfig(**config_params)
-        rc.run_data.set(A=5, tau=0.1, tolerance=100, num_samples=2, sample_period=0.1, production_time=0.2)
+        rc.run_data.set(A=5,
+                        tau=0.1,
+                        tolerance=100,
+                        num_samples=2,
+                        sample_period=0.1,
+                        production_time=0.2)
 
         # Training phase.
         rc.run()
@@ -72,7 +83,8 @@ def test_production_bootstrap(tmpdir, data_dir):
         # Production phase.
         # It is a little bit difficult to test that the production phase actually
         # runs with a non-default TPR file.
-        # Warning: This may need some extra conditional logic to support more gmxapi versions.
+        # Warning: This may need some extra conditional logic to support more gmxapi
+        # versions.
         assert rc.run_data.get('phase') == 'production'
         with tempfile.TemporaryDirectory() as directory:
             new_tpr = os.path.join(directory, 'tmp.tpr')

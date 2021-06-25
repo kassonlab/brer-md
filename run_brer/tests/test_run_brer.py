@@ -1,5 +1,6 @@
-import run_brer
 import sys
+
+import run_brer
 
 
 def test_run_brer_imported():

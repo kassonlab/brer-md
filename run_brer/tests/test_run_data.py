@@ -1,8 +1,11 @@
 """Unit tests and regression for RunData classes."""
 
 import pytest
-from run_brer.run_data import GeneralParams, PairParams, RunData
+
 from run_brer.pair_data import PairData
+from run_brer.run_data import GeneralParams
+from run_brer.run_data import PairParams
+from run_brer.run_data import RunData
 
 
 def test_general_parameters():
@@ -63,7 +66,7 @@ def test_run_data(tmpdir, raw_pair_data):
     with pytest.raises(ValueError):
         rd.set(alpha=1.)
     rd.set(alpha=1., name=name)
-    
+
     # Test getting
     rd.get("alpha", name=name)
     with pytest.raises(ValueError):
