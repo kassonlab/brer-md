@@ -297,7 +297,7 @@ class RunConfig:
             raise RuntimeError('Missing input file: {}'.format(tpr_file))
         return tpr_file
 
-    def __train(self, **kwargs):
+    def __train(self, tpr_file=None, **kwargs):
         for key in ('append_output',):
             if key in kwargs:
                 raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(
@@ -327,7 +327,7 @@ class RunConfig:
 
         # If this is not the first BRER iteration, grab the checkpoint from the production
         # phase of the last round
-        self.__prep_input(kwargs.pop('tpr_file', None))
+        self.__prep_input(tpr_file)
 
         # Set up a dictionary to go from plugin name -> restraint name
         sites_to_name = {}
@@ -371,13 +371,13 @@ class RunConfig:
 
         return context
 
-    def __converge(self, **kwargs):
+    def __converge(self, tpr_file=None, **kwargs):
         for key in ('append_output',):
             if key in kwargs:
                 raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(
                     key))
 
-        self.__prep_input(kwargs.pop('tpr_file', None))
+        self.__prep_input(tpr_file)
 
         md = from_tpr(self._tprs, append_output=False, **kwargs)
         self.build_plugins(ConvergencePluginConfig())
@@ -406,7 +406,7 @@ class RunConfig:
 
         return context
 
-    def __production(self, **kwargs):
+    def __production(self, tpr_file=None, **kwargs):
 
         for key in ('append_output', 'end_time'):
             if key in kwargs:
@@ -414,7 +414,7 @@ class RunConfig:
                     key))
 
         tpr_list = list(self._tprs)
-        tpr_list[self._rank] = self.__prep_input(kwargs.pop('tpr_file', None))
+        tpr_list[self._rank] = self.__prep_input(tpr_file)
 
         # Calculate the time (in ps) at which the BRER iteration should finish.
         # This should be: the end time of the convergence run + the amount of time for
@@ -447,7 +447,7 @@ class RunConfig:
 
         return context
 
-    def run(self, **kwargs):
+    def run(self, tpr_file=None, **kwargs):
         """Perform the MD simulations.
 
         Each Python interpreter process runs a separate ensemble member.
@@ -464,19 +464,16 @@ class RunConfig:
 
         At the beginning of a production phase (when there is not yet a checkpoint file),
         the checkpoint file from the convergence phase is used to start the production
-        trajectory
-        **unless** *tpr_file* is given.
+        trajectory **unless** *tpr_file* is given.
 
         When *tpr_file* is not None, run() does not look for a bootstrapping checkpoint
-        file.
-        This can be helpful if a checkpoint file is corrupted or unavailable.
+        file. This can be helpful if a checkpoint file is corrupted or unavailable.
         In general, this means that the *tpr_file* argument should include
         the starting configuration you intend for the phase that you are about to run().
         If you are providing the *tpr_file* because you are changing parameters that
         render existing checkpoints incompatible, you need to either generate the file
         with the checkpoint from which you want to continue, or you may remove the
-        checkpoint
-        file from the phase directory and restart that phase.
+        checkpoint file from the phase directory and restart that phase.
 
         Additional key word arguments are passed on to the simulator.
 
@@ -502,13 +499,13 @@ class RunConfig:
         self.__set_workdir()
 
         if phase == 'training':
-            context = self.__train(**kwargs)
+            context = self.__train(tpr_file=tpr_file, **kwargs)
             self.run_data.set(phase='convergence')
         elif phase == 'convergence':
-            context = self.__converge(**kwargs)
+            context = self.__converge(tpr_file=tpr_file, **kwargs)
             self.run_data.set(phase='production')
         else:
-            context = self.__production(**kwargs)
+            context = self.__production(tpr_file=tpr_file, **kwargs)
             self.run_data.set(phase='training',
                               start_time=0,
                               iteration=(self.run_data.get('iteration') + 1))
