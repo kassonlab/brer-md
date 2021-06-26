@@ -1,10 +1,19 @@
 """RunConfig class handles the actual workflow logic."""
-
+import collections.abc
 import json
 import logging
 import os
+import pathlib
 import shutil
+import warnings
 from copy import deepcopy
+from typing import Sequence
+from typing import Union
+
+try:
+    import mpi4py.MPI as _MPI
+except (ImportError, ModuleNotFoundError):
+    _MPI = None
 
 try:
     from gmxapi.simulation.context import Context as _context
@@ -21,11 +30,21 @@ from run_brer.plugin_configs import ProductionPluginConfig
 from run_brer.plugin_configs import TrainingPluginConfig
 from run_brer.run_data import RunData
 
+_Path = Union[str, pathlib.Path]
+
 
 class RunConfig:
     """Run configuration for single BRER ensemble member."""
 
-    def __init__(self, tpr, ensemble_dir, ensemble_num=1, pairs_json='pair_data.json'):
+    @property
+    def tpr(self):
+        return pathlib.Path(self._tprs[self._rank])
+
+    def __init__(self,
+                 tpr: Union[_Path, Sequence[_Path]],
+                 ensemble_dir,
+                 ensemble_num: int = None,
+                 pairs_json='pair_data.json'):
         """The run configuration specifies the files and directory structure
         used for the run. It determines whether the run is in the training,
         convergence, or production phase, then performs the run.
@@ -33,7 +52,8 @@ class RunConfig:
         Parameters
         ----------
         tpr : str
-            path to tpr. Must be gmx 2017 compatible.
+            path (or paths) to tpr input. Must be compatible with the GROMACS version
+            providing gmxapi.
         ensemble_dir : str
             path to top directory which contains the full ensemble.
         ensemble_num : int, optional
@@ -43,8 +63,47 @@ class RunConfig:
             An example of what such a file should look like is provided in the data
             directory,
             by default 'pair_data.json'
+
+        Note that all instances of RunConfig need the same sized array of TPR input
+        files across all ranks in an MPI ensemble because they must all be capable of
+        constructing a compatible copy of the ensemble simulation work description.
         """
-        self.tpr = tpr
+        if isinstance(tpr, (str, pathlib.Path, os.PathLike)):
+            self._tprs = tuple([str(tpr)])
+            self._ensemble_size = 1
+        else:
+            if not isinstance(tpr, collections.abc.Iterable):
+                raise ValueError('Paramater *tpr* must be an input file or sequence of '
+                                 'input files (for ensemble input).')
+            self._tprs = tuple([str(name) for name in tpr])
+            self._ensemble_size = len(self._tprs)
+        if self._ensemble_size == 1:
+            self._communicator = None
+            self._rank = 0
+        elif _MPI is None or _MPI.COMM_WORLD.Get_size() < self._ensemble_size:
+            raise RuntimeError('Need mpi4py and one MPI rank per ensemble member.')
+        else:
+            communicator: _MPI.Comm = _MPI.COMM_WORLD
+            assert communicator.Get_size() >= self._ensemble_size
+            # TODO: Handle mismatched ensemble size.
+            if communicator.Get_size() > self._ensemble_size:
+                warnings.warn('run_brer does not yet attempt to handle communicators '
+                              'larger than the ensemble.')
+            self._communicator = communicator
+            self._rank = communicator.Get_rank()
+
+        # WARNING: Previous behavior defaulted to ensemble_num=1
+        if ensemble_num is None:
+            ensemble_num = self._rank
+        else:
+            if self._communicator is not None:
+                # Greater future flexibility is described at
+                # https://github.com/kassonlab/run_brer/issues/18
+                raise TypeError(
+                    'RunConfig does not allow *ensemble_num* with mpi4py ensembles.')
+
+        if not os.path.exists(ensemble_dir):
+            raise RuntimeError(f'Ensemble directory {ensemble_dir} does not exist!')
         self.ens_dir = ensemble_dir
 
         # a list of identifiers of the residue-residue pairs that will be restrained
@@ -61,6 +120,10 @@ class RunConfig:
 
         self.run_data = RunData()
         self.run_data.set(ensemble_num=ensemble_num)
+
+        member_directory = os.path.join(self.ens_dir, f'mem_{ensemble_num}')
+        if not os.path.exists(member_directory):
+            os.mkdir(member_directory)
 
         self.state_json = '{}/mem_{}/state.json'.format(ensemble_dir,
                                                         self.run_data.get('ensemble_num'))
@@ -140,13 +203,23 @@ class RunConfig:
             # current restraint
             self.__plugins.append(new_restraint.build_plugin())
 
-    def __change_directory(self):
+    def __set_workdir(self):
         # change into the current working directory (
         # ensemble_path/member_path/iteration/phase)
         dir_help = DirectoryHelper(top_dir=self.ens_dir,
                                    param_dict=self.run_data.general_params.get_as_dictionary())
         dir_help.build_working_dir()
-        dir_help.change_dir('phase')
+        workdir = dir_help.change_dir('phase')
+        if self._communicator is None or self._communicator.Get_size() == 1:
+            self.workdirs = [workdir]
+        else:
+            # assert isinstance(self._communicator, MPI.Comm)
+            comm_size: int = self._communicator.Get_size()
+            assert comm_size > 1
+            assert self._rank < comm_size
+            self.workdirs = self._communicator.allgather(workdir)
+            assert len(self.workdirs) == comm_size
+            assert self.workdirs[self._rank] == workdir
 
     def __move_cpt(self):
 
@@ -239,7 +312,7 @@ class RunConfig:
         # save the new targets to the BRER checkpoint file.
         self.run_data.save_config(fnm=self.state_json)
 
-        workdir = os.getcwd()
+        workdir = self.workdirs[self._rank]
 
         # backup existing checkpoint.
         # TODO: Don't backup the cpt, actually use it!!
@@ -260,7 +333,8 @@ class RunConfig:
         sites_to_name = {}
 
         # Build the gmxapi session.
-        md = from_tpr(self.tpr, append_output=False, **kwargs)
+        tpr_list: Sequence[str] = self._tprs
+        md = from_tpr(tpr_list, append_output=False, **kwargs)
         self.build_plugins(TrainingPluginConfig())
         for plugin in self.__plugins:
             plugin_name = plugin.name
@@ -269,7 +343,9 @@ class RunConfig:
                 if run_data_sites == plugin_name:
                     sites_to_name[plugin_name] = name
             md.add_dependency(plugin)
-        context = _context(md, workdir_list=[workdir])
+        context = _context(md,
+                           workdir_list=self.workdirs,
+                           communicator=self._communicator)
 
         self._logger.info("=====TRAINING INFO======\n")
         self._logger.info(f'Working directory: {workdir}')
@@ -279,6 +355,8 @@ class RunConfig:
             session.run()
 
         for i in range(len(self.__names)):
+            # TODO: ParallelArrayContext.potentials needs to be declared to avoid IDE
+            #  warnings.
             current_name = sites_to_name[context.potentials[i].name]
             # In the future runs (convergence, production) we need the ABSOLUTE VALUE
             # of alpha.
@@ -301,7 +379,7 @@ class RunConfig:
 
         self.__prep_input(kwargs.pop('tpr_file', None))
 
-        md = from_tpr(self.tpr, append_output=False, **kwargs)
+        md = from_tpr(self._tprs, append_output=False, **kwargs)
         self.build_plugins(ConvergencePluginConfig())
         for plugin in self.__plugins:
             md.add_dependency(plugin)
@@ -310,7 +388,9 @@ class RunConfig:
         self._logger.info("=====CONVERGENCE INFO======\n")
         self._logger.info(f'Working directory: {workdir}')
 
-        context = _context(md, workdir_list=[workdir])
+        context = _context(md,
+                           workdir_list=self.workdirs,
+                           communicator=self._communicator)
         with context as session:
             session.run()
 
@@ -333,14 +413,15 @@ class RunConfig:
                 raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(
                     key))
 
-        run_input = self.__prep_input(kwargs.pop('tpr_file', None))
+        tpr_list = list(self._tprs)
+        tpr_list[self._rank] = self.__prep_input(kwargs.pop('tpr_file', None))
 
         # Calculate the time (in ps) at which the BRER iteration should finish.
         # This should be: the end time of the convergence run + the amount of time for
         # production simulation (specified by the user).
         end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
 
-        md = from_tpr(run_input, end_time=end_time, append_output=False, **kwargs)
+        md = from_tpr(tpr_list, end_time=end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
         for plugin in self.__plugins:
@@ -350,7 +431,10 @@ class RunConfig:
         self._logger.info("=====PRODUCTION INFO======\n")
         self._logger.info(f'Working directory: {workdir}')
 
-        context = _context(md, workdir_list=[workdir])
+        context = _context(md,
+                           workdir_list=self.workdirs,
+                           communicator=self._communicator
+                           )
         with context as session:
             session.run()
 
@@ -415,7 +499,7 @@ class RunConfig:
         """
         phase = self.run_data.get('phase')
 
-        self.__change_directory()
+        self.__set_workdir()
 
         if phase == 'training':
             context = self.__train(**kwargs)
