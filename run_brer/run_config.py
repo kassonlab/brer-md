@@ -11,6 +11,11 @@ from typing import Sequence
 from typing import Union
 
 try:
+    import mpi4py.MPI as _MPI
+except (ImportError, ModuleNotFoundError):
+    _MPI = None
+
+try:
     from gmxapi.simulation.context import Context as _context
     from gmxapi.simulation.workflow import WorkElement, from_tpr
 except (ImportError, ModuleNotFoundError):
@@ -75,9 +80,10 @@ class RunConfig:
         if self._ensemble_size == 1:
             self._communicator = None
             self._rank = 0
+        elif _MPI is None or _MPI.COMM_WORLD.Get_size() < self._ensemble_size:
+            raise RuntimeError('Need mpi4py and one MPI rank per ensemble member.')
         else:
-            from mpi4py import MPI
-            communicator: MPI.Comm = MPI.COMM_WORLD
+            communicator: _MPI.Comm = _MPI.COMM_WORLD
             assert communicator.Get_size() >= self._ensemble_size
             # TODO: Handle mismatched ensemble size.
             if communicator.Get_size() > self._ensemble_size:
@@ -91,6 +97,8 @@ class RunConfig:
             ensemble_num = self._rank
         else:
             if self._communicator is not None:
+                # Greater future flexibility is described at
+                # https://github.com/kassonlab/run_brer/issues/18
                 raise TypeError(
                     'RunConfig does not allow *ensemble_num* with mpi4py ensembles.')
 
