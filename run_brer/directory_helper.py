@@ -91,8 +91,7 @@ class DirectoryHelper:
                                                   pdict['phase'])
         else:
             raise ValueError('{} is not a valid directory type for BRER '
-                             'simulations'.format(
-                'type'))
+                             'simulations'.format('type'))
         return return_dir
 
     def build_working_dir(self):

@@ -25,7 +25,8 @@ class GeneralParams(MetaData):
         """Sets general parameters to their default values."""
         self.set_from_dictionary(self.get_defaults())
 
-    def get_defaults(self):
+    @staticmethod
+    def get_defaults():
         return {
             'A': 50,
             'ensemble_num': 1,

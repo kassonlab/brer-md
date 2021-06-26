@@ -5,6 +5,7 @@ restraint."""
 from abc import abstractmethod
 
 try:
+    # noinspection PyUnresolvedReferences
     from gmxapi.simulation.workflow import WorkElement
 except (ImportError, ModuleNotFoundError):
     from gmx.workflow import WorkElement

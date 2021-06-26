@@ -16,11 +16,7 @@ try:
 except ImportError:
     MPI = None
 
-if MPI is not None:
-    rank = MPI.COMM_WORLD.Get_rank()
-else:
-    rank = 0
-
+# To use PyCharm debug server, you would need something like the following:
 # if rank == 0:
 #     import pydevd_pycharm
 #

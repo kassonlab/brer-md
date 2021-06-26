@@ -2,9 +2,6 @@
 run_brer
 """
 
-# Add imports here
-import run_brer
-
 # Handle versioneer
 from ._version import get_versions
 

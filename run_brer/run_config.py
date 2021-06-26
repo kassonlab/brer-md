@@ -16,9 +16,12 @@ except (ImportError, ModuleNotFoundError):
     _MPI = None
 
 try:
+    # noinspection PyPep8Naming,PyUnresolvedReferences
     from gmxapi.simulation.context import Context as _context
+    # noinspection PyUnresolvedReferences
     from gmxapi.simulation.workflow import WorkElement, from_tpr
 except (ImportError, ModuleNotFoundError):
+    # noinspection PyPep8Naming
     from gmx.context import Context as _context
     from gmx.workflow import from_tpr, WorkElement
 
@@ -206,8 +209,9 @@ class RunConfig:
     def __set_workdir(self):
         # change into the current working directory (
         # ensemble_path/member_path/iteration/phase)
-        dir_help = DirectoryHelper(top_dir=self.ens_dir,
-                                   param_dict=self.run_data.general_params.get_as_dictionary())
+        dir_help = DirectoryHelper(
+            top_dir=self.ens_dir,
+            param_dict=self.run_data.general_params.get_as_dictionary())
         dir_help.build_working_dir()
         workdir = dir_help.change_dir('phase')
         if self._communicator is None or self._communicator.Get_size() == 1:
@@ -357,10 +361,13 @@ class RunConfig:
         for i in range(len(self.__names)):
             # TODO: ParallelArrayContext.potentials needs to be declared to avoid IDE
             #  warnings.
+            # noinspection PyUnresolvedReferences
             current_name = sites_to_name[context.potentials[i].name]
             # In the future runs (convergence, production) we need the ABSOLUTE VALUE
             # of alpha.
+            # noinspection PyUnresolvedReferences
             current_alpha = context.potentials[i].alpha
+            # noinspection PyUnresolvedReferences
             current_target = context.potentials[i].target
 
             self.run_data.set(name=current_name, alpha=current_alpha)
@@ -396,6 +403,7 @@ class RunConfig:
 
         # Get the absolute time (in ps) at which the convergence run finished.
         # This value will be needed if a production run needs to be restarted.
+        # noinspection PyUnresolvedReferences
         self.run_data.set(start_time=context.potentials[0].time)
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)

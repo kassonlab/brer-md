@@ -93,17 +93,13 @@ class MetaData(ABC):
         """
         if key is not None and value is not None:
             if key not in self.__required_parameters and key != "name":
-                warnings.warn("{} is not a required parameter of {}: setting "
-                              "anyway".format(
-                    key,
-                    self.name))
+                warnings.warn(
+                    f"{key} is not a required parameter of {self.name}: setting anyway")
             self._metadata[key] = value
         for key, value in kwargs.items():
             if key not in self.__required_parameters and key != "name":
-                warnings.warn("{} is not a required parameter of {}: setting "
-                              "anyway".format(
-                    key,
-                    self.name))
+                warnings.warn(
+                    f"{key} is not a required parameter of {self.name}: setting anyway")
             self._metadata[key] = value
 
     def get(self, key):
