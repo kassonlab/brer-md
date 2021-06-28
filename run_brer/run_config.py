@@ -367,6 +367,13 @@ class RunConfig:
             # of alpha.
             # noinspection PyUnresolvedReferences
             current_alpha = context.potentials[i].alpha
+            if current_alpha == 0:
+                alpha_error = input('Alpha value was constrained to 0.0. Is this warning harmless? Y/N ')
+                if alpha_error == 'Y' or alpha_error == 'Yes' or alpha_error == 'yes':
+                    continue
+                else:
+                    raise RuntimeError('Alpha value was incorrectly constrained to 0.0')
+
             # noinspection PyUnresolvedReferences
             current_target = context.potentials[i].target
 
