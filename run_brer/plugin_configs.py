@@ -124,6 +124,8 @@ class ConvergencePluginConfig(PluginConfig):
         """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
+        if self.get('alpha') == 0:
+            raise RuntimeError('Alpha value is constrained to 0.')
         potential = WorkElement(
             namespace="brer",
             operation="linearstop_restraint",
