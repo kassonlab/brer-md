@@ -69,6 +69,8 @@ def test_run_config(tmpdir, data_dir):
         # Include a test for kwarg handling.
         rc.run(threads=num_cpus)
 
+        # Include a test to override alpha=0 fail
+        rc.run_data.set(alpha=1.0)
         # Convergence phase.
         assert rc.run_data.get('phase') == 'convergence'
         rc.run()
