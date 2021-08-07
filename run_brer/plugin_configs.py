@@ -4,7 +4,11 @@ restraint."""
 
 from abc import abstractmethod
 
-import gmx
+try:
+    # noinspection PyUnresolvedReferences
+    from gmxapi.simulation.workflow import WorkElement
+except (ImportError, ModuleNotFoundError):
+    from gmx.workflow import WorkElement
 
 from run_brer.metadata import MetaData
 
@@ -89,10 +93,11 @@ class TrainingPluginConfig(PluginConfig):
 
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="myplugin",
-                                             operation="brer_restraint",
-                                             depends=[],
-                                             params=self.get_as_dictionary())
+        potential = WorkElement(
+            namespace="brer",
+            operation="brer_restraint",
+            depends=[],
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential
 
@@ -119,10 +124,11 @@ class ConvergencePluginConfig(PluginConfig):
         """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="myplugin",
-                                             operation="linearstop_restraint",
-                                             depends=[],
-                                             params=self.get_as_dictionary())
+        potential = WorkElement(
+            namespace="brer",
+            operation="linearstop_restraint",
+            depends=[],
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential
 
@@ -149,9 +155,10 @@ class ProductionPluginConfig(PluginConfig):
         """
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        potential = gmx.workflow.WorkElement(namespace="myplugin",
-                                             operation="linear_restraint",
-                                             depends=[],
-                                             params=self.get_as_dictionary())
+        potential = WorkElement(
+            namespace="brer",
+            operation="linear_restraint",
+            depends=[],
+            params=self.get_as_dictionary())
         potential.name = '{}'.format(self.get('sites'))
         return potential

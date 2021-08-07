@@ -5,15 +5,15 @@ export GMX_DOUBLE=OFF
 export GMX_MPI=OFF
 export GMX_THREAD_MPI=ON
 
-export GMX_SRC_DIR=gromacs-release-2019
+export GMX_SRC_DIR=gromacs-$BRANCH
 
 ccache -s
 
 pushd $HOME
- [ -d gromacs-gmxapi ] || \
+ [ -d $GMX_SRC_DIR ] || \
     git clone \
         --depth=1 \
-        -b release-2019 \
+        -b $BRANCH \
         https://gitlab.com/gromacs/gromacs.git \
         ${GMX_SRC_DIR}
  pushd ${GMX_SRC_DIR}
@@ -28,10 +28,15 @@ pushd $HOME
          -DGMX_DOUBLE=$GMX_DOUBLE \
          -DGMX_MPI=$GMX_MPI \
          -DGMX_THREAD_MPI=$GMX_THREAD_MPI \
-         -DGMXAPI=ON \
-         -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs-release-2019 \
+         -DGMX_INSTALL_LEGACY_API=ON \
+         -DCMAKE_INSTALL_PREFIX=$HOME/install/gromacs-$BRANCH \
          ..
    cmake --build . --target install
+  popd
+
+  source $HOME/install/gromacs-$BRANCH/bin/GMXRC
+  pushd python_packaging/src
+   $PYTHON -m pip install .
   popd
  popd
 popd

@@ -14,6 +14,7 @@ How the directory structure is organized:
 """
 
 import os
+import pathlib
 
 
 class DirectoryHelper:
@@ -53,14 +54,14 @@ class DirectoryHelper:
 
         """
 
-        self._top_dir = top_dir
+        self._top_dir = str(top_dir)
         self._required_parameters = ['ensemble_num', 'iteration', 'phase']
         for required in self._required_parameters:
             if required not in param_dict:
                 raise ValueError('Must define {}'.format(required))
         self._param_dict = param_dict
 
-    def get_dir(self, level):
+    def get_dir(self, level: str) -> str:
         """Get the directory for however far you want to go down the directory
         tree.
 
@@ -72,7 +73,6 @@ class DirectoryHelper:
 
         Returns
         -------
-        type
             the path to the specified directory 'level' as a str.
         """
         pdict = self._param_dict
@@ -91,20 +91,15 @@ class DirectoryHelper:
                                                   pdict['phase'])
         else:
             raise ValueError('{} is not a valid directory type for BRER '
-                             'simulations'.format(
-                'type'))
+                             'simulations'.format('type'))
         return return_dir
 
     def build_working_dir(self):
         """Checks to see if the working directory for current state of BRER
         simulation exists. If it does not, creates the directory.
         """
-        if not os.path.exists(self.get_dir('phase')):
-            tree = [self.get_dir('ensemble_num'), self.get_dir('iteration')]
-            for leaf in tree:
-                if not os.path.exists(leaf):
-                    os.mkdir(leaf)
-            os.mkdir(self.get_dir('phase'))
+        phase_dir = pathlib.Path(self.get_dir('phase')).absolute()
+        os.makedirs(phase_dir, mode=0o755, exist_ok=True)
 
     def change_dir(self, level):
         """Change to directory specified by level.
@@ -115,4 +110,6 @@ class DirectoryHelper:
             How far to go down the directory tree.
             Can be one of 'top', 'ensemble_num', 'iteration', or 'phase'.
         """
-        os.chdir(self.get_dir(level))
+        next_dir = self.get_dir(level)
+        os.chdir(next_dir)
+        return next_dir

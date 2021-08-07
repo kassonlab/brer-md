@@ -25,6 +25,7 @@ class MultiPair(MultiMetaData):
 
     def __init__(self):
         super().__init__()
+        self._names = []
 
     def read_from_json(self, filename='state.json'):
         """Reads pair data from json file. For an example file, see
@@ -36,7 +37,6 @@ class MultiPair(MultiMetaData):
             filename of the pair data, by default 'state.json'
         """
         self._metadata_list = []
-        self._names = []
         data = json.load(open(filename, 'r'))
         for name, metadata in data.items():
             self._names.append(name)
