@@ -1,6 +1,6 @@
 # run_brer
 
-[![Build and test](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg)](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master)
+[![Build and test](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/test.yml)
 
 This project is hosted in a git repository at https://github.com/kassonlab/run_brer
 
