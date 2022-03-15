@@ -58,6 +58,7 @@ public:
                 const Resources &resources);
 
   double getTime() { return time_; }
+  bool getStop() { return stop_called_; }
 
 private:
   bool initialized_{false};
@@ -77,7 +78,7 @@ private:
 
   std::string logging_filename_;
   std::unique_ptr<RAIIFile> logging_file_{nullptr};
-  bool stop_not_called_{true};
+  bool stop_called{false};
 };
 
 // implement IRestraintPotential in terms of LinearStop
