@@ -103,3 +103,53 @@ jobs:
           export PYTHON=$HOME/venv/bin/python
           source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && $PYTHON -m pip install "${{ env.GMXAPI }}"
           ./ci_scripts/brer_restraint.sh
+
+  gmx2022:
+    runs-on: ubuntu-latest
+    env:
+      PY: 3.8
+      GROMACS: release-2022
+      GMXAPI: "gmxapi>=0.3"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare OS
+        run: |
+          sudo apt-get update
+          sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
+      - name: Set up Python ${{ env.PY }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PY }}
+      - name: Prepare ccache variables
+        id: ccache_cache
+        run: |
+          echo "::set-output name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')"
+          echo "::set-output name=dir::$(ccache -k cache_dir)"
+      - name: ccache cache files
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.ccache_cache.outputs.dir }}
+          key: ${{ env.GROMACS }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
+          restore-keys: |
+            ${{ env.GROMACS }}-ccache-
+      - name: Install Python dependencies
+        run: |
+          python -m venv $HOME/venv
+          . $HOME/venv/bin/activate
+          python -m pip install --upgrade pip setuptools wheel
+          pip install --upgrade pip setuptools wheel
+          pip install --upgrade packaging scikit-build
+          pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
+          pip install pytest codecov pytest-cov numpy
+      - name: Install GROMACS
+        run: |
+          . ./ci_scripts/set_compilers
+          BRANCH="${GROMACS}" ./ci_scripts/install_gromacs_branch.sh
+      - name: Test
+        timeout-minutes: 8
+        run: |
+          . ./ci_scripts/set_compilers
+          . $HOME/venv/bin/activate
+          export PYTHON=$HOME/venv/bin/python
+          source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && $PYTHON -m pip install "${{ env.GMXAPI }}"
+          ./ci_scripts/brer_restraint.sh
