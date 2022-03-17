@@ -1,7 +1,7 @@
 BRER restraint plugin
 ==========================
 
-[![Build Status](https://travis-ci.com/kassonlab/brer_plugin.svg?branch=master)](https://travis-ci.com/kassonlab/brer_plugin)
+[![Build Status](https://github.com/kassonlab/brer_plugin/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kassonlab/brer_plugin/actions/workflows/test.yml)
 
 This is the [repository](https://github.com/kassonlab/brer_plugin)
 for the `brer` Python module,
