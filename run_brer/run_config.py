@@ -369,15 +369,15 @@ class RunConfig:
             current_alpha = context.potentials[i].alpha
             # noinspection PyUnresolvedReferences
             current_target = context.potentials[i].target
-            current_stop_called = context.potentials[i].stop_called
+            current_stop_called = getattr(context.potentials[i], 'stop_called', None)
 
             self.run_data.set(name=current_name, alpha=current_alpha)
             self.run_data.set(name=current_name, target=current_target)
             self.run_data.set(name=current_stop_called, stop_called=current_stop_called)
-            self._logger.info("Plugin {}: alpha = {}, target = {}, stop_called = {}".format(current_name,
-                                                                                            current_alpha,
-                                                                                            current_target,
-                                                                                            current_stop_called))
+            message = f'Plugin {current_name}: alpha = {current_alpha}, target = {current_target}'
+            if current_stop_called is not None:
+                message += f', stop_called = {current_stop_called}'
+            self._logger.info(message)
 
         return context
 
@@ -454,11 +454,9 @@ class RunConfig:
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
-            current_stop_called = self.run_data.get('stop_called', name=name)
             self._logger.info("Plugin {}: alpha = {}, target = {}, stop_called = {}".format(name,
                                                                                             current_alpha,
-                                                                                            current_target,
-                                                                                            current_stop_called))
+                                                                                            current_target))
 
         return context
 
