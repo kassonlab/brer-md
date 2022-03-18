@@ -78,8 +78,8 @@ void LinearStop::callback(gmx::Vector v, gmx::Vector v0, double t,
   }
 
   if (converged) {
-    if (stop_not_called_) {
-      stop_not_called_ = false;
+    if !(stop_called_) {
+      stop_called_ = true;
       writeparameters(t, R);
       //                fprintf(logging_file_->fh(), "Simulation converged at t
       //                == %f", t);
