@@ -68,61 +68,6 @@ def test_run_config(tmpdir, data_dir):
         assert rc.run_data.get('phase') == 'training'
         # Include a test for kwarg handling.
         rc.run(threads=num_cpus)
-        # Confirm that our sanity checks work.
-        with pytest.raises(ValueError):
-            # Let the untrained value from the high-tolerance training short-cut trigger a sanity check.
-            rc.run()
-
-        # Include a test to override alpha=0 fail
-        rc.run_data.set(alpha=1.0)
-        # Convergence phase.
-        assert rc.run_data.get('phase') == 'convergence'
-        rc.run()
-
-        # Production phase.
-        assert rc.run_data.get('phase') == 'production'
-        with pytest.raises(TypeError):
-            # Test handling of kwarg collisions.
-            rc.run(end_time=1.0)
-        # Note that rc.__production failed, but rc.run() will have changed directory.
-        # This is an unspecified side effect, but we can use it for some additional
-        # inspection.
-        assert len(os.listdir()) == 0
-        # Test another kwarg.
-        rc.run(max_hours=0.001)
-
-
-@with_mpi_only
-def test_mpi_ensemble(data_dir):
-    """Test a batch of multiple ensemble members in a single MPI context."""
-    test_dir = os.getcwd()
-    with working_directory_fence():
-        comm: MPI.Comm = MPI.COMM_WORLD
-        rank: int = comm.Get_rank()
-        logger.info(f'rank is {rank}')
-        assert rank < comm.Get_size()
-
-        tpr_list = [os.path.join(data_dir, 'topol.tpr')] * comm.Get_size()
-        config_params = {
-            "tpr": tpr_list,
-            "ensemble_num": None,
-            "ensemble_dir": test_dir,
-            "pairs_json": "{}/pair_data.json".format(data_dir)
-        }
-        # os.makedirs("{}/mem_{}".format(test_dir, config_params["ensemble_num"]))
-        rc = RunConfig(**config_params)
-        rc.run_data.set(A=5,
-                        tau=0.1,
-                        tolerance=10000,
-                        num_samples=2,
-                        sample_period=0.001,
-                        production_time=10000.)
-
-        # Training phase.
-        assert rc.run_data.get('iteration') == 0
-        assert rc.run_data.get('phase') == 'training'
-        # Include a test for kwarg handling.
-        rc.run(threads=num_cpus)
 
         # Convergence phase.
         assert rc.run_data.get('phase') == 'convergence'
