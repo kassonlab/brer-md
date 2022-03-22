@@ -369,15 +369,12 @@ class RunConfig:
             current_alpha = context.potentials[i].alpha
             # noinspection PyUnresolvedReferences
             current_target = context.potentials[i].target
-            current_stop_called = getattr(context.potentials[i], 'stop_called', None)
 
             self.run_data.set(name=current_name, alpha=current_alpha)
             self.run_data.set(name=current_name, target=current_target)
-            self.run_data.set(name=current_stop_called, stop_called=current_stop_called)
-            message = f'Plugin {current_name}: alpha = {current_alpha}, target = {current_target}'
-            if current_stop_called is not None:
-                message += f', stop_called = {current_stop_called}'
-            self._logger.info(message)
+            self._logger.info("Plugin {}: alpha = {}, target = {}".format(current_name,
+                                                                          current_alpha,
+                                                                          current_target))
 
         return context
 
@@ -454,9 +451,9 @@ class RunConfig:
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
-            self._logger.info("Plugin {}: alpha = {}, target = {}, stop_called = {}".format(name,
-                                                                                            current_alpha,
-                                                                                            current_target))
+            self._logger.info("Plugin {}: alpha = {}, target = {}".format(name,
+                                                                          current_alpha,
+                                                                          current_target))
 
         return context
 
@@ -516,6 +513,8 @@ class RunConfig:
             self.run_data.set(phase='convergence')
         elif phase == 'convergence':
             context = self.__converge(tpr_file=tpr_file, **kwargs)
+            # TODO(#18): Investigate for robustness in the case of
+            #  batch workflows and MPI-enabled GROMACS.
             if all(getattr(potential, 'stop_called', True) for potential in context.potentials):
                 self.run_data.set(phase='production')
         else:
