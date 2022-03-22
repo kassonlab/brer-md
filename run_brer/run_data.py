@@ -94,6 +94,10 @@ class RunData:
             if you provide a name and try to set a general parameter or
             don't provide a name and try to set a pair-specific parameter.
         """
+        if len(kwargs) == 0:
+            raise TypeError(
+                f'Invalid signature: {self.__class__.__qualname__}.set() called without naming any '
+                f'parameters.')
 
         for key, value in kwargs.items():
             # If a restraint name is not specified, it is assumed that the parameter is
@@ -112,7 +116,7 @@ class RunData:
                 else:
                     raise ValueError('{} is not a pair-specific parameter'.format(key))
 
-    def get(self, key, name=None):
+    def get(self, key, *, name=None):
         """get either a general or a pair-specific parameter.
 
         Parameters
