@@ -1,7 +1,10 @@
 name: Build and test
 
 on:
+  push:
+    branches: [ $default-branch ]
   pull_request:
+    branches: [ $default-branch ]
 
 jobs:
   gmx2019:
