@@ -99,8 +99,8 @@ ones for this repository.
 Running BRER
 ------------
 
-Launching a single ensemble member.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Launching a single ensemble member
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An example script, ``run.py`` , is provided for ensemble simulations.
 
@@ -169,7 +169,7 @@ resets the energy constant A to 100 kcal/mol/nm^2 before launching a
 run.
 
 Launching an ensemble
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 
 Right now, the way to launch an ensemble is to launch multiple jobs. We
 hope to soon use the ``gmxapi``

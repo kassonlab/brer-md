@@ -475,6 +475,9 @@ class RunConfig:
         tpr_file : str, optional
             If provided, use this input file instead of the input from the main
             configuration.
+        **kwargs : dict, optional
+            Additional key word arguments are passed on to the simulator.
+
 
         After the first "iteration", run_brer bootstraps the training and convergence
         phase's trajectory with the checkpoint file from the previous iteration's
@@ -493,23 +496,21 @@ class RunConfig:
         with the checkpoint from which you want to continue, or you may remove the
         checkpoint file from the phase directory and restart that phase.
 
-        Additional key word arguments are passed on to the simulator.
-
         Example
         -------
-            config_params = {
-                "tpr": "{}/topol.tpr".format(data_dir),
-                "ensemble_num": 1,
-                "ensemble_dir": tmpdir,
-                "pairs_json": "{}/pair_data.json".format(data_dir)
-            }
-            rc = RunConfig(**config_params)
-            assert rc.run_data.get('phase') == 'training'
-            rc.run(threads=2)
-            assert rc.run_data.get('phase') == 'convergence'
-            rc.run()
-            assert rc.run_data.get('phase') == 'production'
-            rc.run(tpr_file=new_tpr, max_hours=23.9)
+        >>> config_params = {
+        ...     "tpr": "{}/topol.tpr".format(data_dir),
+        ...     "ensemble_num": 1,
+        ...     "ensemble_dir": tmpdir,
+        ...     "pairs_json": "{}/pair_data.json".format(data_dir)
+        ... }
+        >>> rc = RunConfig(**config_params)
+        >>> assert rc.run_data.get('phase') == 'training'
+        >>> rc.run(threads=2)
+        >>> assert rc.run_data.get('phase') == 'convergence'
+        >>> rc.run()
+        >>> assert rc.run_data.get('phase') == 'production'
+        >>> rc.run(tpr_file=new_tpr, max_hours=23.9)
 
         """
         phase = self.run_data.get('phase')
