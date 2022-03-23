@@ -1,6 +1,7 @@
-"""Classes used to build gmxapi plugins for all phases of a BRER iteration Each
-class corresponds to ONE restraint since gmxapi plugins each correspond to one
-restraint."""
+"""Classes used to build gmxapi plugins for all phases of a BRER iteration.
+
+Each class corresponds to ONE restraint since gmxapi plugins each correspond to one restraint.
+"""
 import typing
 from abc import abstractmethod
 
@@ -81,6 +82,13 @@ class PluginConfig(MetaData):
 
 
 class TrainingPluginConfig(PluginConfig):
+    """Configure BRER potential for the training phase.
+
+    The BRER training phase uses the MD potential provided by :py:func:`brer.brer_restraint`.
+
+    See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
+    """
+
     def __init__(self):
         super().__init__()
         self.name = 'training'
@@ -113,6 +121,13 @@ class TrainingPluginConfig(PluginConfig):
 
 
 class ConvergencePluginConfig(PluginConfig):
+    """Configure BRER potential for the convergence phase.
+
+    The BRER convergence phase uses the MD potential provided by :py:func:`brer.linearstop_restraint`.
+
+    See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
+    """
+
     def __init__(self):
         super().__init__()
         self.name = 'convergence'
@@ -145,6 +160,13 @@ class ConvergencePluginConfig(PluginConfig):
 
 
 class ProductionPluginConfig(PluginConfig):
+    """Configure BRER potential for the convergence phase.
+
+    The BRER production phase uses the MD potential provided by :py:func:`brer.linear_restraint`.
+
+    See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
+    """
+
     def __init__(self):
         super().__init__()
         self.name = 'production'
