@@ -397,7 +397,6 @@ class RunConfig:
         self.__prep_input(tpr_file)
 
         md = from_tpr(self._tprs, append_output=False, **kwargs)
-        # TODO(#19): Read and restore `stop_called` for each pair restraint.
         self.build_plugins(ConvergencePluginConfig())
         for plugin in self.__plugins:
             md.add_dependency(plugin)
@@ -412,8 +411,6 @@ class RunConfig:
         with context as session:
             session.run()
 
-        # TODO(#19): Check and set final `stop_called` value for each named pair restraint.
-
         # Get the absolute time (in ps) at which the convergence run finished.
         # This value will be needed if a production run needs to be restarted.
         # noinspection PyUnresolvedReferences
@@ -421,10 +418,7 @@ class RunConfig:
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
-            current_stop_called = self.run_data.get('stop_called', name=name)
             message = f'Plugin {name}: alpha = {current_alpha}, target = {current_target}'
-            if current_stop_called is not None:
-                message += f', stop_called = {current_stop_called}'
             self._logger.info(message)
 
         return context
