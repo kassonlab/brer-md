@@ -2,9 +2,12 @@ name: Build and test
 
 on:
   push:
-    branches: [ master ]
+    # Sequence of patterns matched against refs/heads
+    branches:
+      - master
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
   gmx2019:
