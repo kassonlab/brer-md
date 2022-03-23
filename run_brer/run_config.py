@@ -15,16 +15,6 @@ try:
 except (ImportError, ModuleNotFoundError):
     _MPI = None
 
-try:
-    # noinspection PyPep8Naming,PyUnresolvedReferences
-    from gmxapi.simulation.context import Context as _context
-    # noinspection PyUnresolvedReferences
-    from gmxapi.simulation.workflow import WorkElement, from_tpr
-except (ImportError, ModuleNotFoundError):
-    # noinspection PyPep8Naming
-    from gmx.context import Context as _context
-    from gmx.workflow import from_tpr, WorkElement
-
 from run_brer.directory_helper import DirectoryHelper
 from run_brer.pair_data import MultiPair
 from run_brer.plugin_configs import ConvergencePluginConfig
@@ -34,6 +24,26 @@ from run_brer.plugin_configs import TrainingPluginConfig
 from run_brer.run_data import RunData
 
 _Path = Union[str, pathlib.Path]
+
+
+def _gmxapi_missing(*args, **kwargs):
+    raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/run_brer#requirements')
+
+
+try:
+    # noinspection PyPep8Naming,PyUnresolvedReferences
+    from gmxapi.simulation.context import Context as _context
+    # noinspection PyUnresolvedReferences
+    from gmxapi.simulation.workflow import WorkElement, from_tpr
+except (ImportError, ModuleNotFoundError):
+    try:
+        # noinspection PyPep8Naming
+        from gmx.context import Context as _context
+        from gmx.workflow import from_tpr, WorkElement
+    except (ImportError, ModuleNotFoundError):
+        _context = _gmxapi_missing
+        from_tpr = _gmxapi_missing
+        WorkElement = _gmxapi_missing
 
 
 class RunConfig:
@@ -465,6 +475,9 @@ class RunConfig:
         tpr_file : str, optional
             If provided, use this input file instead of the input from the main
             configuration.
+        **kwargs : dict, optional
+            Additional key word arguments are passed on to the simulator.
+
 
         After the first "iteration", run_brer bootstraps the training and convergence
         phase's trajectory with the checkpoint file from the previous iteration's
@@ -483,23 +496,21 @@ class RunConfig:
         with the checkpoint from which you want to continue, or you may remove the
         checkpoint file from the phase directory and restart that phase.
 
-        Additional key word arguments are passed on to the simulator.
-
         Example
         -------
-            config_params = {
-                "tpr": "{}/topol.tpr".format(data_dir),
-                "ensemble_num": 1,
-                "ensemble_dir": tmpdir,
-                "pairs_json": "{}/pair_data.json".format(data_dir)
-            }
-            rc = RunConfig(**config_params)
-            assert rc.run_data.get('phase') == 'training'
-            rc.run(threads=2)
-            assert rc.run_data.get('phase') == 'convergence'
-            rc.run()
-            assert rc.run_data.get('phase') == 'production'
-            rc.run(tpr_file=new_tpr, max_hours=23.9)
+        >>> config_params = {
+        ...     "tpr": "{}/topol.tpr".format(data_dir),
+        ...     "ensemble_num": 1,
+        ...     "ensemble_dir": tmpdir,
+        ...     "pairs_json": "{}/pair_data.json".format(data_dir)
+        ... }
+        >>> rc = RunConfig(**config_params)
+        >>> assert rc.run_data.get('phase') == 'training'
+        >>> rc.run(threads=2)
+        >>> assert rc.run_data.get('phase') == 'convergence'
+        >>> rc.run()
+        >>> assert rc.run_data.get('phase') == 'production'
+        >>> rc.run(tpr_file=new_tpr, max_hours=23.9)
 
         """
         phase = self.run_data.get('phase')
