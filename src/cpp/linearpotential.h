@@ -46,8 +46,13 @@ public:
   void callback(gmx::Vector v, gmx::Vector v0, double t,
                 const Resources &resources);
 
+  double getTime() const { return time_; }
+  double getStartTime() const { return startTime_; }
+
 private:
   bool initialized_{false};
+  double time_{0};
+
   double alpha_;
 
   /// target distance
@@ -90,6 +95,9 @@ public:
   void setResources(std::unique_ptr<Resources> &&resources) {
     resources_ = std::move(resources);
   }
+
+  using Linear::getTime;
+  using Linear::getStartTime;
 
 private:
   std::vector<int> sites_;
