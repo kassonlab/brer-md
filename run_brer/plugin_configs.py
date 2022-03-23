@@ -1,16 +1,26 @@
 """Classes used to build gmxapi plugins for all phases of a BRER iteration Each
 class corresponds to ONE restraint since gmxapi plugins each correspond to one
 restraint."""
-
+import typing
 from abc import abstractmethod
 
-try:
-    # noinspection PyUnresolvedReferences
-    from gmxapi.simulation.workflow import WorkElement
-except (ImportError, ModuleNotFoundError):
-    from gmx.workflow import WorkElement
-
 from run_brer.metadata import MetaData
+
+
+def _get_workelement() -> typing.Type:
+    try:
+        # noinspection PyUnresolvedReferences
+        from gmxapi.simulation.workflow import WorkElement
+    except (ImportError, ModuleNotFoundError):
+        # Fall-back for gmxapi < 0.1.0
+        try:
+            # noinspection PyUnresolvedReferences
+            from gmx.workflow import WorkElement
+        except (ImportError, ModuleNotFoundError):
+            WorkElement = None
+    if WorkElement is None:
+        raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/run_brer#requirements')
+    return WorkElement
 
 
 class PluginConfig(MetaData):
@@ -90,7 +100,7 @@ class TrainingPluginConfig(PluginConfig):
         KeyError
             if required parameters for building the plugin are missing.
         """
-
+        WorkElement = _get_workelement()
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = WorkElement(
@@ -122,6 +132,7 @@ class ConvergencePluginConfig(PluginConfig):
         KeyError
             if required parameters for building the plugin are missing.
         """
+        WorkElement = _get_workelement()
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = WorkElement(
@@ -153,6 +164,7 @@ class ProductionPluginConfig(PluginConfig):
         KeyError
             if required parameters for building the plugin are missing.
         """
+        WorkElement = _get_workelement()
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = WorkElement(
