@@ -15,16 +15,6 @@ try:
 except (ImportError, ModuleNotFoundError):
     _MPI = None
 
-try:
-    # noinspection PyPep8Naming,PyUnresolvedReferences
-    from gmxapi.simulation.context import Context as _context
-    # noinspection PyUnresolvedReferences
-    from gmxapi.simulation.workflow import WorkElement, from_tpr
-except (ImportError, ModuleNotFoundError):
-    # noinspection PyPep8Naming
-    from gmx.context import Context as _context
-    from gmx.workflow import from_tpr, WorkElement
-
 from run_brer.directory_helper import DirectoryHelper
 from run_brer.pair_data import MultiPair
 from run_brer.plugin_configs import ConvergencePluginConfig
@@ -34,6 +24,26 @@ from run_brer.plugin_configs import TrainingPluginConfig
 from run_brer.run_data import RunData
 
 _Path = Union[str, pathlib.Path]
+
+
+def _gmxapi_missing(*args, **kwargs):
+    raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/run_brer#requirements')
+
+
+try:
+    # noinspection PyPep8Naming,PyUnresolvedReferences
+    from gmxapi.simulation.context import Context as _context
+    # noinspection PyUnresolvedReferences
+    from gmxapi.simulation.workflow import WorkElement, from_tpr
+except (ImportError, ModuleNotFoundError):
+    try:
+        # noinspection PyPep8Naming
+        from gmx.context import Context as _context
+        from gmx.workflow import from_tpr, WorkElement
+    except (ImportError, ModuleNotFoundError):
+        _context = _gmxapi_missing
+        from_tpr = _gmxapi_missing
+        WorkElement = _gmxapi_missing
 
 
 class RunConfig:
