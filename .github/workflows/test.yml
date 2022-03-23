@@ -1,13 +1,7 @@
 name: Build and test
 
 on:
-  push:
-    # Sequence of patterns matched against refs/heads
-    branches:
-      - master
   pull_request:
-    branches:
-      - master
 
 jobs:
   gmx2019:
