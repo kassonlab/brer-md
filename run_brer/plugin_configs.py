@@ -1,16 +1,27 @@
-"""Classes used to build gmxapi plugins for all phases of a BRER iteration Each
-class corresponds to ONE restraint since gmxapi plugins each correspond to one
-restraint."""
+"""Classes used to build gmxapi plugins for all phases of a BRER iteration.
 
+Each class corresponds to ONE restraint since gmxapi plugins each correspond to one restraint.
+"""
+import typing
 from abc import abstractmethod
 
-try:
-    # noinspection PyUnresolvedReferences
-    from gmxapi.simulation.workflow import WorkElement
-except (ImportError, ModuleNotFoundError):
-    from gmx.workflow import WorkElement
-
 from run_brer.metadata import MetaData
+
+
+def _get_workelement() -> typing.Type:
+    try:
+        # noinspection PyUnresolvedReferences
+        from gmxapi.simulation.workflow import WorkElement
+    except (ImportError, ModuleNotFoundError):
+        # Fall-back for gmxapi < 0.1.0
+        try:
+            # noinspection PyUnresolvedReferences
+            from gmx.workflow import WorkElement
+        except (ImportError, ModuleNotFoundError):
+            WorkElement = None
+    if WorkElement is None:
+        raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/run_brer#requirements')
+    return WorkElement
 
 
 class PluginConfig(MetaData):
@@ -71,6 +82,13 @@ class PluginConfig(MetaData):
 
 
 class TrainingPluginConfig(PluginConfig):
+    """Configure BRER potential for the training phase.
+
+    The BRER training phase uses the MD potential provided by :py:func:`brer.brer_restraint`.
+
+    See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
+    """
+
     def __init__(self):
         super().__init__()
         self.name = 'training'
@@ -90,7 +108,7 @@ class TrainingPluginConfig(PluginConfig):
         KeyError
             if required parameters for building the plugin are missing.
         """
-
+        WorkElement = _get_workelement()
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = WorkElement(
@@ -103,6 +121,13 @@ class TrainingPluginConfig(PluginConfig):
 
 
 class ConvergencePluginConfig(PluginConfig):
+    """Configure BRER potential for the convergence phase.
+
+    The BRER convergence phase uses the MD potential provided by :py:func:`brer.linearstop_restraint`.
+
+    See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
+    """
+
     def __init__(self):
         super().__init__()
         self.name = 'convergence'
@@ -122,6 +147,7 @@ class ConvergencePluginConfig(PluginConfig):
         KeyError
             if required parameters for building the plugin are missing.
         """
+        WorkElement = _get_workelement()
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = WorkElement(
@@ -134,6 +160,13 @@ class ConvergencePluginConfig(PluginConfig):
 
 
 class ProductionPluginConfig(PluginConfig):
+    """Configure BRER potential for the convergence phase.
+
+    The BRER production phase uses the MD potential provided by :py:func:`brer.linear_restraint`.
+
+    See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
+    """
+
     def __init__(self):
         super().__init__()
         self.name = 'production'
@@ -153,6 +186,7 @@ class ProductionPluginConfig(PluginConfig):
         KeyError
             if required parameters for building the plugin are missing.
         """
+        WorkElement = _get_workelement()
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = WorkElement(
