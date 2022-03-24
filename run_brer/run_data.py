@@ -12,12 +12,19 @@ class GeneralParams(MetaData):
     simulation.
 
     These include some of the "Voth" parameters: tau, A, tolerance
+
+    .. versionadded:: 2.0
+        The *end_time* parameter is only available with sufficiently recent versions of
+        https://github.com/kassonlab/brer_plugin (late 2.0 beta). Otherwise,
+        *end_time* will always be 0.0
+
     """
 
     def __init__(self):
         super().__init__('general')
         self.set_requirements([
             'A',
+            'end_time',
             'ensemble_num',
             'iteration',
             'num_samples',
@@ -37,13 +44,14 @@ class GeneralParams(MetaData):
     def get_defaults():
         return {
             'A': 50,
+            'end_time': 0.,
             'ensemble_num': 1,
             'iteration': 0,
             'num_samples': 50,
             'phase': 'training',
             'production_time': 10000,  # 10 ns
             'sample_period': 100,
-            'start_time': 0,
+            'start_time': 0.,
             'tau': 50,
             'tolerance': 0.25,
         }

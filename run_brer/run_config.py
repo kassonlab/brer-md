@@ -433,10 +433,11 @@ class RunConfig:
         tpr_list = list(self._tprs)
         tpr_list[self._rank] = self.__prep_input(tpr_file)
 
-        # Calculate the time (in ps) at which the BRER iteration should finish.
+        # Calculate the time (in ps) at which the trajectory for this BRER iteration should finish.
         # This should be: the end time of the convergence run + the amount of time for
         # production simulation (specified by the user).
-        end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
+        start_time = self.run_data.get('start_time')
+        end_time = self.run_data.get('production_time') + start_time
 
         md = from_tpr(tpr_list, end_time=end_time, append_output=False, **kwargs)
 
@@ -455,6 +456,39 @@ class RunConfig:
         with context as session:
             session.run()
 
+        # Get the start and end times for the simulation managed by this Python interpreter.
+        # Note that these are the times for all potentials in a single simulation
+        # (which should be the same). We are not gathering values across any potential ensembles.
+        start_times = [potential.start_time for potential in context.potentials if hasattr(
+            potential, 'start_time')]
+        if len(start_times) > 0:
+            session_start_time = start_times[0]
+            if not all(session_start_time == t for t in start_times):
+                self._logger.warning('Potentials report inconsistent start times: '
+                                     ', '.join(str(t) for t in start_times))
+            assert session_start_time >= start_time
+        else:
+            # If the plugin attribute is missing, assume that the convergence phase behaved properly.
+            session_start_time = start_time
+
+        end_times = [potential.time for potential in context.potentials if hasattr(potential, 'time')]
+        if len(end_times) > 0:
+            session_end_time = end_times[0]
+            if not all(session_end_time == t for t in end_times):
+                self._logger.warning('Potentials report inconsistent end times: '
+                                     ', '.join(str(t) for t in end_times))
+        else:
+            session_end_time = None
+
+        if session_end_time is not None:
+            self.run_data.set(end_time=session_end_time)
+
+        trajectory_time = None
+        if session_end_time is not None:
+            trajectory_time = session_end_time - session_start_time
+
+        if trajectory_time is not None:
+            self._logger.info(f"{trajectory_time} ps production phase trajectory segment.")
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
@@ -527,8 +561,18 @@ class RunConfig:
                 self.run_data.set(phase='production')
         else:
             context = self.__production(tpr_file=tpr_file, **kwargs)
-            self.run_data.set(phase='training',
-                              start_time=0,
-                              iteration=(self.run_data.get('iteration') + 1))
+            requested_production_time = self.run_data.get('production_time')
+            start_time = self.run_data.get('start_time')
+            end_time = self.run_data.get('end_time')
+            if end_time == 0.0:
+                self._logger.warning(
+                    'Upgrade `brer` plugin module to avoid a bug in which BRER phase may advance '
+                    'prematurely. See https://github.com/kassonlab/run_brer/issues/19')
+            else:
+                assert end_time > start_time
+                if end_time - start_time >= requested_production_time:
+                    self.run_data.set(phase='training',
+                                      start_time=0,
+                                      iteration=(self.run_data.get('iteration') + 1))
         self.run_data.save_config(self.state_json)
         return context
