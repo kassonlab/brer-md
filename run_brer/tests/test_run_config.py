@@ -91,9 +91,8 @@ def test_run_config(tmpdir, data_dir):
         assert len(os.listdir()) == 0
         # Test another kwarg.
         rc.run(max_hours=0.001)
-        # TODO(#19): Confirm fix for production phase.
-        # assert rc.run_data.get('phase') == 'production'
-        # assert rc.run_data.get('iteration') == 0
+        assert rc.run_data.get('phase') == 'production'
+        assert rc.run_data.get('iteration') == 0
 
 
 @with_mpi_only
