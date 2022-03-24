@@ -26,7 +26,7 @@ except ImportError:
 #                             stderrToServer=True)
 
 with_mpi_only = pytest.mark.skipif(
-    MPI is None,
+    MPI is None or MPI.COMM_WORLD.Get_size() < 2,
     reason='This test requires mpi4py and a usable MPI environment.')
 
 # Try to get a reasonable number of threads to use.
@@ -145,7 +145,7 @@ def test_mpi_ensemble(tmpdir, data_dir):
         # inspection.
         assert len(os.listdir()) == 0
         # Test another kwarg.
-        rc.run(threads=4, max_hours=0.1)
+        rc.run(threads=4, max_hours=0.001)
 
         if comm.Get_size() > 1:
             # TODO: Confirm that we actually ran different ensemble members.
