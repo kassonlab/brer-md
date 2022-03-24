@@ -17,9 +17,16 @@ class GeneralParams(MetaData):
     def __init__(self):
         super().__init__('general')
         self.set_requirements([
-            'ensemble_num', 'iteration', 'phase', 'start_time', 'A', 'tau', 'tolerance',
+            'A',
+            'ensemble_num',
+            'iteration',
             'num_samples',
-            'sample_period', 'production_time'
+            'phase',
+            'production_time',
+            'sample_period',
+            'start_time',
+            'tau',
+            'tolerance',
         ])
 
     def set_to_defaults(self):
