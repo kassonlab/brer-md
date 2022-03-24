@@ -432,6 +432,10 @@ class RunConfig:
 
         tpr_list = list(self._tprs)
         tpr_list[self._rank] = self.__prep_input(tpr_file)
+        if tpr_file is not None:
+            # If bootstrap TPR is provided, we are not continuing from the
+            # convergence phase trajectory.
+            self.run_data.set(start_time=0.0)
 
         # Calculate the time (in ps) at which the trajectory for this BRER iteration should finish.
         # This should be: the end time of the convergence run + the amount of time for
