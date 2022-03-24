@@ -437,9 +437,9 @@ class RunConfig:
         # This should be: the end time of the convergence run + the amount of time for
         # production simulation (specified by the user).
         start_time = self.run_data.get('start_time')
-        end_time = self.run_data.get('production_time') + start_time
+        target_end_time = self.run_data.get('production_time') + start_time
 
-        md = from_tpr(tpr_list, end_time=end_time, append_output=False, **kwargs)
+        md = from_tpr(tpr_list, end_time=target_end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
         for plugin in self.__plugins:
