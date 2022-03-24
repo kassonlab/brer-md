@@ -67,6 +67,7 @@ gmx::PotentialPointData Linear::calculate(gmx::Vector v, gmx::Vector v0,
                                           double t) {
   // Our convention is to calculate the force that will be applied to v.
   // An equal and opposite force is applied to v0.
+  time_ = t;
   auto rdiff = v - v0;
   const auto Rsquared = dot(rdiff, rdiff);
   const auto R = sqrt(Rsquared);

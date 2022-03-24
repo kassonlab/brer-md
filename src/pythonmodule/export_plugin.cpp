@@ -613,6 +613,22 @@ PYBIND11_MODULE(brer, m){
   py::class_<PyLinear, std::shared_ptr<PyLinear>> linear(m, "LinearRestraint");
   // EnsembleRestraint can only be created via builder for now.
   linear.def("bind", &PyLinear::bind, "Implement binding protocol");
+  linear.def_property_readonly(
+      "time",
+      [](PyLinear *potential) {
+        return static_cast<plugin::LinearRestraint *>(
+                   potential->getRestraint().get())
+            ->getTime();
+      },
+      "Simulation time for the last call to the force calculator.");
+  linear.def_property_readonly(
+      "start_time",
+      [](PyLinear *potential) {
+        return static_cast<plugin::LinearRestraint *>(
+                   potential->getRestraint().get())
+            ->getStartTime();
+      },
+      "Simulation time at which the plugin potential was initialized.");
 
   m.def("linear_restraint",
         [](const py::object element) { return createLinearBuilder(element); });
