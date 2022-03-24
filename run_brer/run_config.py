@@ -418,9 +418,8 @@ class RunConfig:
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
-            self._logger.info("Plugin {}: alpha = {}, target = {}".format(name,
-                                                                          current_alpha,
-                                                                          current_target))
+            message = f'Plugin {name}: alpha = {current_alpha}, target = {current_target}'
+            self._logger.info(message)
 
         return context
 
@@ -522,7 +521,10 @@ class RunConfig:
             self.run_data.set(phase='convergence')
         elif phase == 'convergence':
             context = self.__converge(tpr_file=tpr_file, **kwargs)
-            self.run_data.set(phase='production')
+            # TODO(#18): Investigate for robustness in the case of
+            #  batch workflows and MPI-enabled GROMACS.
+            if all(getattr(potential, 'stop_called', True) for potential in context.potentials):
+                self.run_data.set(phase='production')
         else:
             context = self.__production(tpr_file=tpr_file, **kwargs)
             self.run_data.set(phase='training',

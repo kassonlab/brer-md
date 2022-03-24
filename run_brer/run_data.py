@@ -1,6 +1,7 @@
 """Class that handles the simulation data for BRER simulations.
 """
 import json
+import typing
 
 from run_brer.metadata import MetaData
 from run_brer.pair_data import PairData
@@ -76,7 +77,7 @@ class RunData:
         general parameters and the pair-specific parameters."""
         self.general_params = GeneralParams()
         self.general_params.set_to_defaults()
-        self.pair_params = {}
+        self.pair_params: typing.MutableMapping[str, PairParams] = {}
         self.__names = []
 
     def set(self, name=None, **kwargs):

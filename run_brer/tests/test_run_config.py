@@ -71,6 +71,13 @@ def test_run_config(tmpdir, data_dir):
 
         # Convergence phase.
         assert rc.run_data.get('phase') == 'convergence'
+        # Check robustness to early termination.
+        rc.run_data.set(tolerance=0.01)
+        rc.run(max_hours=0.001)
+        assert rc.run_data.get('phase') == 'convergence'
+
+        # Finish convergence phase.
+        rc.run_data.set(tolerance=10000)
         rc.run()
 
         # Production phase.
@@ -84,6 +91,9 @@ def test_run_config(tmpdir, data_dir):
         assert len(os.listdir()) == 0
         # Test another kwarg.
         rc.run(max_hours=0.001)
+        # TODO(#19): Confirm fix for production phase.
+        # assert rc.run_data.get('phase') == 'production'
+        # assert rc.run_data.get('iteration') == 0
 
 
 @with_mpi_only
