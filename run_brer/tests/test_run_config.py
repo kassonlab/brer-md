@@ -95,6 +95,19 @@ def test_run_config(tmpdir, data_dir):
         # Test another kwarg.
         rc.run(max_hours=0.001)
         assert rc.run_data.get('phase') == 'production'
+
+        # Test the production phase bootstrapping option.
+        # It is a little difficult to test that the production phase actually
+        # runs with a non-default TPR file.
+        # Warning: This may need some extra conditional logic to support more gmxapi
+        # versions.
+        with tempfile.TemporaryDirectory() as directory:
+            new_tpr = os.path.join(directory, 'tmp.tpr')
+            shutil.copy("{}/topol.tpr".format(data_dir), new_tpr)
+            gmxapi_context = rc.run(tpr_file=new_tpr, max_hours=0.001)
+        element = json.loads(gmxapi_context.work.elements['tpr_input'])
+        assert str(element['params']['input'][0]) == str(new_tpr)
+        assert rc.run_data.get('phase') == 'production'
         assert rc.run_data.get('iteration') == 0
 
 
@@ -150,44 +163,3 @@ def test_mpi_ensemble(tmpdir, data_dir):
         if comm.Get_size() > 1:
             # TODO: Confirm that we actually ran different ensemble members.
             ...
-
-
-def test_production_bootstrap(tmpdir, data_dir):
-    with working_directory_fence():
-        config_params = {
-            "tpr": "{}/topol.tpr".format(data_dir),
-            "ensemble_num": 1,
-            "ensemble_dir": tmpdir,
-            "pairs_json": "{}/pair_data.json".format(data_dir)
-        }
-        os.makedirs("{}/mem_{}".format(tmpdir, config_params["ensemble_num"]))
-        rc = RunConfig(**config_params)
-        rc.run_data.set(A=5,
-                        tau=0.1,
-                        tolerance=100,
-                        num_samples=2,
-                        sample_period=0.1,
-                        production_time=0.2)
-
-        # Training phase.
-        assert rc.run_data.get('phase') == 'training'
-        rc.run()
-        # Convergence phase.
-        assert rc.run_data.get('phase') == 'convergence'
-        rc.run()
-
-        # Production phase.
-        # It is a little bit difficult to test that the production phase actually
-        # runs with a non-default TPR file.
-        # Warning: This may need some extra conditional logic to support more gmxapi
-        # versions.
-
-        # Test production bootstrap option.
-        # TODO: Merge with test_run_config once issue #19 is resolved.
-        assert rc.run_data.get('phase') == 'production'
-        with tempfile.TemporaryDirectory() as directory:
-            new_tpr = os.path.join(directory, 'tmp.tpr')
-            shutil.copy("{}/topol.tpr".format(data_dir), new_tpr)
-            gmxapi_context = rc.run(tpr_file=new_tpr, max_hours=0.001)
-        element = json.loads(gmxapi_context.work.elements['tpr_input'])
-        assert str(element['params']['input'][0]) == str(new_tpr)
