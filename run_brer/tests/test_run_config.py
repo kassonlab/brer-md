@@ -54,7 +54,10 @@ def test_run_config(tmpdir, data_dir):
             "ensemble_dir": tmpdir,
             "pairs_json": "{}/pair_data.json".format(data_dir)
         }
-        os.makedirs("{}/mem_{}".format(tmpdir, config_params["ensemble_num"]))
+        os.makedirs(
+            "{}/mem_{}".format(tmpdir, config_params["ensemble_num"]),
+            exist_ok=True
+        )
         rc = RunConfig(**config_params)
         rc.run_data.set(A=5,
                         tau=0.1,
@@ -96,9 +99,8 @@ def test_run_config(tmpdir, data_dir):
 
 
 @with_mpi_only
-def test_mpi_ensemble(data_dir):
+def test_mpi_ensemble(tmpdir, data_dir):
     """Test a batch of multiple ensemble members in a single MPI context."""
-    test_dir = os.getcwd()
     with working_directory_fence():
         comm: MPI.Comm = MPI.COMM_WORLD
         rank: int = comm.Get_rank()
@@ -109,10 +111,13 @@ def test_mpi_ensemble(data_dir):
         config_params = {
             "tpr": tpr_list,
             "ensemble_num": None,
-            "ensemble_dir": test_dir,
+            "ensemble_dir": tmpdir,
             "pairs_json": "{}/pair_data.json".format(data_dir)
         }
-        # os.makedirs("{}/mem_{}".format(test_dir, config_params["ensemble_num"]))
+        os.makedirs(
+            "{}/mem_{}".format(tmpdir, config_params["ensemble_num"]),
+            exist_ok=True
+        )
         rc = RunConfig(**config_params)
         rc.run_data.set(A=5,
                         tau=0.1,
