@@ -208,3 +208,9 @@ jobs:
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && $PYTHON -m pip install "${{ env.GMXAPI }}"
         ./ci_scripts/brer_restraint.sh
         ./ci_scripts/run_brer.sh
+    - name: Docs
+      run: |
+        export GITHUB_ACTOR=$GITHUB_ACTOR
+        export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        export GITHUB_REPOSITORY=$GITHUB_REPOSITORY
+        ./ci_scripts/docs/buildsite.sh
