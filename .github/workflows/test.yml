@@ -210,6 +210,9 @@ jobs:
         ./ci_scripts/run_brer.sh
     - name: Docs
       run: |
+        . $HOME/venv/bin/activate
+        pip install sphinx sphinx-rtd-theme
+        pip install -r docs/requirements.txt
         export GITHUB_ACTOR=$GITHUB_ACTOR
         export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
         export GITHUB_REPOSITORY=$GITHUB_REPOSITORY

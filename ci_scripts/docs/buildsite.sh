@@ -4,8 +4,7 @@
 set -x
 
 pushd docs
-pwd
-ls -lah
+pwd; ls -lah
 export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
 
 ##############
@@ -31,10 +30,10 @@ pushd "${docroot}"
 
 git init
 git remote add deploy "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-# Initially, let's try without the force push.
-#git checkout -b gh-pages
-git fetch deploy
-git checkout gh-pages
+git checkout -b gh-pages
+# If we want to keep a history of web doc builds, do the following instead.
+#git fetch deploy
+#git checkout gh-pages
 
 # Adds .nojekyll file to the root to signal to GitHub that
 # directories that start with an underscore (_) can remain
@@ -58,10 +57,9 @@ git add .
 msg="Updating Docs for commit ${GITHUB_SHA} made on `date -d"@${SOURCE_DATE_EPOCH}" --iso-8601=seconds` from ${GITHUB_REF} by ${GITHUB_ACTOR}"
 git commit -am "${msg}"
 
-# Initially, let's try without the force push.
-## overwrite the contents of the gh-pages branch on our github.com repo
-#git push deploy gh-pages --force
-git push deploy gh-pages
+# overwrite the contents of the gh-pages branch on our github.com repo
+git push deploy gh-pages --force
+# If we want to keep a history of web doc builds, there is no need to `--force`
 
 popd; popd # return to main repo sandbox root
 
