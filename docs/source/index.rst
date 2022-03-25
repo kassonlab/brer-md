@@ -17,9 +17,13 @@ Welcome to run BRER's documentation!
 run_brer
 ========
 
-|Documentation Status| |Language grade: Python| |Total alerts|
+|Build Status|
+|Documentation Status|
 
-|Build Status| |codecov|
+.. todo:: Restore additional project tests and reactivate badges.
+    See https://github.com/kassonlab/run_brer/issues/2
+
+.. .. |codecov| |Language grade: Python| |Total alerts|
 
 Set of scripts for running BRER simulations using gmxapi. Details of
 this method may be found at:
