@@ -1,11 +1,12 @@
 # run_brer
 
 [![Build and test](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/test.yml)
+[![Documentation](https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment)
 
 This project is hosted in a git repository at https://github.com/kassonlab/run_brer
 
-Project documentation is available in the repository or
-[on the web](https://kassonlab.github.io/run_brer/).
+Project documentation is available in the repository or at
+[https://kassonlab.github.io/run_brer/](https://kassonlab.github.io/run_brer/).
 
 The `run_brer` Python package provides a set of scripts for running BRER simulations using [gmxapi](https://gmxapi.org/).
 Details of this method may be found in:
