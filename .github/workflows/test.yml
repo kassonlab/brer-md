@@ -209,6 +209,7 @@ jobs:
         ./ci_scripts/brer_restraint.sh
         ./ci_scripts/run_brer.sh
     - name: Docs
+      if: ${{ github.event_name == 'push' && github.ref_name == 'master' && secrets.GITHUB_TOKEN != '' }}
       run: |
         . $HOME/venv/bin/activate
         pip install sphinx sphinx-rtd-theme
