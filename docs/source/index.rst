@@ -17,9 +17,13 @@ Welcome to run BRER's documentation!
 run_brer
 ========
 
-|Documentation Status| |Language grade: Python| |Total alerts|
+|Build Status|
+|Documentation Status|
 
-|Build Status| |codecov|
+.. todo:: Restore additional project tests and reactivate badges.
+    See https://github.com/kassonlab/run_brer/issues/2
+
+.. .. |codecov| |Language grade: Python| |Total alerts|
 
 Set of scripts for running BRER simulations using gmxapi. Details of
 this method may be found at:
@@ -176,11 +180,12 @@ hope to soon use the ``gmxapi``
 `features <https://github.com/kassonlab/gmxapi>`__ that allow a user to
 launch many ensemble members in one job.
 
-.. |Documentation Status| image:: https://readthedocs.org/projects/run-brer/badge/?version=latest
+.. |Documentation Status| image:: https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master
+   :target: https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment
 .. |Language grade: Python| image:: https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18
 .. |Total alerts| image:: https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18
-.. |Build Status| image:: https://travis-ci.com/kassonlab/run_brer.svg?branch=master
-   :target: https://travis-ci.com/kassonlab/run_brer
+.. |Build Status| image:: https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master
+   :target: https://github.com/kassonlab/run_brer/actions/workflows/test.yml
 .. |codecov| image:: https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg
 
 Indices and tables
