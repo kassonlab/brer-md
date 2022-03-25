@@ -210,7 +210,7 @@ jobs:
         ./ci_scripts/run_brer.sh
         echo "github.ref_name: ${{ github.ref_name }}"
     - name: Docs
-      if: ${{ github.event_name == 'push' && github.ref_name == 'master' && secrets.GITHUB_TOKEN != '' }}
+      if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
       run: |
         . $HOME/venv/bin/activate
         pip install sphinx sphinx-rtd-theme
