@@ -3,10 +3,9 @@
 # https://github.com/annegentle/create-demo/blob/main/docs/buildsite.sh
 set -x
 
-apt-get update
-apt-get -y install git rsync python3-sphinx
-
-pwd ls -lah
+pushd docs
+pwd
+ls -lah
 export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
 
 ##############
@@ -34,7 +33,7 @@ git init
 git remote add deploy "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 # Initially, let's try without the force push.
 #git checkout -b gh-pages
-git fetch
+git fetch deploy
 git checkout gh-pages
 
 # Adds .nojekyll file to the root to signal to GitHub that
@@ -64,7 +63,7 @@ git commit -am "${msg}"
 #git push deploy gh-pages --force
 git push deploy gh-pages
 
-popd # return to main repo sandbox root
+popd; popd # return to main repo sandbox root
 
 # exit cleanly
 exit 0
