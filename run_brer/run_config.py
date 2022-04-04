@@ -15,16 +15,6 @@ try:
 except (ImportError, ModuleNotFoundError):
     _MPI = None
 
-try:
-    # noinspection PyPep8Naming,PyUnresolvedReferences
-    from gmxapi.simulation.context import Context as _context
-    # noinspection PyUnresolvedReferences
-    from gmxapi.simulation.workflow import WorkElement, from_tpr
-except (ImportError, ModuleNotFoundError):
-    # noinspection PyPep8Naming
-    from gmx.context import Context as _context
-    from gmx.workflow import from_tpr, WorkElement
-
 from run_brer.directory_helper import DirectoryHelper
 from run_brer.pair_data import MultiPair
 from run_brer.plugin_configs import ConvergencePluginConfig
@@ -34,6 +24,26 @@ from run_brer.plugin_configs import TrainingPluginConfig
 from run_brer.run_data import RunData
 
 _Path = Union[str, pathlib.Path]
+
+
+def _gmxapi_missing(*args, **kwargs):
+    raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/run_brer#requirements')
+
+
+try:
+    # noinspection PyPep8Naming,PyUnresolvedReferences
+    from gmxapi.simulation.context import Context as _context
+    # noinspection PyUnresolvedReferences
+    from gmxapi.simulation.workflow import WorkElement, from_tpr
+except (ImportError, ModuleNotFoundError):
+    try:
+        # noinspection PyPep8Naming
+        from gmx.context import Context as _context
+        from gmx.workflow import from_tpr, WorkElement
+    except (ImportError, ModuleNotFoundError):
+        _context = _gmxapi_missing
+        from_tpr = _gmxapi_missing
+        WorkElement = _gmxapi_missing
 
 
 class RunConfig:
@@ -412,9 +422,8 @@ class RunConfig:
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
-            self._logger.info("Plugin {}: alpha = {}, target = {}".format(name,
-                                                                          current_alpha,
-                                                                          current_target))
+            message = f'Plugin {name}: alpha = {current_alpha}, target = {current_target}'
+            self._logger.info(message)
 
         return context
 
@@ -427,13 +436,18 @@ class RunConfig:
 
         tpr_list = list(self._tprs)
         tpr_list[self._rank] = self.__prep_input(tpr_file)
+        if tpr_file is not None:
+            # If bootstrap TPR is provided, we are not continuing from the
+            # convergence phase trajectory.
+            self.run_data.set(start_time=0.0)
 
-        # Calculate the time (in ps) at which the BRER iteration should finish.
+        # Calculate the time (in ps) at which the trajectory for this BRER iteration should finish.
         # This should be: the end time of the convergence run + the amount of time for
         # production simulation (specified by the user).
-        end_time = self.run_data.get('production_time') + self.run_data.get('start_time')
+        start_time = self.run_data.get('start_time')
+        target_end_time = self.run_data.get('production_time') + start_time
 
-        md = from_tpr(tpr_list, end_time=end_time, append_output=False, **kwargs)
+        md = from_tpr(tpr_list, end_time=target_end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
         for plugin in self.__plugins:
@@ -450,6 +464,39 @@ class RunConfig:
         with context as session:
             session.run()
 
+        # Get the start and end times for the simulation managed by this Python interpreter.
+        # Note that these are the times for all potentials in a single simulation
+        # (which should be the same). We are not gathering values across any potential ensembles.
+        start_times = [potential.start_time for potential in context.potentials if hasattr(
+            potential, 'start_time')]
+        if len(start_times) > 0:
+            session_start_time = start_times[0]
+            if not all(session_start_time == t for t in start_times):
+                self._logger.warning('Potentials report inconsistent start times: '
+                                     ', '.join(str(t) for t in start_times))
+            assert session_start_time >= start_time
+        else:
+            # If the plugin attribute is missing, assume that the convergence phase behaved properly.
+            session_start_time = start_time
+
+        end_times = [potential.time for potential in context.potentials if hasattr(potential, 'time')]
+        if len(end_times) > 0:
+            session_end_time = end_times[0]
+            if not all(session_end_time == t for t in end_times):
+                self._logger.warning('Potentials report inconsistent end times: '
+                                     ', '.join(str(t) for t in end_times))
+        else:
+            session_end_time = None
+
+        if session_end_time is not None:
+            self.run_data.set(end_time=session_end_time)
+
+        trajectory_time = None
+        if session_end_time is not None:
+            trajectory_time = session_end_time - session_start_time
+
+        if trajectory_time is not None:
+            self._logger.info(f"{trajectory_time} ps production phase trajectory segment.")
         for name in self.__names:
             current_alpha = self.run_data.get('alpha', name=name)
             current_target = self.run_data.get('target', name=name)
@@ -469,6 +516,9 @@ class RunConfig:
         tpr_file : str, optional
             If provided, use this input file instead of the input from the main
             configuration.
+        **kwargs : dict, optional
+            Additional key word arguments are passed on to the simulator.
+
 
         After the first "iteration", run_brer bootstraps the training and convergence
         phase's trajectory with the checkpoint file from the previous iteration's
@@ -487,23 +537,21 @@ class RunConfig:
         with the checkpoint from which you want to continue, or you may remove the
         checkpoint file from the phase directory and restart that phase.
 
-        Additional key word arguments are passed on to the simulator.
-
         Example
         -------
-            config_params = {
-                "tpr": "{}/topol.tpr".format(data_dir),
-                "ensemble_num": 1,
-                "ensemble_dir": tmpdir,
-                "pairs_json": "{}/pair_data.json".format(data_dir)
-            }
-            rc = RunConfig(**config_params)
-            assert rc.run_data.get('phase') == 'training'
-            rc.run(threads=2)
-            assert rc.run_data.get('phase') == 'convergence'
-            rc.run()
-            assert rc.run_data.get('phase') == 'production'
-            rc.run(tpr_file=new_tpr, max_hours=23.9)
+        >>> config_params = {
+        ...     "tpr": "{}/topol.tpr".format(data_dir),
+        ...     "ensemble_num": 1,
+        ...     "ensemble_dir": tmpdir,
+        ...     "pairs_json": "{}/pair_data.json".format(data_dir)
+        ... }
+        >>> rc = RunConfig(**config_params)
+        >>> assert rc.run_data.get('phase') == 'training'
+        >>> rc.run(threads=2)
+        >>> assert rc.run_data.get('phase') == 'convergence'
+        >>> rc.run()
+        >>> assert rc.run_data.get('phase') == 'production'
+        >>> rc.run(tpr_file=new_tpr, max_hours=23.9)
 
         """
         phase = self.run_data.get('phase')
@@ -515,11 +563,24 @@ class RunConfig:
             self.run_data.set(phase='convergence')
         elif phase == 'convergence':
             context = self.__converge(tpr_file=tpr_file, **kwargs)
-            self.run_data.set(phase='production')
+            # TODO(#18): Investigate for robustness in the case of
+            #  batch workflows and MPI-enabled GROMACS.
+            if all(getattr(potential, 'stop_called', True) for potential in context.potentials):
+                self.run_data.set(phase='production')
         else:
             context = self.__production(tpr_file=tpr_file, **kwargs)
-            self.run_data.set(phase='training',
-                              start_time=0,
-                              iteration=(self.run_data.get('iteration') + 1))
+            requested_production_time = self.run_data.get('production_time')
+            start_time = self.run_data.get('start_time')
+            end_time = self.run_data.get('end_time')
+            if end_time == 0.0:
+                self._logger.warning(
+                    'Upgrade `brer` plugin module to avoid a bug in which BRER phase may advance '
+                    'prematurely. See https://github.com/kassonlab/run_brer/issues/19')
+            else:
+                assert end_time > start_time
+                if end_time - start_time >= requested_production_time:
+                    self.run_data.set(phase='training',
+                                      start_time=0,
+                                      iteration=(self.run_data.get('iteration') + 1))
         self.run_data.save_config(self.state_json)
         return context

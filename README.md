@@ -1,13 +1,15 @@
 # run_brer
 
-[![Build and test](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg)](https://github.com/kassonlab/run_brer/actions/workflows/test.yml)
+[![Build and test](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/test.yml)
+[![Documentation](https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment)
 
 This project is hosted in a git repository at https://github.com/kassonlab/run_brer
 
-Project documentation is available in the repository or
-[on the web](https://kassonlab.github.io/run_brer/).
+Project documentation is available in the repository or at
+[https://kassonlab.github.io/run_brer/](https://kassonlab.github.io/run_brer/).
 
-Set of scripts for running BRER simulations using gmxapi. Details of this method may be found at:
+The `run_brer` Python package provides a set of scripts for running BRER simulations using [gmxapi](https://gmxapi.org/).
+Details of this method may be found in:
 
 Hays, J. M., Cafiso, D. S., & Kasson, P. M. Hybrid Refinement of Heterogeneous Conformational Ensembles using Spectroscopic Data. *The Journal of Physical Chemistry Letters*. DOI: [10.1021/acs.jpclett.9b01407](https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407)
 
@@ -19,7 +21,8 @@ If you're going to use a pip or a conda environment, you'll need:
 
 - Python 3.X
 - gmxapi for GROMACS 2019 or newer.
-    * Install [GROMACS 2019 and gmxapi 0.0.7](https://gmxapi.readthedocs.io/en/release-0_0_7/install.html#installation), or
+    * Install [GROMACS 2019 and gmxapi 0.0.7](https://gmxapi.readthedocs.io/en/release-0_0_7/install.html#installation),
+  or
     * Install [current GROMACS and gmxapi >= 0.1](https://manual.gromacs.org/current/gmxapi/userguide/install.html)
 
 - The [plugin code](https://github.com/kassonlab/brer_plugin) for BRER.

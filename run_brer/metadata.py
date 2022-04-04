@@ -82,7 +82,7 @@ class MetaData(ABC):
     def set(self, key=None, value=None, **kwargs):
         """Sets a parameter of the class. Checks whether or not the parameter
         is required and reports information about requirements. You can pass
-        the key,value pairs either as a key and value or as a set of **kwargs.
+        the key,value pairs either as a key and value or as a set of ``**kwargs``.
 
         Parameters
         ----------

@@ -1,6 +1,7 @@
 """Class that handles the simulation data for BRER simulations.
 """
 import json
+import typing
 
 from run_brer.metadata import MetaData
 from run_brer.pair_data import PairData
@@ -11,14 +12,28 @@ class GeneralParams(MetaData):
     simulation.
 
     These include some of the "Voth" parameters: tau, A, tolerance
+
+    .. versionadded:: 2.0
+        The *end_time* parameter is only available with sufficiently recent versions of
+        https://github.com/kassonlab/brer_plugin (late 2.0 beta). Otherwise,
+        *end_time* will always be 0.0
+
     """
 
     def __init__(self):
         super().__init__('general')
         self.set_requirements([
-            'ensemble_num', 'iteration', 'phase', 'start_time', 'A', 'tau', 'tolerance',
+            'A',
+            'end_time',
+            'ensemble_num',
+            'iteration',
             'num_samples',
-            'sample_period', 'production_time'
+            'phase',
+            'production_time',
+            'sample_period',
+            'start_time',
+            'tau',
+            'tolerance',
         ])
 
     def set_to_defaults(self):
@@ -29,13 +44,14 @@ class GeneralParams(MetaData):
     def get_defaults():
         return {
             'A': 50,
+            'end_time': 0.,
             'ensemble_num': 1,
             'iteration': 0,
             'num_samples': 50,
             'phase': 'training',
             'production_time': 10000,  # 10 ns
             'sample_period': 100,
-            'start_time': 0,
+            'start_time': 0.,
             'tau': 50,
             'tolerance': 0.25,
         }
@@ -76,7 +92,7 @@ class RunData:
         general parameters and the pair-specific parameters."""
         self.general_params = GeneralParams()
         self.general_params.set_to_defaults()
-        self.pair_params = {}
+        self.pair_params: typing.MutableMapping[str, PairParams] = {}
         self.__names = []
 
     def set(self, name=None, **kwargs):
@@ -94,6 +110,10 @@ class RunData:
             if you provide a name and try to set a general parameter or
             don't provide a name and try to set a pair-specific parameter.
         """
+        if len(kwargs) == 0:
+            raise TypeError(
+                f'Invalid signature: {self.__class__.__qualname__}.set() called without naming any '
+                f'parameters.')
 
         for key, value in kwargs.items():
             # If a restraint name is not specified, it is assumed that the parameter is
@@ -112,7 +132,7 @@ class RunData:
                 else:
                     raise ValueError('{} is not a pair-specific parameter'.format(key))
 
-    def get(self, key, name=None):
+    def get(self, key, *, name=None):
         """get either a general or a pair-specific parameter.
 
         Parameters
