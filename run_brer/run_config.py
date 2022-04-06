@@ -382,6 +382,7 @@ class RunConfig:
 
             # noinspection PyUnresolvedReferences
             current_target = context.potentials[i].target
+            current_converged = context.potentials[i].converged
 
             self.run_data.set(name=current_name, alpha=current_alpha)
             self.run_data.set(name=current_name, target=current_target)
@@ -560,7 +561,11 @@ class RunConfig:
 
         if phase == 'training':
             context = self.__train(tpr_file=tpr_file, **kwargs)
-            self.run_data.set(phase='convergence')
+            if all(getattr(potential, 'converged', True) for potential in context.potentials):
+                self.run_data.set(phase='convergence')
+            else:
+                self._logger.warning(
+                    '')
         elif phase == 'convergence':
             context = self.__converge(tpr_file=tpr_file, **kwargs)
             # TODO(#18): Investigate for robustness in the case of
