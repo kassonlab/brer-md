@@ -96,6 +96,7 @@ public:
 
   double getAlphaMax() { return alpha_max_; }
   double getTarget() { return target_; }
+  bool getConverged() { return converged_;}
 
 private:
   bool initialized_{false};
@@ -182,6 +183,7 @@ public:
 
   using BRER::getAlphaMax;
   using BRER::getTarget;
+  using BRER::getConverged;
 
 private:
   std::vector<int> sites_;
