@@ -565,7 +565,7 @@ class RunConfig:
                 self.run_data.set(phase='convergence')
             else:
                 self._logger.warning(
-                    '')
+                    'Training alpha value has not converged')
         elif phase == 'convergence':
             context = self.__converge(tpr_file=tpr_file, **kwargs)
             # TODO(#18): Investigate for robustness in the case of
