@@ -47,7 +47,7 @@ void Linear::callback(gmx::Vector v, gmx::Vector v0, double t,
     startTime_ = t;
     nextSampleTime_ = startTime_ + samplePeriod_;
     logging_file_ =
-        std::make_unique<RAIIFile>(logging_filename_.c_str(), "w");
+        std::make_unique<RAIIFile>(logging_filename_.c_str(), "a");
     if (logging_file_) {
       fprintf(logging_file_->fh(), "time\tR\ttarget\talpha\n");
       writeparameters(t, R);
