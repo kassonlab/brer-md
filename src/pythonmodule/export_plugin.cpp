@@ -705,6 +705,10 @@ PYBIND11_MODULE(brer, m){
     return static_cast<plugin::BRERRestraint *>(potential->getRestraint().get())
         ->getTarget();
   });
+brer.def_property_readonly("converged", [](PyBRER *potential) {
+    return static_cast<plugin::BRERRestraint *>(potential->getRestraint().get())
+        ->getConverged();
+    });
 
   m.def("brer_restraint",
         [](const py::object element) { return createBRERBuilder(element); });
