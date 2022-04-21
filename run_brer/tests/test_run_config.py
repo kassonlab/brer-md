@@ -73,7 +73,9 @@ def test_run_config(tmpdir, data_dir):
         rc.run(threads=num_cpus)
 
         # Include a test to override alpha=0 fail
-        rc.run_data.set(alpha=1.0)
+        for name in rc.run_data.pair_params:
+            rc.run_data.set(name=name, alpha=1.0)
+            
         # Convergence phase.
         assert rc.run_data.get('phase') == 'convergence'
         # Check robustness to early termination.

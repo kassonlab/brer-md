@@ -378,17 +378,19 @@ class RunConfig:
             # noinspection PyUnresolvedReferences
             current_alpha = context.potentials[i].alpha
             if current_alpha == 0.0:
-                raise Exception('Alpha value was constrained to 0.0')
+                raise RuntimeError('Alpha value was constrained to 0.0, which indicates something went wrong')
 
             # noinspection PyUnresolvedReferences
             current_target = context.potentials[i].target
-            current_converged = getattr(context.potentials[i], 'converged', False)
+            current_converged = getattr(context.potentials[i], 'converged', None)
 
             self.run_data.set(name=current_name, alpha=current_alpha)
             self.run_data.set(name=current_name, target=current_target)
+            self.run_data.set(name=current_converged, converged=current_converged)
             self._logger.info("Plugin {}: alpha = {}, target = {}".format(current_name,
                                                                           current_alpha,
-                                                                          current_target))
+                                                                          current_target,
+                                                                          current_converged))
 
         return context
 
