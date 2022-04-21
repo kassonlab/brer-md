@@ -377,12 +377,12 @@ class RunConfig:
             # of alpha.
             # noinspection PyUnresolvedReferences
             current_alpha = context.potentials[i].alpha
-            if current_alpha == 0:
-                self._logger.error('Alpha value was constrained to 0.0')
+            if current_alpha == 0.0:
+                raise Exception('Alpha value was constrained to 0.0')
 
             # noinspection PyUnresolvedReferences
             current_target = context.potentials[i].target
-            current_converged = context.potentials[i].converged
+            current_converged = getattr(context.potentials[i], 'converged', False)
 
             self.run_data.set(name=current_name, alpha=current_alpha)
             self.run_data.set(name=current_name, target=current_target)
@@ -564,8 +564,8 @@ class RunConfig:
             if all(getattr(potential, 'converged', True) for potential in context.potentials):
                 self.run_data.set(phase='convergence')
             else:
-                self._logger.warning(
-                    'Training alpha value has not converged')
+                raise RuntimeError(
+                    'Training alpha value has not converged.')
         elif phase == 'convergence':
             context = self.__converge(tpr_file=tpr_file, **kwargs)
             # TODO(#18): Investigate for robustness in the case of
