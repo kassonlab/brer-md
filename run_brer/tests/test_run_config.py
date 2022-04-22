@@ -75,7 +75,7 @@ def test_run_config(tmpdir, data_dir):
         # Include a test to override alpha=0 fail
         for name in rc.run_data.pair_params:
             rc.run_data.set(name=name, alpha=1.0)
-            
+
         # Convergence phase.
         assert rc.run_data.get('phase') == 'convergence'
         # Check robustness to early termination.
