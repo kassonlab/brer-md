@@ -150,6 +150,8 @@ class ConvergencePluginConfig(PluginConfig):
         WorkElement = _get_workelement()
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
+        if self.get('alpha') == 0.0:
+            raise ValueError('Read a non-sensical alpha value: 0.0')
         potential = WorkElement(
             namespace="brer",
             operation="linearstop_restraint",
@@ -189,6 +191,8 @@ class ProductionPluginConfig(PluginConfig):
         WorkElement = _get_workelement()
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
+        if self.get('alpha') == 0.0:
+            raise ValueError('Read a non-sensical alpha value: 0.0')
         potential = WorkElement(
             namespace="brer",
             operation="linear_restraint",

@@ -377,6 +377,9 @@ class RunConfig:
             # of alpha.
             # noinspection PyUnresolvedReferences
             current_alpha = context.potentials[i].alpha
+            if current_alpha == 0.0:
+                raise RuntimeError('Alpha value was constrained to 0.0, which indicates something went wrong')
+
             # noinspection PyUnresolvedReferences
             current_target = context.potentials[i].target
 
@@ -389,6 +392,7 @@ class RunConfig:
         return context
 
     def __converge(self, tpr_file=None, **kwargs):
+
         for key in ('append_output',):
             if key in kwargs:
                 raise TypeError('Conflicting key word argument. Cannot accept {}.'.format(
@@ -556,7 +560,11 @@ class RunConfig:
 
         if phase == 'training':
             context = self.__train(tpr_file=tpr_file, **kwargs)
-            self.run_data.set(phase='convergence')
+            if all(getattr(potential, 'converged', True) for potential in context.potentials):
+                self.run_data.set(phase='convergence')
+            else:
+                raise RuntimeError(
+                    'Training alpha value has not converged.')
         elif phase == 'convergence':
             context = self.__converge(tpr_file=tpr_file, **kwargs)
             # TODO(#18): Investigate for robustness in the case of

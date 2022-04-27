@@ -60,5 +60,16 @@ def test_plugins(raw_pair_data):
     ppc.scan_metadata(pp)
 
     tpc.build_plugin()
+
+    # By default, alpha is 0.0, which doesn't make sense in the convergence and production phases.
+    assert cpc.get('alpha') == 0.0
+    with pytest.raises(ValueError):
+        cpc.build_plugin()
+    with pytest.raises(ValueError):
+        ppc.build_plugin()
+
+    cpc.set('alpha', 1.0)
     cpc.build_plugin()
+
+    ppc.set('alpha', 1.0)
     ppc.build_plugin()
