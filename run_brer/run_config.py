@@ -516,7 +516,7 @@ class RunConfig:
         tpr_file : str, optional
             If provided, use this input file instead of the input from the main
             configuration.
-        **kwargs : dict, optional
+        **kwargs : optional
             Additional key word arguments are passed on to the simulator.
 
 
