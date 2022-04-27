@@ -61,7 +61,7 @@ def test_run_config(tmpdir, data_dir):
         rc = RunConfig(**config_params)
         rc.run_data.set(A=5,
                         tau=0.1,
-                        tolerance=10000,
+                        tolerance=0.1,
                         num_samples=2,
                         sample_period=0.001,
                         production_time=10000.)
@@ -69,15 +69,33 @@ def test_run_config(tmpdir, data_dir):
         # Training phase.
         assert rc.run_data.get('iteration') == 0
         assert rc.run_data.get('phase') == 'training'
+
+        # With a tight tolerance and short run time, it can't have converged.
+        # Note that this check requires a `brer` plugin installation from
+        # 2.0 pre-release commit
+        # https://github.com/kassonlab/brer_plugin/commit/1c8ba5767a872fc69e3d6d9bfae8603a73870064
+        # or newer. See https://github.com/kassonlab/run_brer/issues/8
+        with pytest.raises(RuntimeError):
+            rc.run(max_hours=0.0001)
+        assert rc.run_data.get('phase') == 'training'
+
+        # Allow the training phase to converge.
+        rc.run_data.set(tolerance=10000)
         # Include a test for kwarg handling.
         rc.run(threads=num_cpus)
 
-        # Include a test to override alpha=0 fail
-        for name in rc.run_data.pair_params:
-            rc.run_data.set(name=name, alpha=1.0)
-
         # Convergence phase.
         assert rc.run_data.get('phase') == 'convergence'
+        # Check that bad alpha is caught.
+        _original_alpha = [None] * len(rc.run_data.pair_params)
+        for i, name in enumerate(rc.run_data.pair_params):
+            _original_alpha[i] = rc.run_data.get('alpha', name=name)
+            rc.run_data.set(name=name, alpha=0.0)
+        with pytest.raises(ValueError):
+            rc.run()
+        # Set alpha back so we can continue.
+        for i, name in enumerate(rc.run_data.pair_params):
+            rc.run_data.set(name=name, alpha=_original_alpha[i])
         # Check robustness to early termination.
         rc.run_data.set(tolerance=0.01)
         rc.run(max_hours=0.001)
