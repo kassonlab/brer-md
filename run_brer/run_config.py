@@ -583,6 +583,8 @@ class RunConfig:
             else:
                 assert end_time > start_time
                 if end_time - start_time >= requested_production_time:
+                    prev_iter_state_json = 'state_' + str(self.run_data.get('iteration')) + '.json'
+                    shutil.copy2(self.state_json, prev_iter_state_json)
                     self.run_data.set(phase='training',
                                       start_time=0,
                                       iteration=(self.run_data.get('iteration') + 1))
