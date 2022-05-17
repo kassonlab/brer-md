@@ -583,8 +583,15 @@ class RunConfig:
             else:
                 assert end_time > start_time
                 if end_time - start_time >= requested_production_time:
-                    prev_iter_state_json = 'state_' + str(self.run_data.get('iteration')) + '.json'
-                    shutil.copy2(self.state_json, prev_iter_state_json)
+                    state_dir = os.path.dirname(self.state_json)
+                    archive_name = 'state_' + str(self.run_data.get('iteration')) + '.json'
+                    prev_iter_state_json = os.path.join(state_dir, archive_name)
+                    if os.path.exists(prev_iter_state_json):
+                        raise RuntimeError(
+                            'If you intended to re-run the phase, please remove ', prev_iter_state_json,
+                            '.', 'See https://github.com/kassonlab/run_brer/issues/24')
+                    else:
+                        shutil.copy2(self.state_json, prev_iter_state_json)
                     self.run_data.set(phase='training',
                                       start_time=0,
                                       iteration=(self.run_data.get('iteration') + 1))
