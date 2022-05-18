@@ -584,6 +584,11 @@ class RunConfig:
                 assert end_time > start_time
                 if end_time - start_time >= requested_production_time:
                     state_dir = os.path.dirname(self.state_json)
+                    # Previously, when BRER restarted from production --> training,
+                    # the state.json file was overwritten.
+                    # Added changes below maintain previous state.json files from
+                    # completed BRER iterations.
+                    # See https://github.com/kassonlab/run_brer/issues/24.
                     archive_name = 'state_' + str(self.run_data.get('iteration')) + '.json'
                     prev_iter_state_json = os.path.join(state_dir, archive_name)
                     if os.path.exists(prev_iter_state_json):

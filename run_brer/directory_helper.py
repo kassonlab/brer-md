@@ -49,6 +49,7 @@ class DirectoryHelper:
         >>> │       ├── state_prev.cpt
         >>> │       └── traj_comp.part0001.xtc
         >>> ├── state.json
+        >>> ├── state_{iteration}.json
         >>> ├── submit.slurm
         >>> └── syx.tpr
 
