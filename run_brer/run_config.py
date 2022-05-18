@@ -583,6 +583,20 @@ class RunConfig:
             else:
                 assert end_time > start_time
                 if end_time - start_time >= requested_production_time:
+                    state_dir = os.path.dirname(self.state_json)
+                    # The state.json file is overwritten below.
+                    # We retain previous state.json files from
+                    # completed BRER iteration "i" as state_i.json.
+                    # See https://github.com/kassonlab/run_brer/issues/24.
+                    archive_name = 'state_' + str(self.run_data.get('iteration')) + '.json'
+                    prev_iter_state_json = os.path.join(state_dir, archive_name)
+                    if os.path.exists(prev_iter_state_json):
+                        message = 'If you intended to re-run the phase, please remove '
+                        message += str(prev_iter_state_json)
+                        message += '. See https://github.com/kassonlab/run_brer/issues/24'
+                        raise RuntimeError(message)
+                    else:
+                        shutil.copy2(self.state_json, prev_iter_state_json)
                     self.run_data.set(phase='training',
                                       start_time=0,
                                       iteration=(self.run_data.get('iteration') + 1))
