@@ -591,9 +591,10 @@ class RunConfig:
                     archive_name = 'state_' + str(self.run_data.get('iteration')) + '.json'
                     prev_iter_state_json = os.path.join(state_dir, archive_name)
                     if os.path.exists(prev_iter_state_json):
-                        raise RuntimeError(
-                            'If you intended to re-run the phase, please remove ', prev_iter_state_json,
-                            '.', 'See https://github.com/kassonlab/run_brer/issues/24')
+                        message = 'If you intended to re-run the phase, please remove '
+                        message += str(prev_iter_state_json)
+                        message += '. See https://github.com/kassonlab/run_brer/issues/24'
+                        raise RuntimeError(message)
                     else:
                         shutil.copy2(self.state_json, prev_iter_state_json)
                     self.run_data.set(phase='training',
