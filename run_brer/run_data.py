@@ -123,14 +123,15 @@ class RunData:
                     self.general_params.set(key, value)
                 else:
                     raise ValueError(
-                        'You have provided a name; this means you are probably trying '
+                        'You have not provided a name; this means you are probably trying '
                         'to set a '
-                        'pair-specific parameter. {} is not pair-specific'.format(key))
+                        'general parameter. {} is pair-specific'.format(key))
             else:
                 if key in self.pair_params[name].get_requirements():
                     self.pair_params[name].set(key, value)
                 else:
-                    raise ValueError('{} is not a pair-specific parameter'.format(key))
+                    raise ValueError('{} is not a pair-specific parameter'.format(key)
+                                     + ' but you have provided a name.')
 
     def get(self, key, *, name=None):
         """get either a general or a pair-specific parameter.
