@@ -350,6 +350,8 @@ class RunConfig:
         tpr_list: Sequence[str] = self._tprs
         md = from_tpr(tpr_list, append_output=False, **kwargs)
         self.build_plugins(TrainingPluginConfig())
+        if len(self.__plugins) == 0:
+            warnings.warn('No BRER restraints are being applied! User error?')
         for plugin in self.__plugins:
             plugin_name = plugin.name
             for name in self.__names:
@@ -365,8 +367,19 @@ class RunConfig:
         self._logger.info(f'Working directory: {workdir}')
 
         # Run it.
+        # WARNING: We do not yet handle situations where a rank has no work to do.
+        # See https://github.com/kassonlab/run_brer/issues/18
+        # and https://github.com/kassonlab/run_brer/issues/55
         with context as session:
             session.run()
+
+        # Through at least gmxapi 0.4, the *potentials* attribute is created on
+        # the Context for any Session launched with MD work to perform. An explicit
+        # error message here should be more helpful than an AttributeError below,
+        # but we don't really know what went wrong.
+        # Ref https://github.com/kassonlab/run_brer/issues/55
+        if not hasattr(context, 'potentials'):
+            raise RuntimeError('Invalid gmxapi Context: missing "potentials" attribute.')
 
         for i in range(len(self.__names)):
             # TODO: ParallelArrayContext.potentials needs to be declared to avoid IDE
@@ -402,6 +415,8 @@ class RunConfig:
 
         md = from_tpr(self._tprs, append_output=False, **kwargs)
         self.build_plugins(ConvergencePluginConfig())
+        if len(self.__plugins) == 0:
+            warnings.warn('No BRER restraints are being applied! User error?')
         for plugin in self.__plugins:
             md.add_dependency(plugin)
 
@@ -412,8 +427,19 @@ class RunConfig:
         context = _context(md,
                            workdir_list=self.workdirs,
                            communicator=self._communicator)
+        # WARNING: We do not yet handle situations where a rank has no work to do.
+        # See https://github.com/kassonlab/run_brer/issues/18
+        # and https://github.com/kassonlab/run_brer/issues/55
         with context as session:
             session.run()
+
+        # Through at least gmxapi 0.4, the *potentials* attribute is created on
+        # the Context for any Session launched with MD work to perform. An explicit
+        # error message here should be more helpful than an AttributeError below,
+        # but we don't really know what went wrong.
+        # Ref https://github.com/kassonlab/run_brer/issues/55
+        if not hasattr(context, 'potentials'):
+            raise RuntimeError('Invalid gmxapi Context: missing "potentials" attribute.')
 
         # Get the absolute time (in ps) at which the convergence run finished.
         # This value will be needed if a production run needs to be restarted.
@@ -450,6 +476,8 @@ class RunConfig:
         md = from_tpr(tpr_list, end_time=target_end_time, append_output=False, **kwargs)
 
         self.build_plugins(ProductionPluginConfig())
+        if len(self.__plugins) == 0:
+            warnings.warn('No BRER restraints are being applied! User error?')
         for plugin in self.__plugins:
             md.add_dependency(plugin)
 
@@ -461,8 +489,19 @@ class RunConfig:
                            workdir_list=self.workdirs,
                            communicator=self._communicator
                            )
+        # WARNING: We do not yet handle situations where a rank has no work to do.
+        # See https://github.com/kassonlab/run_brer/issues/18
+        # and https://github.com/kassonlab/run_brer/issues/55
         with context as session:
             session.run()
+
+        # Through at least gmxapi 0.4, the *potentials* attribute is created on
+        # the Context for any Session launched with MD work to perform. An explicit
+        # error message here should be more helpful than an AttributeError below,
+        # but we don't really know what went wrong.
+        # Ref https://github.com/kassonlab/run_brer/issues/55
+        if not hasattr(context, 'potentials'):
+            raise RuntimeError('Invalid gmxapi Context: missing "potentials" attribute.')
 
         # Get the start and end times for the simulation managed by this Python interpreter.
         # Note that these are the times for all potentials in a single simulation
