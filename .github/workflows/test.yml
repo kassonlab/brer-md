@@ -10,7 +10,7 @@ jobs:
   gmx2019:
     runs-on: ubuntu-latest
     env:
-      PY: 3.6
+      PY: 3.7
       GROMACS: release-2019
     steps:
     - uses: actions/checkout@v2
@@ -110,7 +110,7 @@ jobs:
   gmx2021:
     runs-on: ubuntu-latest
     env:
-      PY: 3.7
+      PY: 3.8
       GROMACS: release-2021
       GMXAPI: "gmxapi<0.3"
     steps:
