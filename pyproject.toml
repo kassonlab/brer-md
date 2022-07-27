@@ -1,6 +1,56 @@
 [build-system]
-requires = ["setuptools>=42", "versioningit~=2.0"]
+requires = ["setuptools>=61", "versioningit~=2.0"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "run_brer"
+description = "A set of scripts for running BRER simulations using gmxapi."
+authors = [
+    { name = "Jennifer M. Hays, Kasson Lab BRER Team" },
+    { name = "Kasson Lab BRER Team", email = "kassonlab@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "LGPL 2.1" }
+classifiers = [
+    "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
+    "Programming Language :: Python :: 3"
+]
+dependencies = [
+    'numpy>=1',
+    'importlib-resources; python_version<"3.10"',
+]
+dynamic = ["version"]
+
+[project.urls]
+"Source" = "https://github.com/kassonlab/run_brer/"
+"Documentation" = "https://kassonlab.github.io/run_brer/"
+
+[project.optional-dependencies]
+all = [
+    "brer",
+    "gmxapi"
+]
+test = [
+  "pytest >= 6.1.2"
+]
+
+# Let setuptools discover the package in the current directory,
+# but be explicit about non-Python files.
+[tool.setuptools]
+zip-safe = false
+include-package-data = false
+[tool.setuptools.packages.find]
+namespaces = false
+where = ["src"]
+
+# Ref https://setuptools.pypa.io/en/latest/userguide/datafiles.html#package-data
+[tool.setuptools.package-data]
+run_brer = [
+    "py.typed",
+    "data/pair_data.json",
+    "data/topol.tpr"
+]
 
 [tool.versioningit]
 default-version = "2+unknown"
