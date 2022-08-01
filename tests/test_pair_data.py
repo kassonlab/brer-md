@@ -3,7 +3,7 @@ from run_brer.pair_data import MultiPair
 from run_brer.pair_data import PairData
 
 
-def test_pair_data(data_dir, raw_pair_data):
+def test_pair_data(raw_pair_data, pair_data_file):
     """Ensures that multipair constructs multiple PairData objects.
     
     Parameters
@@ -14,7 +14,7 @@ def test_pair_data(data_dir, raw_pair_data):
         dictionary of multiple pair data
     """
     mp = MultiPair()
-    mp.read_from_json("{}/pair_data.json".format(data_dir))
+    mp.read_from_json(pair_data_file)
 
     assert mp.get_as_single_dataset() == raw_pair_data
     for name in mp.names:

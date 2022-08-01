@@ -107,3 +107,6 @@ venv.bak/
 .idea/
 .vscode
 docs/_build/
+
+# Generated file
+src/run_brer/_version.py

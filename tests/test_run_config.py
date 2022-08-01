@@ -46,13 +46,13 @@ def working_directory_fence():
         os.chdir(wd)
 
 
-def test_run_config(tmpdir, data_dir):
+def test_run_config(tmpdir, pair_data_file, simulation_input):
     with working_directory_fence():
         config_params = {
-            "tpr": "{}/topol.tpr".format(data_dir),
+            "tpr": simulation_input,
             "ensemble_num": 1,
             "ensemble_dir": tmpdir,
-            "pairs_json": "{}/pair_data.json".format(data_dir)
+            "pairs_json": pair_data_file
         }
         os.makedirs(
             "{}/mem_{}".format(tmpdir, config_params["ensemble_num"]),
@@ -125,7 +125,7 @@ def test_run_config(tmpdir, data_dir):
         # versions.
         with tempfile.TemporaryDirectory() as directory:
             new_tpr = os.path.join(directory, 'tmp.tpr')
-            shutil.copy("{}/topol.tpr".format(data_dir), new_tpr)
+            shutil.copy(simulation_input, new_tpr)
             gmxapi_context = rc.run(tpr_file=new_tpr, max_hours=0.001)
         element = json.loads(gmxapi_context.work.elements['tpr_input'])
         assert str(element['params']['input'][0]) == str(new_tpr)
@@ -134,7 +134,7 @@ def test_run_config(tmpdir, data_dir):
 
 
 @with_mpi_only
-def test_mpi_ensemble(tmpdir, data_dir):
+def test_mpi_ensemble(tmpdir, pair_data_file, simulation_input):
     """Test a batch of multiple ensemble members in a single MPI context."""
     with working_directory_fence():
         comm: MPI.Comm = MPI.COMM_WORLD
@@ -142,12 +142,12 @@ def test_mpi_ensemble(tmpdir, data_dir):
         logger.info(f'rank is {rank}')
         assert rank < comm.Get_size()
 
-        tpr_list = [os.path.join(data_dir, 'topol.tpr')] * comm.Get_size()
+        tpr_list = [simulation_input] * comm.Get_size()
         config_params = {
             "tpr": tpr_list,
             "ensemble_num": None,
             "ensemble_dir": tmpdir,
-            "pairs_json": "{}/pair_data.json".format(data_dir)
+            "pairs_json": pair_data_file
         }
         os.makedirs(
             "{}/mem_{}".format(tmpdir, config_params["ensemble_num"]),
