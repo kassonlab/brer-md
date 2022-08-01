@@ -230,7 +230,8 @@ class RunData:
         fnm : str, optional
             log file for state parameters, by default 'state.json'
         """
-        json.dump(self.as_dictionary(), open(fnm, 'w'))
+        with open(fnm, 'w') as fh:
+            json.dump(self.as_dictionary(), fh, indent=4)
 
     def load_config(self, fnm='state.json'):
         """Load state parameters from file.
@@ -240,4 +241,5 @@ class RunData:
         fnm : str, optional
             log file of state parameters, by default 'state.json'
         """
-        self.from_dictionary(json.load(open(fnm)))
+        with open(fnm, 'r') as fh:
+            self.from_dictionary(json.load(fh))
