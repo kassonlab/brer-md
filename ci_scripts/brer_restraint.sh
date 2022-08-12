@@ -4,6 +4,7 @@ set -ev
 pushd $HOME
   [ -d brer_plugin ] || git clone --depth=1 https://github.com/kassonlab/brer_plugin.git
   pushd brer_plugin
+    git pull --ff-only
     rm -rf build
     mkdir build
     pushd build
