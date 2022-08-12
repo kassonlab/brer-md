@@ -76,45 +76,16 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 # CMake modules are in a subdirectory to keep this file cleaner
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# Assuming GROMACS is in our path or that we have set either the gmxapi_DIR or GROMACS_DIR environment variables,
-# this will find the CMake configuration for the GROMACS libraries we need and define the CMake library objects
-# Gromacs::gmxapi
 if(GMXAPI_EXTENSION_MASTER_PROJECT)
-    find_package(gmxapi
-                 0.0.7 REQUIRED CONFIG
-                 PATHS "$ENV{gmxapi_DIR}" "${gmxapi_DIR}" "$ENV{GROMACS_DIR}" "${GROMACS_DIR}"
-                 )
-
-    message(STATUS "Found gmxapi version ${gmxapi_VERSION_MAJOR}.${gmxapi_VERSION_MINOR}.${gmxapi_VERSION_PATCH}")
-endif()
-
-if(GMXAPI_EXTENSION_MASTER_PROJECT)
-    # Note: This property only appears on the Gromacs::gmxapi target since GROMACS 2021.
-    # For earlier releases, `-DGMX_SUFFIX` can be set on the CMake command line.
-    get_target_property(_mpi Gromacs::gmxapi MPI)
-    if(_mpi AND _mpi STREQUAL "library")
-        set(_suffix "_mpi")
-    endif()
     ######################################################
     # The following is boiler-plate recommended by GROMACS
     ######################################################
-    # In principle, this could be deduced from GROMACS_IS_DOUBLE returned by
-    # find_package(GROMACS) based on the suffix alone, but it is clearer that the
-    # user explicitly sets what they want to get, and then need to provide a suffix
-    # to match.
-    option(GMX_DOUBLE "Use double precision" OFF)
-    set(GMX_SUFFIX "${_suffix}" CACHE STRING "Suffix for the GROMACS installation to use (empty for default)")
 
-    # This does not allow for a non-suffixed double-precision libgromacs, but
-    # that should be rare enough for demonstration purposes.
-    if (GMX_DOUBLE AND NOT GMX_SUFFIX)
-        set(GROMACS_SUFFIX "_d")
-    else()
-        set(GROMACS_SUFFIX ${GMX_SUFFIX})
-    endif()
+    find_package(GROMACS REQUIRED
+                 NAMES gromacs gromacs_mpi gromacs_d
+                 HINTS "$ENV{GROMACS_DIR}"
+                 )
 
-    find_package(GROMACS REQUIRED)
-    gromacs_check_double(GMX_DOUBLE)
     gromacs_check_compiler(CXX)
     include_directories(${GROMACS_INCLUDE_DIRS})
     add_definitions(${GROMACS_DEFINITIONS})
@@ -126,9 +97,20 @@ if(GMXAPI_EXTENSION_MASTER_PROJECT)
         string(REPLACE /MD /MT CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
         set(CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG} CACHE STRING "" FORCE)
     endif()
+    ######################################################
 
-    # Activate the CTest module for this directory.
-    include(CTest)
+    # Note that we find GROMACS before gmxapi as a workaround for issue #4563
+    # for GROMACS releases that won't be patched.
+
+    # Assuming GROMACS is in our path or that we have set either gmxapi_ROOT or the
+    # GROMACS_DIR environment variable, this will find the CMake configuration for
+    # the GROMACS libraries we need and define the CMake library object Gromacs::gmxapi
+    find_package(gmxapi
+                 0.0.7 REQUIRED CONFIG
+                 PATHS "$ENV{gmxapi_DIR}" "${gmxapi_DIR}" "$ENV{GROMACS_DIR}" "${GROMACS_DIR}"
+                 )
+
+    message(STATUS "Found gmxapi version ${gmxapi_VERSION_MAJOR}.${gmxapi_VERSION_MINOR}.${gmxapi_VERSION_PATCH}")
 endif()
 
 ########################################################
