@@ -21,6 +21,8 @@ pushd $HOME
   rm -rf build
   mkdir build
   pushd build
+   which cmake
+   cmake --version
    cmake -G Ninja \
          -DCMAKE_CXX_COMPILER=$CXX \
          -DGMX_ENABLE_CCACHE=ON \
