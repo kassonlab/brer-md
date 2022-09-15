@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.9.6)
 # project name and adopt your own versioning scheme.
 project(brer_restraint VERSION 0.0.8)
 
+if (POLICY CMP0074)
+    cmake_policy(SET CMP0074 NEW)
+endif ()
+
 find_package(PythonInterp)
 
 # Check if Python package is being built directly or via add_subdirectory.
