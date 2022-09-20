@@ -10,7 +10,7 @@ jobs:
   gmx2019:
     runs-on: ubuntu-latest
     env:
-      PY: 3.7
+      PY: 3.8
       GROMACS: release-2019
     steps:
     - name: Prepare OS
@@ -77,7 +77,7 @@ jobs:
   gmx2021:
     runs-on: ubuntu-latest
     env:
-      PY: 3.8
+      PY: 3.10
       GROMACS: release-2021
       GMXAPI: "gmxapi<0.3"
     steps:
