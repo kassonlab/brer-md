@@ -10,7 +10,7 @@ jobs:
   gmx2019:
     runs-on: ubuntu-latest
     env:
-      PY: 3.6
+      PY: 3.8
       GROMACS: release-2019
     steps:
       - uses: actions/checkout@v2
@@ -59,7 +59,7 @@ jobs:
   gmx2021:
     runs-on: ubuntu-latest
     env:
-      PY: 3.7
+      PY: 3.9
       GROMACS: release-2021
       GMXAPI: "gmxapi>=0.2"
     steps:
@@ -109,7 +109,7 @@ jobs:
   gmx2022:
     runs-on: ubuntu-latest
     env:
-      PY: 3.8
+      PY: "3.10"
       GROMACS: release-2022
       GMXAPI: "gmxapi>=0.3"
     steps:
@@ -118,10 +118,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
-      - name: Set up Python ${{ env.PY }}
+      - name: "Set up Python ${{ env.PY }}"
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ env.PY }}
+          python-version: "${{ env.PY }}"
       - name: Prepare ccache variables
         id: ccache_cache
         run: |
