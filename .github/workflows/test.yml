@@ -135,7 +135,14 @@ jobs:
         versioningit .
         $PYTHON -m build
         pip install dist/*whl
-        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer tests
+        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer --cov-report=xml tests
+    - name: "Upload coverage to Codecov"
+      continue-on-error: true
+      uses: codecov/codecov-action@v2
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+        name: codecov-${{ env.GMXAPI }}-${{ env.GROMACS }}-${{ matrix.python-version }}
     - name: "Upload artifacts"
       if: failure()
       uses: actions/upload-artifact@v3
