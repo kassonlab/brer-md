@@ -46,8 +46,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install GROMACS
       run: |
+        ccache -s
         . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_2019.sh
+        ccache -s
     - name: Test
       timeout-minutes: 8
       run: |
@@ -71,7 +73,7 @@ jobs:
       with:
         name: ${{ github.job }}-${{ env.GROMACS }}
         path: |
-          ~/install/
+          ~/install/gromacs-${{ env.GROMACS }}/share/
           ~/gmxapi/build/
 
   gmx2021:
@@ -114,9 +116,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install GROMACS
       run: |
+        ccache -s
         . $HOME/venv/bin/activate
         . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
+        ccache -s
     - name: Test
       timeout-minutes: 8
       run: |
@@ -142,7 +146,7 @@ jobs:
       with:
         name: ${{ github.job }}-${{ env.GROMACS }}
         path: |
-          ~/install/
+          ~/install/gromacs-${{ env.GROMACS }}/share/
           ~/pip-tmp/
 
   gmx2022:
@@ -184,9 +188,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install GROMACS
       run: |
+        ccache -s
         . $HOME/venv/bin/activate
         . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
+        ccache -s
     - name: Test
       timeout-minutes: 8
       run: |
@@ -223,5 +229,79 @@ jobs:
       with:
         name: ${{ github.job }}-${{ env.GROMACS }}
         path: |
-          ~/install/
+          ~/install/gromacs-${{ env.GROMACS }}/share/
+          ~/pip-tmp/
+
+  gmx-dev:
+    runs-on: ubuntu-latest
+    env:
+      PY: "3.9"
+      GROMACS: main
+      GMXAPI: "gmxapi"
+    steps:
+    - name: Prepare OS
+      run: |
+        sudo apt-get update
+        sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
+    - name: Set up Python ${{ env.PY }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: "${{ env.PY }}"
+    - name: Prepare ccache variables
+      id: ccache_cache
+      run: |
+        echo "::set-output name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')"
+        echo "::set-output name=dir::$(ccache -k cache_dir)"
+    - name: ccache cache files
+      uses: actions/cache@v2
+      with:
+        path: ${{ steps.ccache_cache.outputs.dir }}
+        key: ${{ env.GROMACS }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
+        restore-keys: |
+          ${{ env.GROMACS }}-ccache-
+    - name: Install Python dependencies
+      run: |
+        python -m venv $HOME/venv
+        . $HOME/venv/bin/activate
+        export PYTHON=$VIRTUAL_ENV/bin/python
+        $PYTHON -m pip install --upgrade pip setuptools wheel
+        pip install --upgrade packaging cmake
+        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
+        pip install pytest codecov pytest-cov numpy
+    - uses: actions/checkout@v2
+    - name: Install GROMACS
+      run: |
+        ccache -s
+        . $HOME/venv/bin/activate
+        . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
+        BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
+        ccache -s
+    - name: Test
+      timeout-minutes: 8
+      run: |
+        . ./ci_scripts/set_compilers
+        . $HOME/venv/bin/activate
+        pip install -r requirements.txt
+        pip install "cmake>=3.16" "pybind11>=2.6" "setuptools>=42.0" "wheel"
+        export PYTHON=$HOME/venv/bin/python
+        source $HOME/install/gromacs-${GROMACS}/bin/GMXRC
+        mkdir -p $HOME/pip-tmp
+        TMPDIR=$HOME/pip-tmp \
+        pip install --no-clean --no-build-isolation --verbose --extra-index-url https://test.pypi.org/simple/ --pre "${{ env.GMXAPI }}"
+        bash -x ${GITHUB_WORKSPACE}/ci_scripts/brer_restraint.sh
+        git tag --list
+        pip list
+        export VERSIONINGIT_LOG_LEVEL=INFO
+        versioningit .
+        $PYTHON -m build --sdist
+        pip install dist/*
+        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer tests
+        echo "github.ref_name: ${{ github.ref_name }}"
+    - name: "Upload artifacts"
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ github.job }}-${{ env.GROMACS }}
+        path: |
+          ~/install/gromacs-${{ env.GROMACS }}/share/
           ~/pip-tmp/
