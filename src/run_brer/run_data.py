@@ -165,7 +165,7 @@ class RunData:
         -------
         type
             heirarchical dictionary of metadata
-        
+
         Examples
         --------
 

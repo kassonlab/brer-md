@@ -5,7 +5,7 @@ from run_brer.pair_data import PairData
 
 def test_pair_data(raw_pair_data, pair_data_file):
     """Ensures that multipair constructs multiple PairData objects.
-    
+
     Parameters
     ----------
     data_dir : str
