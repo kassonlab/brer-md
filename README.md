@@ -2,6 +2,7 @@
 
 [![Build and test](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/test.yml)
 [![Documentation](https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment)
+[![codecov](https://codecov.io/gh/kassonlab/run_brer/branch/master/graph/badge.svg)](https://codecov.io/gh/kassonlab/run_brer)
 
 This project is hosted in a git repository at https://github.com/kassonlab/run_brer
 

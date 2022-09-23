@@ -66,7 +66,14 @@ jobs:
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
         pip install ${GITHUB_WORKSPACE}/
-        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer tests
+        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer --cov-report=xml tests
+    - name: "Upload coverage to Codecov"
+      continue-on-error: true
+      uses: codecov/codecov-action@v2
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+        name: codecov-gmx0_0_7-${{ env.GROMACS }}-${{ matrix.python-version }}
     - name: "Upload artifacts"
       if: failure()
       uses: actions/upload-artifact@v3
@@ -139,7 +146,14 @@ jobs:
         versioningit .
         $PYTHON -m build
         pip install dist/*whl
-        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer tests
+        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer --cov-report=xml tests
+    - name: "Upload coverage to Codecov"
+      continue-on-error: true
+      uses: codecov/codecov-action@v2
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+        name: codecov-${{ env.GMXAPI }}-${{ env.GROMACS }}-${{ matrix.python-version }}
     - name: "Upload artifacts"
       if: failure()
       uses: actions/upload-artifact@v3
@@ -211,8 +225,15 @@ jobs:
         versioningit .
         $PYTHON -m build --sdist
         pip install dist/*
-        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer tests
         echo "github.ref_name: ${{ github.ref_name }}"
+        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer --cov-report=xml tests
+    - name: "Upload coverage to Codecov"
+      continue-on-error: true
+      uses: codecov/codecov-action@v2
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+        name: codecov-${{ env.GMXAPI }}-${{ env.GROMACS }}-${{ matrix.python-version }}
     - name: Docs
       if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
       run: |
