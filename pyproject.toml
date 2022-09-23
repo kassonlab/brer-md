@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61", "versioningit~=2.0"]
+requires = ["setuptools>=61", "versioningit~=2.0", "pybind11>=2.6"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -28,7 +28,6 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 all = [
-    "brer",
     "gmxapi"
 ]
 test = [

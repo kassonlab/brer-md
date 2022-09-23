@@ -58,7 +58,6 @@ jobs:
         pip install -r requirements.txt
         export PYTHON=$VIRTUAL_ENV/bin/python
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && bash -x ${GITHUB_WORKSPACE}/ci_scripts/pygmx_0_0_7.sh
-        bash -x ${GITHUB_WORKSPACE}/ci_scripts/brer_restraint.sh
         pwd
         ls
         git tag --list
@@ -137,7 +136,6 @@ jobs:
         mkdir -p $HOME/pip-tmp && \
         TMPDIR=$HOME/pip-tmp \
         $PYTHON -m pip install --no-clean --verbose "${{ env.GMXAPI }}"
-        bash -x ${GITHUB_WORKSPACE}/ci_scripts/brer_restraint.sh
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
@@ -214,7 +212,6 @@ jobs:
         mkdir -p $HOME/pip-tmp && \
         TMPDIR=$HOME/pip-tmp \
         $PYTHON -m pip install --no-clean --verbose "${{ env.GMXAPI }}"
-        bash -x ${GITHUB_WORKSPACE}/ci_scripts/brer_restraint.sh
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
@@ -303,7 +300,6 @@ jobs:
         mkdir -p $HOME/pip-tmp
         TMPDIR=$HOME/pip-tmp \
         pip install --no-clean --no-build-isolation --verbose --extra-index-url https://test.pypi.org/simple/ --pre "${{ env.GMXAPI }}"
-        bash -x ${GITHUB_WORKSPACE}/ci_scripts/brer_restraint.sh
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
@@ -311,6 +307,7 @@ jobs:
         $PYTHON -m build --sdist
         pip install dist/*
         $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer --cov-report=xml tests
+        mpiexec -n 2 $PYTHON -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=run_brer --cov-report=xml tests
         echo "github.ref_name: ${{ github.ref_name }}"
     - name: "Upload coverage to Codecov"
       continue-on-error: true
