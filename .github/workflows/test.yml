@@ -69,11 +69,9 @@ jobs:
         $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
       continue-on-error: true
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
-        file: ./coverage.xml
         fail_ci_if_error: true
-        name: codecov-gmx0_0_7-${{ env.GROMACS }}-${{ matrix.python-version }}
     - name: "Upload artifacts"
       if: failure()
       uses: actions/upload-artifact@v3
@@ -149,11 +147,9 @@ jobs:
         $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
       continue-on-error: true
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
-        file: ./coverage.xml
         fail_ci_if_error: true
-        name: codecov-${{ env.GMXAPI }}-${{ env.GROMACS }}-${{ matrix.python-version }}
     - name: "Upload artifacts"
       if: failure()
       uses: actions/upload-artifact@v3
@@ -229,11 +225,9 @@ jobs:
         $PYTHON -m pytest -rA -l --log-cli-level=info --cov=run_brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
       continue-on-error: true
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
-        file: ./coverage.xml
         fail_ci_if_error: true
-        name: codecov-${{ env.GMXAPI }}-${{ env.GROMACS }}-${{ matrix.python-version }}
     - name: Docs
       if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
       run: |
@@ -320,11 +314,9 @@ jobs:
         echo "github.ref_name: ${{ github.ref_name }}"
     - name: "Upload coverage to Codecov"
       continue-on-error: true
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       with:
-        file: ./coverage.xml
         fail_ci_if_error: true
-        name: codecov-gmx0_0_7-${{ env.GROMACS }}-${{ matrix.python-version }}
     - name: "Upload artifacts"
       if: failure()
       uses: actions/upload-artifact@v3
