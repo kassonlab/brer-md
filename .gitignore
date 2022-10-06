@@ -109,4 +109,4 @@ venv.bak/
 docs/_build/
 
 # Generated file
-src/run_brer/_version.py
+src/brer/_version.py

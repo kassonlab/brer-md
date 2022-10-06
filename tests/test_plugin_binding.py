@@ -1,10 +1,4 @@
-# The myplugin module must be locatable by Python.
-# If you configured CMake in the build directory ``/path/to/repo/build`` then,
-# assuming you are in ``/path/to/repo``, run the tests with something like
-#     PYTHONPATH=./cmake-build-debug/src/pythonmodule mpiexec -n 2 python -m mpi4py -m pytest tests/
-
-# This test is not currently run automatically in any way. Build the module, point your PYTHONPATH at it,
-# and run pytest in the tests directory.
+"""Test the usability of the C++ extension module and pluggable MD extension code."""
 
 import logging
 import os
@@ -58,4 +52,7 @@ def test_import():
     # Suppress inspection warning outside of testing context.
     # noinspection PyUnresolvedReferences
     import brer
-    assert brer
+    # TODO: Consider the new "lazy import" scheme as an option to make cleaner
+    #  static checking of the following line.
+    import brer.md
+    assert callable(brer.md.brer_restraint)

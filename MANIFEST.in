@@ -1,0 +1,5 @@
+include _custom_build/backend.py
+include tests/pytest.ini
+include tests/testdata.json
+prune tests/.pytest_cache
+global-exclude *.py[cod] *.so

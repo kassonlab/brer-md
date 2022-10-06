@@ -22,6 +22,7 @@
 // Make a convenient alias to save some typing...
 namespace py = pybind11;
 
+namespace {
 ////////////////////////////////
 // Begin PyRestraint static code
 /*!
@@ -537,14 +538,7 @@ createBRERBuilder(const py::object element)
   auto builder = make_unique<BRERRestraintBuilder>(element);
   return builder;
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// New potentials modeled after EnsembleRestraint should define a Builder class and define a
-// factory function here, following the previous two examples. The factory function should be
-// exposed to Python following the examples near the end of the PYBIND11_MODULE block.
-////////////////////////////////////////////////////////////////////////////////////////////
-
+} // end anonymous namespace
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // The PYBIND11_MODULE block uses the pybind11 framework (ref https://github.com/pybind/pybind11 )
@@ -561,7 +555,7 @@ createBRERBuilder(const py::object element)
 // The first argument is the name of the module when importing to Python. This should be the same as the name specified
 // as the OUTPUT_NAME for the shared object library in the CMakeLists.txt file. The second argument, 'm', can be anything
 // but it might as well be short since we use it to refer to aspects of the module we are defining.
-PYBIND11_MODULE(brer, m){
+PYBIND11_MODULE(md, m){
   m.doc() = "sample plugin"; // This will be the text of the module's docstring.
 
   // Matrix utility class (temporary). Borrowed from
@@ -582,12 +576,12 @@ PYBIND11_MODULE(brer, m){
       });
 
   // Make a null restraint for testing.
-  py::class_<PyRestraint<MyRestraint>,
-             std::shared_ptr<PyRestraint<MyRestraint>>>
-      md_module(m, "MyRestraint");
-  md_module.def(py::init<>([]() { return PyRestraint<MyRestraint>::create(); }),
-                "Create default MyRestraint");
-  md_module.def("bind", &PyRestraint<MyRestraint>::bind);
+//  py::class_<PyRestraint<MyRestraint>,
+//             std::shared_ptr<PyRestraint<MyRestraint>>>
+//      md_module(m, "MyRestraint");
+//  md_module.def(py::init<>([]() { return PyRestraint<MyRestraint>::create(); }),
+//                "Create default MyRestraint");
+//  md_module.def("bind", &PyRestraint<MyRestraint>::bind);
   // This bindings specification could actually be done in a templated function
   // to automatically generate parameter setters/getters
 
@@ -705,7 +699,7 @@ PYBIND11_MODULE(brer, m){
     return static_cast<plugin::BRERRestraint *>(potential->getRestraint().get())
         ->getTarget();
   });
-brer.def_property_readonly("converged", [](PyBRER *potential) {
+  brer.def_property_readonly("converged", [](PyBRER *potential) {
     return static_cast<plugin::BRERRestraint *>(potential->getRestraint().get())
         ->getConverged();
     });
