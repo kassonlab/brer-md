@@ -1,6 +1,6 @@
 """Unit tests and regression for PairData classes."""
-from run_brer.pair_data import MultiPair
-from run_brer.pair_data import PairData
+from brer.pair_data import MultiPair
+from brer.pair_data import PairData
 
 
 def test_pair_data(raw_pair_data, pair_data_file):

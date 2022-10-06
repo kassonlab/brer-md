@@ -15,19 +15,19 @@ try:
 except (ImportError, ModuleNotFoundError):
     _MPI = None
 
-from run_brer.directory_helper import DirectoryHelper
-from run_brer.pair_data import MultiPair
-from run_brer.plugin_configs import ConvergencePluginConfig
-from run_brer.plugin_configs import PluginConfig
-from run_brer.plugin_configs import ProductionPluginConfig
-from run_brer.plugin_configs import TrainingPluginConfig
-from run_brer.run_data import RunData
+from brer.directory_helper import DirectoryHelper
+from brer.pair_data import MultiPair
+from brer.plugin_configs import ConvergencePluginConfig
+from brer.plugin_configs import PluginConfig
+from brer.plugin_configs import ProductionPluginConfig
+from brer.plugin_configs import TrainingPluginConfig
+from brer.run_data import RunData
 
 _Path = Union[str, pathlib.Path]
 
 
 def _gmxapi_missing(*args, **kwargs):
-    raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/run_brer#requirements')
+    raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/brer_md#requirements')
 
 
 try:
@@ -100,7 +100,7 @@ class RunConfig:
             assert communicator.Get_size() >= self._ensemble_size
             # TODO: Handle mismatched ensemble size.
             if communicator.Get_size() > self._ensemble_size:
-                warnings.warn('run_brer does not yet attempt to handle communicators '
+                warnings.warn('brer does not yet attempt to handle communicators '
                               'larger than the ensemble.')
             self._communicator = communicator
             self._rank = communicator.Get_rank()
@@ -559,7 +559,7 @@ class RunConfig:
             Additional key word arguments are passed on to the simulator.
 
 
-        After the first "iteration", run_brer bootstraps the training and convergence
+        After the first "iteration", brer bootstraps the training and convergence
         phase's trajectory with the checkpoint file from the previous iteration's
         production phase.
 

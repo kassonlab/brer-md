@@ -1,6 +1,6 @@
 """A set of scripts for running BRER simulations using gmxapi.
 
-Online documentation is hosted at https://kassonlab.github.io/run_brer/.
+Online documentation is hosted at https://kassonlab.github.io/brer_md/.
 
 See Also
 --------

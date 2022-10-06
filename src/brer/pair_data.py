@@ -5,8 +5,8 @@ import json
 
 import numpy as np
 
-from run_brer.metadata import MetaData
-from run_brer.metadata import MultiMetaData
+from brer.metadata import MetaData
+from brer.metadata import MultiMetaData
 
 
 class PairData(MetaData):

@@ -19,14 +19,14 @@ else:
 
 @pytest.fixture(scope='session')
 def simulation_input():
-    source = files('run_brer').joinpath('data', 'topol.tpr')
+    source = files('brer').joinpath('data', 'topol.tpr')
     with as_file(source) as tpr_file:
         yield tpr_file
 
 
 @pytest.fixture(scope='session')
 def pair_data_file():
-    source = files('run_brer').joinpath('data', 'pair_data.json')
+    source = files('brer').joinpath('data', 'pair_data.json')
     with as_file(source) as pair_data:
         yield pair_data
 
@@ -36,9 +36,9 @@ def raw_pair_data():
     """
     Three DEER distributions for testing purposes.
 
-    :return: contents of :file:`run_brer/data/pair_data.json`
+    :return: contents of :file:`brer/data/pair_data.json`
     """
-    raw_data = files('run_brer').joinpath('data', 'pair_data.json').read_text()
+    raw_data = files('brer').joinpath('data', 'pair_data.json').read_text()
     pair_data = json.loads(raw_data)
     assert pair_data["196_228"]["distribution"][0] == 3.0993964770242886e-55
     return pair_data

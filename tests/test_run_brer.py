@@ -1,8 +1,8 @@
 import sys
 
-import run_brer
+import brer
 
 
-def test_run_brer_imported():
-    assert run_brer
-    assert "run_brer" in sys.modules
+def test_brer_imported():
+    assert brer
+    assert "brer" in sys.modules
