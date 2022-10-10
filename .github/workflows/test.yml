@@ -64,7 +64,7 @@ jobs:
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
-        pip install --no-deps ${GITHUB_WORKSPACE}/
+        pip install --no-deps --no-build-isolation ${GITHUB_WORKSPACE}/
         $PYTHON -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
       continue-on-error: true
