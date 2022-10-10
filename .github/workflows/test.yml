@@ -307,6 +307,7 @@ jobs:
         $PYTHON -m build --sdist
         pip install dist/*
         $PYTHON -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
+        # Ref https://github.com/kassonlab/run_brer/issues/81
         # mpiexec -n 2 $PYTHON -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests
         echo "github.ref_name: ${{ github.ref_name }}"
     - name: "Upload coverage to Codecov"
