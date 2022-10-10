@@ -56,6 +56,13 @@ find_package(GROMACS 2019 REQUIRED
 if (NOT DEFINED GROMACS_IS_DOUBLE)
     message(AUTHOR_WARNING "GROMACS_IS_DOUBLE undefined.")
 endif ()
+if(NOT TARGET Gromacs::libgromacs)
+    if(TARGET libgromacs)
+        add_library(Gromacs::libgromacs ALIAS libgromacs)
+    else()
+        message(FATAL_ERROR "Could not find a libgromacs CMake target.")
+    endif()
+endif()
 
 find_package(gmxapi REQUIRED)
 
