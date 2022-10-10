@@ -1,5 +1,5 @@
-brer-md
-========
+BRER MD
+=======
 
 |Build and test| |Documentation| |codecov|
 
@@ -26,60 +26,92 @@ Requirements
 
 If you’re going to use a pip or a conda environment, you’ll need:
 
--  Python 3.X
--  gmxapi for GROMACS 2019 or newer.
+-  Python 3.8 or newer.
+-  A GROMACS installation supporting client software builds.
+-  `gmxapi <https://manual.gromacs.org/current/gmxapi>`__ for GROMACS.
 
-   -  Install `GROMACS 2019 and gmxapi
-      0.0.7 <https://gmxapi.readthedocs.io/en/release-0_0_7/install.html#installation>`__,
-      or
-   -  Install `current GROMACS and gmxapi >=
-      0.1 <https://manual.gromacs.org/current/gmxapi/userguide/install.html>`__
+``brer`` includes a simple C++ extension module that can be attached to a GROMACS
+molecular dynamics (MD) simulator through the gmxapi Python interface.
+GROMACS installations (and GROMACS dependencies) can be built rather specifically
+for their computing environments. The ``brer`` package is distributed as source
+code that must be built for a specific GROMACS installation.
 
--  The `plugin code <https://github.com/kassonlab/brer_plugin>`__ for
-   BRER.
+.. note::
+    For several recent versions of GROMACS, the “legacy API” needs
+    to be enabled **explicitly** when GROMACS is configured.
+    The ``GMX_INSTALL_LEGACY_API`` GROMACS CMake variable is **not documented**.
+    Example::
 
-Otherwise, you can just use a Singularity container!
+       cmake /path/to/gromacs/sources -DGMX_INSTALL_LEGACY_API=ON -DGMX_THREAD_MPI=ON
 
-Singularity
-~~~~~~~~~~~
+Python environment
+~~~~~~~~~~~~~~~~~~
 
-By far the easiest option!
+We recommend using a separate Python virtual environment for each research project,
+tied to specific versions of the software tools you use. If your computing
+environment provides Python packages such as ``mpi4py`` that may be difficult
+to configure, you should try to use the provided packages in your virtual environment.
+Example::
 
-If you have the latest and greatest Singuarity (v > 3), you can pull the
-container from the cloud repository:
+    python3 -m venv --system-site-packages myprojectvenv
+    . myprojectvenv/bin/activate
+    myprojectvenv/bin/python -m pip install --upgrade pip
 
-``singularity pull library://kassonlab/default/brer:latest``
+Then, follow the installation instructions for GROMACS and
+`gmxapi <https://manual.gromacs.org/current/gmxapi/userguide/install.html>`__.
 
-For instructions on using the container, please see the
-`singularity-brer <https://github.com/kassonlab/singularity-brer>`__
-repository.
-
-Conda environment
+Build and Install
 ~~~~~~~~~~~~~~~~~
 
-I suggest running this in a conda environment rather than
-``pip install`` . The following conda command will handle all the
-``gmxapi`` and ``sample_restraint`` python dependencies, as well as the
-ones for this repository.
+We recommend installing the package with
+`pip <https://pip.pypa.io/en/stable/>`__.
 
-1. ``conda create -n BRER numpy scipy networkx setuptools mpi4py cmake``
+Generally, ``pip`` will automatically install any package dependencies.
 
-   If you want to run the tests, then install ``pytest`` as well.
+If a GROMACS installation is discoverable (you have "sourced" a GMXRC file or
+defined a GROMACS_DIR environment variable), then the ``gmxapi`` Python package
+will be installed automatically with the ``brer`` package.
+Simply::
 
-2. Source the environment and then ``pip install``:
+    pip install brer
 
-::
+If you prefer to install ``gmxapi`` separately (such as to specify an older
+package version), you can provide ``--no-deps`` and ``--no-build-isolation``
+to ``pip install``, and the existing ``gmxapi`` installation will be used.
 
-   source activate BRER
-   git clone https://github.com/kassonlab/brer-md.git
-   cd brer-md
-   pip install .
+You can pre-install (other) required packages using the
+`requirements.txt <https://github.com/kassonlab/brer-md/blob/main/requirements.txt>`__
+file.
+The ``requirements.txt`` file does not include the ``gmxapi`` dependency.
+
+Example::
+
+    pip show gmxapi |grep Version
+    # Version: 0.3.1
+    wget https://github.com/kassonlab/brer-md/blob/main/requirements.txt
+    pip install -r requirements.txt
+    pip install brer
+
+The Python package builder will manage compilation of the C++ GROMACS client
+using `cmake
+documentation <https://cmake.org/cmake/help/latest/manual/cmake.1.html>`__.
+If the GROMACS installation or C++ toolchain cannot be determined automatically,
+you may need to provide additional hints.
+See also `GROMACS release
+notes <https://manual.gromacs.org/2022/release-notes/2022/major/portability.html#cmake-toolchain-file-replaced-with-cache-file>`__.
+
+Example::
+
+    gmx --version |grep prefix
+    # Data prefix:  /Users/eric/install/gromacs2022
+    CMAKE_ARGS="-C /Users/eric/install/gromacs2022/share/cmake/gromacs/gromacs-hints.cmake" \
+    pip install brer
 
 Running BRER
 ------------
 
 Launching a single ensemble member.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An example script, ``run.py`` , is provided for ensemble simulations.
 
@@ -148,96 +180,11 @@ resets the energy constant A to 100 kcal/mol/nm^2 before launching a
 run.
 
 Launching an ensemble
-^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~
 
 Right now, the way to launch an ensemble is to launch multiple jobs. We
-hope to soon use the ``gmxapi``
-`features <https://github.com/kassonlab/gmxapi>`__ that allow a user to
+hope to soon use the ``gmxapi`` features that allow a user to
 launch many ensemble members in one job.
-
-BRER restraint plugin
-=====================
-
-|Build Status|
-
-This is the `repository <https://github.com/kassonlab/brer_plugin>`__
-for the ``brer`` Python module, a C++ extension that provides the
-GROMACS MD plugin for use with https://github.com/kassonlab/brer-md
-
-.. _requirements-1:
-
-Requirements
-------------
-
-To build and install the GROMACS MD plugin, first install GROMACS and
-``gmxapi`` as described for ``brer``.
-
-**NOTE:** For several recent versions of GROMACS, the “legacy API” needs
-to be enabled when GROMACS is configured. The ``GMX_INSTALL_LEGACY_API``
-GROMACS CMake variable is **not documented**. Example:
-
-::
-
-   cmake /path/to/gromacs/sources -DGMX_INSTALL_LEGACY_API=ON -DGMX_THREAD_MPI=ON
-
-You will also need a reasonably recent version of ``cmake``. ``cmake``
-is a command line tool that is often already available, but you can be
-sure of getting a recent version by activating your python environment
-and just doing ``pip install cmake``.
-
-.. _installation-1:
-
-Installation
-------------
-
-This is a simple C++ extension module that can be attached to a GROMACS
-molecular dynamics (MD) simulator through the gmxapi Python interface.
-The module is necessary for research workflows based on the ``brer``
-Python package. See https://github.com/kassonlab/brer-md for more
-information.
-
-Once you have identified your compilers and Python installation (or
-virtual environment), use ``cmake`` to configure, build, and install.
-Refer to `cmake
-documentation <https://cmake.org/cmake/help/latest/manual/cmake.1.html>`__
-for usage and options. Note that GROMACS installs a CMake hints (or
-toolchain) file to help you specify the correct compiler toolchain to
-``cmake``. See `GROMACS release
-notes <https://manual.gromacs.org/2022/release-notes/2022/major/portability.html#cmake-toolchain-file-replaced-with-cache-file>`__.
-
-See https://github.com/kassonlab/brer_plugin/releases for tagged
-releases. For development code, clone the repository and use the default
-branch.
-
-Complete example
-~~~~~~~~~~~~~~~~
-
-This example assumes \* I have already activated a Python (virtual)
-environment in which ``gmxapi`` is installed, and \* A GROMACS
-installation is available on my ``$PATH`` (such as by “sourcing” the
-GMXRC or calling ``module load gromacs`` in an HPC environment) \* I am
-using GROMACS 2022, which provides a CMake “hints” file, which I will
-(optionally) provide when calling ``cmake``.
-
-To confirm: \* ``gmx --version`` (or ``gmx_mpi``, ``gmx_d``, etc. for
-other configurations) should … \* ``which python`` should show a path to
-a python virtual environment for Python 3.7 or later. \* ``pip list``
-should include ``gmxapi``
-
-To download, build, and install the ``brer`` Python module:
-
-.. code:: bash
-
-   git clone https://github.com/kassonlab/brer_plugin.git
-   cd brer_plugin
-   mkdir build
-   cd build
-   cmake ..
-   make
-   make install
-
-In the example above, the ``-C`` argument is usually optional. (See
-below.)
 
 Troubleshooting
 ---------------
@@ -255,21 +202,33 @@ one that was used to compile GROMACS.” \* When you ``import`` the
 You can either set the ``CMAKE_CXX_COMPILER``, explicitly, or you can
 use the GROMACS-installed CMake hints file.
 
-You will have to rebuild and reinstall the ``brer`` module. First,
-remove the ``CMakeCache.txt`` file from the build directory.
+You will have to rebuild and reinstall the ``brer`` module.
+
+Remove any cached built packages::
+
+    pip cache remove brer
+
+If you previously installed without build isolation you may have ``build`` or
+``dist`` directories that should be removed, as well.
+
+When attempting to build the package again, provide extra hints to CMake through
+the Python package builder by adding strings to the CMAKE_ARGS environment
+variable.
 
 For GROMACS 2022 and newer, you would invoke ``cmake`` with something
 like the following. (The exact path will depend on your installation.)
 
 ::
 
-   cmake .. -C /path/to/gromacs_installation/share/cmake/gromacs/gromacs-hints.cmake
+    CMAKE_ARGS="-C /path/to/gromacs_installation/share/cmake/gromacs/gromacs-hints.cmake" \
+    pip install brer
 
 For GROMACS 2021 and older,
 
 ::
 
-   cmake .. -DCMAKE_TOOLCHAIN_FILE=/path/to/gromacs_installation/share/cmake/gromacs/gromacs-toolchain.cmake
+    CMAKE_ARGS="-DCMAKE_TOOLCHAIN_FILE=/path/to/gromacs_installation/share/cmake/gromacs/gromacs-toolchain.cmake" \
+    pip install brer
 
 See `GROMACS release
 notes <https://manual.gromacs.org/2022/release-notes/2022/major/portability.html#cmake-toolchain-file-replaced-with-cache-file>`__.

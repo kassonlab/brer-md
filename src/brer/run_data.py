@@ -14,9 +14,7 @@ class GeneralParams(MetaData):
     These include some of the "Voth" parameters: tau, A, tolerance
 
     .. versionadded:: 2.0
-        The *end_time* parameter is only available with sufficiently recent versions of
-        https://github.com/kassonlab/brer_plugin (late 2.0 beta). Otherwise,
-        *end_time* will always be 0.0
+        The *end_time* parameter.
 
     """
 

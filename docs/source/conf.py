@@ -115,8 +115,8 @@ autoclass_content = 'both'
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'https://docs.python.org/': None,
-    'https://manual.gromacs.org/current/index.html': None,
+    'https://docs.python.org/3/': None,
+    'https://manual.gromacs.org/current/': None,
 }
 
 # -- Options for todo extension ----------------------------------------------
