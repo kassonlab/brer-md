@@ -1,7 +1,7 @@
 """Unit tests and regression for DirectoryHelper class."""
 import os
 
-from run_brer.directory_helper import DirectoryHelper
+from brer.directory_helper import DirectoryHelper
 
 
 def test_directory(tmpdir):

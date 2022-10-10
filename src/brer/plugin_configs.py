@@ -5,7 +5,7 @@ Each class corresponds to ONE restraint since gmxapi plugins each correspond to 
 import typing
 from abc import abstractmethod
 
-from run_brer.metadata import MetaData
+from brer.metadata import MetaData
 
 
 def _get_workelement() -> typing.Type:
@@ -20,7 +20,7 @@ def _get_workelement() -> typing.Type:
         except (ImportError, ModuleNotFoundError):
             WorkElement = None
     if WorkElement is None:
-        raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/run_brer#requirements')
+        raise RuntimeError('brer requires gmxapi. See https://github.com/kassonlab/brer_md#requirements')
     return WorkElement
 
 
@@ -112,7 +112,7 @@ class TrainingPluginConfig(PluginConfig):
         if self.get_missing_keys():
             raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = WorkElement(
-            namespace="brer",
+            namespace="brer.md",
             operation="brer_restraint",
             depends=[],
             params=self.get_as_dictionary())
@@ -153,7 +153,7 @@ class ConvergencePluginConfig(PluginConfig):
         if self.get('alpha') == 0.0:
             raise ValueError('Read a non-sensical alpha value: 0.0')
         potential = WorkElement(
-            namespace="brer",
+            namespace="brer.md",
             operation="linearstop_restraint",
             depends=[],
             params=self.get_as_dictionary())
@@ -194,7 +194,7 @@ class ProductionPluginConfig(PluginConfig):
         if self.get('alpha') == 0.0:
             raise ValueError('Read a non-sensical alpha value: 0.0')
         potential = WorkElement(
-            namespace="brer",
+            namespace="brer.md",
             operation="linear_restraint",
             depends=[],
             params=self.get_as_dictionary())

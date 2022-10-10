@@ -15,4 +15,5 @@ pushd $HOME
  popd
  mpiexec -n 2 $PYTHON -m mpi4py -m pytest --log-cli-level=WARN --pyargs gmx -s
 # mpiexec -n 2 $PYTHON -m mpi4py -m pytest --log-cli-level=DEBUG --pyargs gmx -s --verbose
+ ccache -s
 popd

@@ -1,11 +1,11 @@
 """Unit tests and regression for PluginConfig classes."""
 import pytest
 
-from run_brer.plugin_configs import ConvergencePluginConfig
-from run_brer.plugin_configs import ProductionPluginConfig
-from run_brer.plugin_configs import TrainingPluginConfig
-from run_brer.run_data import GeneralParams
-from run_brer.run_data import PairParams
+from brer.plugin_configs import ConvergencePluginConfig
+from brer.plugin_configs import ProductionPluginConfig
+from brer.plugin_configs import TrainingPluginConfig
+from brer.run_data import GeneralParams
+from brer.run_data import PairParams
 
 
 def test_plugins(raw_pair_data):

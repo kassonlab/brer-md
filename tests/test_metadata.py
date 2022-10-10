@@ -3,8 +3,8 @@
 
 import pytest
 
-from run_brer.metadata import MetaData
-from run_brer.metadata import MultiMetaData
+from brer.metadata import MetaData
+from brer.metadata import MultiMetaData
 
 
 def test_metadata():

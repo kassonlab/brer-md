@@ -5,7 +5,7 @@ omit =
     # Omit the tests
     tests/*
     # Omit generated versioneer
-    */run_brer/_version.py
+    **/_version.py
 
 [report]
 # Regexes for lines to exclude from consideration

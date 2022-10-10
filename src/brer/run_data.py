@@ -3,8 +3,8 @@
 import json
 import typing
 
-from run_brer.metadata import MetaData
-from run_brer.pair_data import PairData
+from brer.metadata import MetaData
+from brer.pair_data import PairData
 
 
 class GeneralParams(MetaData):

@@ -2,10 +2,10 @@
 
 import pytest
 
-from run_brer.pair_data import PairData
-from run_brer.run_data import GeneralParams
-from run_brer.run_data import PairParams
-from run_brer.run_data import RunData
+from brer.pair_data import PairData
+from brer.run_data import GeneralParams
+from brer.run_data import PairParams
+from brer.run_data import RunData
 
 
 def test_general_parameters():

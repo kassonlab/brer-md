@@ -7,7 +7,7 @@ import tempfile
 
 import pytest
 
-from run_brer.run_config import RunConfig
+from brer.run_config import RunConfig
 
 logger = logging.getLogger()
 

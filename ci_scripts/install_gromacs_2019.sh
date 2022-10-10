@@ -10,7 +10,7 @@ export GMX_SRC_DIR=gromacs-release-2019
 ccache -s
 
 pushd $HOME
- [ -d gromacs-gmxapi ] || \
+ [ -d ${GMX_SRC_DIR} ] || \
     git clone \
         --depth=1 \
         -b release-2019 \
