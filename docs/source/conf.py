@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'run BRER'
+project = 'BRER MD'
 copyright = '2019, Jennifer M. Hays'
 author = 'Jennifer M. Hays'
 

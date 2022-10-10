@@ -1,15 +1,15 @@
-# run_brer
+# brer
 
-[![Build and test](https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/test.yml)
-[![Documentation](https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master)](https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment)
-[![codecov](https://codecov.io/gh/kassonlab/run_brer/branch/master/graph/badge.svg)](https://codecov.io/gh/kassonlab/run_brer)
+[![Build and test](https://github.com/kassonlab/brer-md/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kassonlab/brer-md/actions/workflows/test.yml)
+[![Documentation](https://github.com/kassonlab/brer-md/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master)](https://github.com/kassonlab/brer-md/actions/workflows/pages/pages-build-deployment)
+[![codecov](https://codecov.io/gh/kassonlab/brer-md/branch/master/graph/badge.svg)](https://codecov.io/gh/kassonlab/brer-md)
 
-This project is hosted in a git repository at https://github.com/kassonlab/run_brer
+This project is hosted in a git repository at https://github.com/kassonlab/brer-md
 
 Project documentation is available in the repository or at
-[https://kassonlab.github.io/run_brer/](https://kassonlab.github.io/run_brer/).
+[https://kassonlab.github.io/brer/](https://kassonlab.github.io/brer/).
 
-The `run_brer` Python package provides a set of scripts for running BRER simulations using [gmxapi](https://gmxapi.org/).
+The `brer` Python package provides a set of scripts for running BRER simulations using [gmxapi](https://gmxapi.org/).
 Details of this method may be found in:
 
 Hays, J. M., Cafiso, D. S., & Kasson, P. M. Hybrid Refinement of Heterogeneous Conformational Ensembles using Spectroscopic Data. *The Journal of Physical Chemistry Letters*. DOI: [10.1021/acs.jpclett.9b01407](https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407)
@@ -52,8 +52,8 @@ I suggest running this in a conda environment rather than `pip install` . The fo
 
 ```
 source activate BRER
-git clone https://github.com/kassonlab/run_brer.git
-cd run_brer
+git clone https://github.com/kassonlab/brer-md.git
+cd brer-md
 pip install .
 ```
 
@@ -73,11 +73,11 @@ Example run script
 for BRER simulations
 """
 
-import run_brer.run_config as rc
+import brer.run_config as rc
 import sys
 ```
 
-The `import run_brer.run_config` statement imports a `RunConfig` object, which handles the following things _**for a single ensemble member**_:
+The `import brer.run_config` statement imports a `RunConfig` object, which handles the following things _**for a single ensemble member**_:
 
 1. Initializing/setting up parameters for the BRER run.
 2. Launching the run. 
@@ -86,10 +86,10 @@ Then we provide some files and directory paths to the `RunConfig` object.
 
 ```
 init = {
-    'tpr': '/home/jennifer/Git/run_brer/tests/syx.tpr',
+    'tpr': '/home/jennifer/Git/brer-md/tests/syx.tpr',
     'ensemble_dir': '/home/jennifer/test-brer',
     'ensemble_num': 5,
-    'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
+    'pairs_json': '/home/jennifer/Git/brer-md/tests/pair_data.json'
 }
 
 config = rc.RunConfig(**init)
@@ -100,7 +100,7 @@ In order to run a BRER simulation, we need to provide :
 1. a `tpr` (compatible with GROMACS 2019).
 2. The path to our ensemble. This directory should contain subdirectories of the form `mem_<my ensemble number>` 
 3. The ensemble number. This is an integer used to identify which ensemble member we are running and thus, the subdirectory in which we will be running our simulations.
-4. The path to the DEER metadata. Please see the example json in this repository: `run_brer/data/pair_data.json` 
+4. The path to the DEER metadata. Please see the example json in this repository: `src/brer/data/pair_data.json` 
 
 Finally, we launch the run!
 
@@ -129,11 +129,11 @@ Right now, the way to launch an ensemble is to launch multiple jobs. We hope to 
 This is the [repository](https://github.com/kassonlab/brer_plugin)
 for the `brer` Python module,
 a C++ extension that provides the GROMACS MD plugin for use with
-https://github.com/kassonlab/run_brer
+https://github.com/kassonlab/brer-md
 
 ## Requirements
 
-To build and install the GROMACS MD plugin, first install GROMACS and `gmxapi` as described for `run_brer`.
+To build and install the GROMACS MD plugin, first install GROMACS and `gmxapi` as described for `brer`.
 
 **NOTE:** For several recent versions of GROMACS, the "legacy API" needs to be enabled when GROMACS is configured.
 The `GMX_INSTALL_LEGACY_API` GROMACS CMake variable is **not documented**.
@@ -149,7 +149,7 @@ and just doing `pip install cmake`.
 
 This is a simple C++ extension module that can be attached to a GROMACS molecular dynamics (MD) simulator
 through the gmxapi Python interface. The module is necessary for research workflows based on the
-`run_brer` Python package. See https://github.com/kassonlab/run_brer for more information.
+`brer` Python package. See https://github.com/kassonlab/brer-md for more information.
 
 Once you have identified your compilers and Python installation (or virtual environment), use `cmake` to
 configure, build, and install.

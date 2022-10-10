@@ -71,10 +71,7 @@ def test_run_config(tmpdir, pair_data_file, simulation_input):
         assert rc.run_data.get('phase') == 'training'
 
         # With a tight tolerance and short run time, it can't have converged.
-        # Note that this check requires a `brer` plugin installation from
-        # 2.0 pre-release commit
-        # https://github.com/kassonlab/brer_plugin/commit/1c8ba5767a872fc69e3d6d9bfae8603a73870064
-        # or newer. See https://github.com/kassonlab/run_brer/issues/8
+        # See https://github.com/kassonlab/run_brer/issues/8
         with pytest.raises(RuntimeError):
             rc.run(max_hours=0.0001)
         assert rc.run_data.get('phase') == 'training'

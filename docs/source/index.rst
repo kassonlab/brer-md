@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to run BRER's documentation!
+Welcome to BRER's documentation!
 ====================================
 
 .. toctree::
@@ -14,7 +14,7 @@ Welcome to run BRER's documentation!
    user_api
    developer_api
 
-run_brer
+brer
 ========
 
 |Build Status|
@@ -96,8 +96,8 @@ ones for this repository.
 ::
 
    source activate BRER
-   git clone https://github.com/kassonlab/run_brer.git
-   cd run_brer
+   git clone https://github.com/kassonlab/brer-md.git
+   cd brer-md
    pip install .
 
 Running BRER
@@ -119,10 +119,10 @@ Let’s work through it piece by piece.
    for BRER simulations
    """
 
-   import run_brer.run_config as rc
+   import brer.run_config as rc
    import sys
 
-The ``import run_brer.run_config`` statement imports a ``RunConfig``
+The ``import brer.run_config`` statement imports a ``RunConfig``
 object, which handles the following things **for a single ensemble
 member**:
 
@@ -135,10 +135,10 @@ object.
 ::
 
    init = {
-       'tpr': '/home/jennifer/Git/run_brer/tests/syx.tpr',
+       'tpr': '/home/jennifer/Git/brer-md/tests/syx.tpr',
        'ensemble_dir': '/home/jennifer/test-brer',
        'ensemble_num': 5,
-       'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
+       'pairs_json': '/home/jennifer/Git/brer-md/tests/pair_data.json'
    }
 
    config = rc.RunConfig(**init)
@@ -152,7 +152,7 @@ In order to run a BRER simulation, we need to provide :
    ensemble member we are running and thus, the subdirectory in which we
    will be running our simulations.
 4. The path to the DEER metadata. Please see the example json in this
-   repository: ``run_brer/data/pair_data.json``
+   repository: ``src/brer/data/pair_data.json``
 
 Finally, we launch the run!
 
@@ -180,12 +180,12 @@ hope to soon use the ``gmxapi``
 `features <https://github.com/kassonlab/gmxapi>`__ that allow a user to
 launch many ensemble members in one job.
 
-.. |Documentation Status| image:: https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master
-   :target: https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment
+.. |Documentation Status| image:: https://github.com/kassonlab/brer-md/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master
+   :target: https://github.com/kassonlab/brer-md/actions/workflows/pages/pages-build-deployment
 .. |Language grade: Python| image:: https://img.shields.io/lgtm/grade/python/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18
 .. |Total alerts| image:: https://img.shields.io/lgtm/alerts/g/jmhays/run_brer.svg?logo=lgtm&logoWidth=18
-.. |Build Status| image:: https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master
-   :target: https://github.com/kassonlab/run_brer/actions/workflows/test.yml
+.. |Build Status| image:: https://github.com/kassonlab/brer-md/actions/workflows/test.yml/badge.svg?branch=master
+   :target: https://github.com/kassonlab/brer-md/actions/workflows/test.yml
 .. |codecov| image:: https://codecov.io/gh/jmhays/run_brer/branch/master/graph/badge.svg
 
 Indices and tables

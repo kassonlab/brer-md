@@ -21,7 +21,7 @@ For older GROMACS installations, use
 Example:
     export GROMACS_DIR=/path/to/gromacs
     export CMAKE_ARGS="-Dgmxapi_ROOT=$GROMACS_DIR -C $GROMACS_DIR/share/cmake/gromacs/gromacs-hints.cmake"
-    pip install run_brer
+    pip install brer-md
 
 """
 import os

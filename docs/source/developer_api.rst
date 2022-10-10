@@ -3,42 +3,42 @@ Developer API
 
 directory_helper
 ================
-.. automodule:: run_brer.directory_helper
+.. automodule:: brer.directory_helper
 
-.. autoclass:: run_brer.directory_helper.DirectoryHelper
+.. autoclass:: brer.directory_helper.DirectoryHelper
     :members:
 
 metadata
 ========
-.. automodule:: run_brer.metadata
+.. automodule:: brer.metadata
 
-.. autoclass:: run_brer.metadata.MetaData
+.. autoclass:: brer.metadata.MetaData
 	:members:
-.. autoclass:: run_brer.metadata.MultiMetaData
+.. autoclass:: brer.metadata.MultiMetaData
 	:members:
 
 pair_data
 =========
-.. automodule:: run_brer.pair_data
+.. automodule:: brer.pair_data
 
-.. autoclass:: run_brer.pair_data.PairData
+.. autoclass:: brer.pair_data.PairData
 	:members:
 
-.. autoclass:: run_brer.pair_data.MultiPair
+.. autoclass:: brer.pair_data.MultiPair
 	:members:
 
 plugin_configs
 ==============
-.. automodule:: run_brer.plugin_configs
+.. automodule:: brer.plugin_configs
 
-.. autoclass:: run_brer.plugin_configs.PluginConfig
+.. autoclass:: brer.plugin_configs.PluginConfig
 	:members:
 
-.. autoclass:: run_brer.plugin_configs.TrainingPluginConfig
+.. autoclass:: brer.plugin_configs.TrainingPluginConfig
 	:members:
 
-.. autoclass:: run_brer.plugin_configs.ConvergencePluginConfig
+.. autoclass:: brer.plugin_configs.ConvergencePluginConfig
 	:members:
 
-.. autoclass:: run_brer.plugin_configs.ProductionPluginConfig
+.. autoclass:: brer.plugin_configs.ProductionPluginConfig
 	:members:

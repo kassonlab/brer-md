@@ -3,16 +3,16 @@
 Example run script for BRER simulations
 """
 
-import run_brer.run_config as rc
+import brer.run_config as rc
 import sys
 
 sys.path.append('/home/jennifer/Git/brer/build/src/pythonmodule')
 
 init = {
-    'tpr': '/home/jennifer/Git/run_brer/run_brer/data/topol.tpr',
+    'tpr': '/home/jennifer/Git/brer-md/src/brer/data/topol.tpr',
     'ensemble_dir': '/home/jennifer/test-brer',
     'ensemble_num': 5,
-    'pairs_json': '/home/jennifer/Git/run_brer/run_brer/data/pair_data.json'
+    'pairs_json': '/home/jennifer/Git/brer-md/src/brer/data/pair_data.json'
 }
 
 config = rc.RunConfig(**init)

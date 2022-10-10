@@ -1,15 +1,15 @@
-run_brer
+brer-md
 ========
 
 |Build and test| |Documentation| |codecov|
 
 This project is hosted in a git repository at
-https://github.com/kassonlab/run_brer
+https://github.com/kassonlab/brer-md
 
 Project documentation is available in the repository or at
-https://kassonlab.github.io/run_brer/.
+https://kassonlab.github.io/brer-md/.
 
-The ``run_brer`` Python package provides a set of scripts for running
+The ``brer`` Python package provides a set of scripts for running
 BRER simulations using `gmxapi <https://gmxapi.org/>`__. Details of this
 method may be found in:
 
@@ -71,8 +71,8 @@ ones for this repository.
 ::
 
    source activate BRER
-   git clone https://github.com/kassonlab/run_brer.git
-   cd run_brer
+   git clone https://github.com/kassonlab/brer-md.git
+   cd brer-md
    pip install .
 
 Running BRER
@@ -94,10 +94,10 @@ Let’s work through it piece by piece.
    for BRER simulations
    """
 
-   import run_brer.run_config as rc
+   import brer.run_config as rc
    import sys
 
-The ``import run_brer.run_config`` statement imports a ``RunConfig``
+The ``import brer.run_config`` statement imports a ``RunConfig``
 object, which handles the following things **for a single ensemble
 member**:
 
@@ -110,10 +110,10 @@ object.
 ::
 
    init = {
-       'tpr': '/home/jennifer/Git/run_brer/tests/syx.tpr',
+       'tpr': '/home/jennifer/Git/brer-md/tests/syx.tpr',
        'ensemble_dir': '/home/jennifer/test-brer',
        'ensemble_num': 5,
-       'pairs_json': '/home/jennifer/Git/run_brer/tests/pair_data.json'
+       'pairs_json': '/home/jennifer/Git/brer-md/tests/pair_data.json'
    }
 
    config = rc.RunConfig(**init)
@@ -127,7 +127,7 @@ In order to run a BRER simulation, we need to provide :
    ensemble member we are running and thus, the subdirectory in which we
    will be running our simulations.
 4. The path to the DEER metadata. Please see the example json in this
-   repository: ``run_brer/data/pair_data.json``
+   repository: ``src/brer/data/pair_data.json``
 
 Finally, we launch the run!
 
@@ -162,7 +162,7 @@ BRER restraint plugin
 
 This is the `repository <https://github.com/kassonlab/brer_plugin>`__
 for the ``brer`` Python module, a C++ extension that provides the
-GROMACS MD plugin for use with https://github.com/kassonlab/run_brer
+GROMACS MD plugin for use with https://github.com/kassonlab/brer-md
 
 .. _requirements-1:
 
@@ -170,7 +170,7 @@ Requirements
 ------------
 
 To build and install the GROMACS MD plugin, first install GROMACS and
-``gmxapi`` as described for ``run_brer``.
+``gmxapi`` as described for ``brer``.
 
 **NOTE:** For several recent versions of GROMACS, the “legacy API” needs
 to be enabled when GROMACS is configured. The ``GMX_INSTALL_LEGACY_API``
@@ -192,8 +192,8 @@ Installation
 
 This is a simple C++ extension module that can be attached to a GROMACS
 molecular dynamics (MD) simulator through the gmxapi Python interface.
-The module is necessary for research workflows based on the ``run_brer``
-Python package. See https://github.com/kassonlab/run_brer for more
+The module is necessary for research workflows based on the ``brer``
+Python package. See https://github.com/kassonlab/brer-md for more
 information.
 
 Once you have identified your compilers and Python installation (or
@@ -287,11 +287,9 @@ interface for advanced control and extension of molecular dynamics
 simulations. *Bioinformatics* 2018. DOI:
 `10.1093/bioinformatics/bty484 <https://doi.org/10.1093/bioinformatics/bty484>`__
 
-.. |Build and test| image:: https://github.com/kassonlab/run_brer/actions/workflows/test.yml/badge.svg?branch=master
-   :target: https://github.com/kassonlab/run_brer/actions/workflows/test.yml
-.. |Documentation| image:: https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment/badge.svg?branch=master
-   :target: https://github.com/kassonlab/run_brer/actions/workflows/pages/pages-build-deployment
-.. |codecov| image:: https://codecov.io/gh/kassonlab/run_brer/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/kassonlab/run_brer
-.. |Build Status| image:: https://github.com/kassonlab/brer_plugin/actions/workflows/test.yml/badge.svg?branch=master
-   :target: https://github.com/kassonlab/brer_plugin/actions/workflows/test.yml
+.. |Build and test| image:: https://github.com/kassonlab/brer-md/actions/workflows/test.yml/badge.svg?branch=main
+   :target: https://github.com/kassonlab/brer-md/actions/workflows/test.yml
+.. |Documentation| image:: https://github.com/kassonlab/brer-md/actions/workflows/pages/pages-build-deployment/badge.svg?branch=main
+   :target: https://github.com/kassonlab/brer-md/actions/workflows/pages/pages-build-deployment
+.. |codecov| image:: https://codecov.io/gh/kassonlab/brer-md/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/kassonlab/brer-md

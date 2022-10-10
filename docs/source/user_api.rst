@@ -1,14 +1,14 @@
 User API
 ###########
 
-run_brer
+brer
 ========
-.. automodule:: run_brer.run_config
-.. autoclass:: run_brer.run_config.RunConfig
+.. automodule:: brer.run_config
+.. autoclass:: brer.run_config.RunConfig
 	:members:
 
 run_config
 ==========
-.. automodule:: run_brer.run_data
-.. autoclass:: run_brer.run_data.RunData
+.. automodule:: brer.run_data
+.. autoclass:: brer.run_data.RunData
 	:members:

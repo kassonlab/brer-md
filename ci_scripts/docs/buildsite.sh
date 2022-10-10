@@ -47,7 +47,7 @@ This branch is generated automatically.
 Documentation should be updated in the main repository.
 Changes here will be overwritten.
 
-See https://github.com/kassonlab/run_brer/tree/master/docs
+See https://github.com/kassonlab/brer-md/tree/main/docs
 EOF
 
 # Copy the resulting html pages built from Sphinx to the gh-pages branch

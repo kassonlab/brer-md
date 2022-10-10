@@ -2,9 +2,9 @@ name: Build and test
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   gmx-legacy:
@@ -226,7 +226,7 @@ jobs:
       with:
         fail_ci_if_error: true
     - name: Docs
-      if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+      if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
       run: |
         . $HOME/venv/bin/activate
         pip install sphinx sphinx-rtd-theme

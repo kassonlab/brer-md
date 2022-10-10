@@ -27,7 +27,7 @@ _Path = Union[str, pathlib.Path]
 
 
 def _gmxapi_missing(*args, **kwargs):
-    raise RuntimeError('run_brer requires gmxapi. See https://github.com/kassonlab/brer_md#requirements')
+    raise RuntimeError('brer requires gmxapi. See https://github.com/kassonlab/brer_md#requirements')
 
 
 try:

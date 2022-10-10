@@ -39,8 +39,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-"Source" = "https://github.com/kassonlab/run_brer/"
-"Documentation" = "https://kassonlab.github.io/run_brer/"
+"Source" = "https://github.com/kassonlab/brer-md/"
+"Documentation" = "https://kassonlab.github.io/brer-md/"
 
 [project.optional-dependencies]
 test = [
