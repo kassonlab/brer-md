@@ -1,4 +1,6 @@
 """RunConfig class handles the actual workflow logic."""
+__all__ = ('RunConfig',)
+
 import collections.abc
 import json
 import logging
@@ -15,13 +17,13 @@ try:
 except (ImportError, ModuleNotFoundError):
     _MPI = None
 
-from brer.directory_helper import DirectoryHelper
-from brer.pair_data import MultiPair
-from brer.plugin_configs import ConvergencePluginConfig
-from brer.plugin_configs import PluginConfig
-from brer.plugin_configs import ProductionPluginConfig
-from brer.plugin_configs import TrainingPluginConfig
-from brer.run_data import RunData
+from .directory_helper import DirectoryHelper
+from .pair_data import MultiPair
+from .plugin_configs import ConvergencePluginConfig
+from .plugin_configs import PluginConfig
+from .plugin_configs import ProductionPluginConfig
+from .plugin_configs import TrainingPluginConfig
+from .run_data import RunData
 
 _Path = Union[str, pathlib.Path]
 
@@ -188,7 +190,9 @@ class RunConfig:
         # atexit.register(cleanup)
 
     def build_plugins(self, plugin_config: PluginConfig):
-        """Builds the plugin configuration. For each pair-wise restraint,
+        """Builds the plugin configuration.
+
+        For each pair-wise restraint,
         populate the plugin with data: both the "general" data and the data
         unique to that restraint.
 
