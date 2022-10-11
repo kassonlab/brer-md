@@ -462,7 +462,7 @@ def update_gromacs_client_cmake_args(args: typing.Sequence[str]) -> typing.List[
 
     gmxapi_config = get_gmxapi_config()
     gmxapi_root = get_gmxapi_root(config=gmxapi_config, args=args)
-    if gmxapi_root and cmake_defined('gmxapi_ROOT', args) is not None:
+    if gmxapi_root and cmake_defined('gmxapi_ROOT', args) is None:
         args.append(f'-Dgmxapi_ROOT={gmxapi_root}')
 
     cmake_hints = get_cmake_hints(config=gmxapi_config, args=args)
