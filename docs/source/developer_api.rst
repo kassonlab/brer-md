@@ -107,12 +107,18 @@ a :term:`sites` parameter.
 
     Configure the BRER potential used for the training phase.
 
-    :param float A: training parameter.
-    :param float tau: training parameter.
+    :param float A: control the maximum energy input while training the coupling parameter.
+    :param float tau: time constant for sample smoothing (simulator time units).
     :param float tolerance: convergence detection parameter
     :param float target: site displacement distance to bias towards.
-    :param float sample_period: time between samples (simulator time units)
+    :param float num_samples: number of samples to average at each update.
     :param str logging_filename: output file
+
+    During execution, the pair distance is regularly sampled. To smooth fluctuations,
+    a rolling average is maintained over a period *tau*. A measurement is recorded
+    and the average is updated at intervals of *tau/num_samples*.
+
+    For additional explanation of *A*, see White and Voth, https://doi.org/10.1021/ct500320c
 
 .. These objects are not user-facing, and their architecture will be updated a
    little bit with more expressive templating.
