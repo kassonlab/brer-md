@@ -153,38 +153,6 @@ PyRestraint<plugin::RestraintModule<plugin::BRERRestraint>>::getModule()
 {
   return shared_from_this();
 }
-//////////////////////////////////////////////////////////////////////////////////////////
-// New restraints mimicking EnsembleRestraint should specialize getModule() here
-// as above.
-//////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////
-// Begin MyRestraint
-/*!
- * \brief No-op restraint class for testing and demonstration.
- */
-class MyRestraint
-{
-public:
-  static const char *docstring;
-
-  static std::string name() { return "MyRestraint"; };
-};
-
-template <>
-std::shared_ptr<gmxapi::MDModule> PyRestraint<MyRestraint>::getModule()
-{
-  auto module = std::make_shared<gmxapi::MDModule>();
-  return module;
-}
-
-// Raw string will have line breaks and indentation as written between the
-// delimiters.
-const char *MyRestraint::docstring =
-    R"rawdelimiter(Some sort of custom potential.
-)rawdelimiter";
-// end MyRestraint
-//////////////////
 
 // Start Linear Restraint
 class LinearRestraintBuilder
@@ -556,7 +524,7 @@ createBRERBuilder(const py::object element)
 // as the OUTPUT_NAME for the shared object library in the CMakeLists.txt file. The second argument, 'm', can be anything
 // but it might as well be short since we use it to refer to aspects of the module we are defining.
 PYBIND11_MODULE(md, m){
-  m.doc() = "sample plugin"; // This will be the text of the module's docstring.
+  m.doc() = "MD potentials for BRER simulation workflows."; // This will be the text of the module's docstring.
 
   // Matrix utility class (temporary). Borrowed from
   // http://pybind11.readthedocs.io/en/master/advanced/pycpp/numpy.html#arrays
@@ -574,16 +542,6 @@ PYBIND11_MODULE(md, m){
                  matrix.cols(), /* Strides (in bytes) for each index */
              sizeof(double)});
       });
-
-  // Make a null restraint for testing.
-//  py::class_<PyRestraint<MyRestraint>,
-//             std::shared_ptr<PyRestraint<MyRestraint>>>
-//      md_module(m, "MyRestraint");
-//  md_module.def(py::init<>([]() { return PyRestraint<MyRestraint>::create(); }),
-//                "Create default MyRestraint");
-//  md_module.def("bind", &PyRestraint<MyRestraint>::bind);
-  // This bindings specification could actually be done in a templated function
-  // to automatically generate parameter setters/getters
 
   //////////////////////////////////////////////////////////////////////////
   // Begin LinearRestraint
@@ -604,7 +562,11 @@ PYBIND11_MODULE(md, m){
   m.def("make_linear_params", &plugin::makeLinearParams);
 
   // API object to build.
-  py::class_<PyLinear, std::shared_ptr<PyLinear>> linear(m, "LinearRestraint");
+  py::class_<PyLinear, std::shared_ptr<PyLinear>> linear(
+    m,
+    "LinearRestraint",
+    "The BRER potential used for the production phase."
+  );
   // EnsembleRestraint can only be created via builder for now.
   linear.def("bind", &PyLinear::bind, "Implement binding protocol");
   linear.def_property_readonly(
@@ -624,8 +586,10 @@ PYBIND11_MODULE(md, m){
       },
       "Simulation time at which the plugin potential was initialized.");
 
-  m.def("linear_restraint",
-        [](const py::object element) { return createLinearBuilder(element); });
+  m.def(
+    "linear_restraint",
+    [](const py::object element) { return createLinearBuilder(element); },
+    "Configure the BRER potential used for the production phase.");
   //
   // End LinearRestraint
   ///////////////////////////////////////////////////////////////////////////
@@ -651,7 +615,10 @@ PYBIND11_MODULE(md, m){
 
   // API object to build.
   py::class_<PyLinearStop, std::shared_ptr<PyLinearStop>> linearStop(
-      m, "LinearStopRestraint");
+      m,
+      "LinearStopRestraint",
+      "The BRER potential used during the convergence phase."
+  );
   // EnsembleRestraint can only be created via builder for now.
   linearStop.def("bind", &PyLinearStop::bind, "Implement binding protocol");
   linearStop.def_property_readonly("stop_called", [](PyLinearStop *potential) {
@@ -663,9 +630,13 @@ PYBIND11_MODULE(md, m){
         ->getTime();
   });
 
-  m.def("linearstop_restraint", [](const py::object element) {
-    return createLinearStopBuilder(element);
-  });
+  m.def(
+    "linearstop_restraint",
+    [](const py::object element) {
+      return createLinearStopBuilder(element);
+    },
+    "Configure the BRER potential used during the convergence phase."
+  );
   //
   // End LinearStopRestraint
   ///////////////////////////////////////////////////////////////////////////
@@ -686,7 +657,10 @@ PYBIND11_MODULE(md, m){
       m, "BRERRestraintParams");
 
   // API object to build.
-  py::class_<PyBRER, std::shared_ptr<PyBRER>> brer(m, "BRERRestraint");
+  py::class_<PyBRER, std::shared_ptr<PyBRER>> brer(
+    m,
+    "BRERRestraint",
+    "The self-tuning potential for the BRER training phase.");
   // EnsembleRestraint can only be created via builder for now.
   brer.def("bind", &PyBRER::bind, "Implement binding protocol");
   brer.def("make_brer_params", &plugin::makeBRERParams);
@@ -704,8 +678,10 @@ PYBIND11_MODULE(md, m){
         ->getConverged();
     });
 
-  m.def("brer_restraint",
-        [](const py::object element) { return createBRERBuilder(element); });
+  m.def(
+    "brer_restraint",
+    [](const py::object element) { return createBRERBuilder(element); },
+    "Configure the self-tuning potential for the BRER training phase.");
   //
   // End BRERRestraint
   ///////////////////////////////////////////////////////////////////////////
