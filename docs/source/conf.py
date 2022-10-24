@@ -42,6 +42,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
+    'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.mathjax',
@@ -109,6 +110,12 @@ html_theme = 'sphinx_rtd_theme'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'runBRERdoc'
 
+# -- options for extlinks extension -
+extlinks = {'issue': ('https://github.com/kassonlab/brer-md/issues/%s',
+                      'issue #%s'),
+            'Issue': ('https://github.com/kassonlab/brer-md/issues/%s',
+                      'Issue #%s')}
+
 # -- Extension configuration -------------------------------------------------
 autoclass_content = 'both'
 
@@ -124,3 +131,5 @@ intersphinx_mapping = {
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
+# Override from the command line with `-D todo_include_todos=1`.
+# E.g. `cd docs; sphinx-build -b html -D todo_include_todos=1 source _build/html`

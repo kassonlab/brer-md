@@ -80,7 +80,7 @@ a :term:`sites` parameter.
         last element to define a sequence of vectors that can reliably sum to the
         intended vector.
 
-.. todo:: Auto-extract the parameter structure docs once parameters are expressed more cleanly in the C++ code.
+.. todo:: (:issue:`3`) Auto-extract the parameter structure docs once parameters are expressed more cleanly in the C++ code.
 
 .. py:function:: linear_restraint()
 
@@ -90,8 +90,6 @@ a :term:`sites` parameter.
     :param float target: site displacement distance to bias towards.
     :param float sample_period: time between samples (simulator time units)
     :param str logging_filename: output file
-
-.. todo:: Get parameters from makeLineareStopParams docstring.
 
 .. py:function:: linearstop_restraint()
 
