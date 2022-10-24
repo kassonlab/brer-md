@@ -75,7 +75,7 @@ class PluginConfig(ABC):
         return cls(**{key: getattr(obj, key) for key in [field.name for field in dataclasses.fields(cls) if
                                                          field.init] if hasattr(obj, key)})
 
-    @create_from.register
+    @create_from.register(dict)
     @classmethod
     def _(cls, obj: dict):
         return cls(**{key: obj[key] for key in [field.name for field in dataclasses.fields(cls) if
