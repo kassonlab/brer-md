@@ -8,15 +8,6 @@ from brer.run_data import PairParams
 from brer.run_data import RunData
 
 
-def test_general_parameters():
-    """Set the defaults for general parameters and check no missing params."""
-    gp = GeneralParams()
-    gp.set_to_defaults()
-
-    assert not gp.get_missing_keys()
-    assert gp.get_as_dictionary() == gp.get_defaults()
-
-
 def test_pair_parameters(raw_pair_data):
     """Set PairParams objects from PairData objects. Check that there are no
     missing keys.
@@ -27,14 +18,12 @@ def test_pair_parameters(raw_pair_data):
         raw pair data from conftest.py
     """
     for name in raw_pair_data:
-        pd = PairData(name)
-        pd.set_from_dictionary(raw_pair_data[name])
-        pp = PairParams(name)
-        pp.load_sites(sites=pd.get("sites"))
-
-        assert pp.get_missing_keys() == ['alpha', 'target']
-        pp.set_to_defaults()
-        assert not pp.get_missing_keys()
+        # Check our assumption about the redundancy of 'name'.
+        assert name == raw_pair_data[name]['name']
+        pd = PairData(**raw_pair_data[name])
+        pp = PairParams(name, sites=pd.sites)
+        for default_param in ('alpha', 'target'):
+            assert hasattr(pp, default_param)
 
 
 def test_run_data(tmpdir, raw_pair_data):
@@ -51,12 +40,10 @@ def test_run_data(tmpdir, raw_pair_data):
     rd = RunData()
 
     for name in raw_pair_data:
-        pd = PairData(name)
-        pd.set_from_dictionary(raw_pair_data[name])
+        # Check our assumption about the redundancy of 'name'.
+        assert name == raw_pair_data[name]['name']
+        pd = PairData(**raw_pair_data[name])
         rd.from_pair_data(pd)
-        assert not rd.pair_params[name].get_missing_keys()
-
-    assert not rd.general_params.get_missing_keys()
 
     # Get an arbitrary but valid name.
     name = tuple(raw_pair_data.keys())[-1]

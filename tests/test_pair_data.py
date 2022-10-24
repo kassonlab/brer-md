@@ -4,22 +4,13 @@ from brer.pair_data import PairData
 
 
 def test_pair_data(raw_pair_data, pair_data_file):
-    """Ensures that multipair constructs multiple PairData objects.
-
-    Parameters
-    ----------
-    data_dir : str
-        pytest data directory
-    raw_pair_data : dict
-        dictionary of multiple pair data
-    """
+    """Ensures that multipair constructs multiple PairData objects."""
     mp = MultiPair()
     mp.read_from_json(pair_data_file)
 
     assert mp.get_as_single_dataset() == raw_pair_data
     for name in mp.names:
-        assert (type(
-            mp[mp.name_to_id(name)]) == PairData)
+        assert isinstance(mp[mp.name_to_id(name)], PairData)
 
     samples = mp.re_sample()
     assert list(samples.keys()) == mp.names

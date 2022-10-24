@@ -1,24 +1,34 @@
-"""Abstract class for handling all BRER metadata.
+"""Base classes for handling all BRER metadata.
 
-State and PairData classes inherit from this class.
+State and PairData classes derive from this module.
 """
 
 import json
+import sys
 import warnings
-from abc import ABC
+from typing import Collection
+from typing import Mapping
+from typing import Optional
+
+if sys.version_info.major > 3 or sys.version_info.minor >= 9:
+    List = list
+else:
+    from typing import List
 
 
-class MetaData(ABC):
-    def __init__(self, name):
-        """Construct metadata object. and give it a name.
+class MetaData:
+    def __init__(self, name: str, required_parameters: Collection[str] = ()):
+        """Construct metadata object and give it a name.
 
         Parameters
         ----------
         name :
             Give your MetaData class a descriptive name.
+        required_parameters :
+            The names of the required parameters for this data collection.
         """
         self.__name = name
-        self.__required_parameters = ()
+        self.__required_parameters = tuple(required_parameters)
         self._metadata = {}
 
     @property
@@ -34,16 +44,6 @@ class MetaData(ABC):
         """
         return self.__name
 
-    @name.getter
-    def name(self):
-        """getter for name.
-
-        Returns
-        -------
-        str
-        """
-        return self.__name
-
     @name.setter
     def name(self, name):
         """setter for name.
@@ -54,18 +54,6 @@ class MetaData(ABC):
             name of the class
         """
         self.__name = name
-
-    def set_requirements(self, list_of_requirements: list):
-        """Defines a set of required parameters for the class. This is quite
-        useful for checking if there are any missing parameters before
-        beginning a run.
-
-        Parameters
-        ----------
-        list_of_requirements : list
-            list of required parameters for the class (a list of strings)
-        """
-        self.__required_parameters = tuple(list_of_requirements)
 
     def get_requirements(self):
         """Gets the set of required parameters for the class. This is quite
@@ -80,9 +68,13 @@ class MetaData(ABC):
         return self.__required_parameters
 
     def set(self, key=None, value=None, **kwargs):
-        """Sets a parameter of the class. Checks whether or not the parameter
-        is required and reports information about requirements. You can pass
-        the key,value pairs either as a key and value or as a set of ``**kwargs``.
+        """Sets one or more parameters of the class.
+
+        Parameters may be provided with the *key* and *value* arguments, or as
+        any number of keyword arguments.
+
+        Checks whether parameters are required and reports information about
+        requirements.
 
         Parameters
         ----------
@@ -91,11 +83,10 @@ class MetaData(ABC):
         value : any, optional
             parameter value, by default None
         """
-        if key is not None and value is not None:
-            if key not in self.__required_parameters and key != "name":
-                warnings.warn(
-                    f"{key} is not a required parameter of {self.name}: setting anyway")
-            self._metadata[key] = value
+        if key is not None or value is not None:
+            if key is None or value is None:
+                raise TypeError('Both *key* and *value* must be provided, if either is used.')
+        kwargs[key] = value
         for key, value in kwargs.items():
             if key not in self.__required_parameters and key != "name":
                 warnings.warn(
@@ -116,7 +107,7 @@ class MetaData(ABC):
         """
         return self._metadata[key]
 
-    def set_from_dictionary(self, data: dict):
+    def set_from_dictionary(self, data: Mapping):
         """Another method that essentially performs the same thing as "set",
         but just takes a dictionary. Probably should be deprecated...
 
@@ -152,56 +143,26 @@ class MetaData(ABC):
         return missing
 
 
-class MultiMetaData(ABC):
-    """A single class that handles multiple MetaData classes (useful when
-    restraining multiple atom-atom pairs)."""
+class MultiMetaData:
+    """A collection of MetaData instances.
 
-    def __init__(self):
-        self._metadata_list = []
-        self.__names = []
+    A useful data structure when restraining multiple atom-atom pairs.
+    """
+
+    def __init__(self, metadata: Optional[List[MetaData]] = None):
+        self._metadata_list: List[MetaData] = []
 
     @property
     def names(self):
-        """A list of names that associate each class with a pair or a
-        particular function (such as with the Plugins, which are named either
-        'training', 'convergence' or 'production').
+        """A list of named metadata collections.
 
-        Returns
-        -------
-        list
-            a list of names
+        Names associate each class with a pair or a particular function
+        (such as with the Plugins, which are named either 'training',
+        'convergence' or 'production').
         """
-        return list(self.__names)
-
-    @names.setter
-    def names(self, names: list):
-        """setter for names.
-
-        Parameters
-        ----------
-        names : list
-        """
-        self.__names = list(names)
-
-    @names.getter
-    def names(self):
-        """getter for names.
-
-        Returns
-        -------
-        list
-            list of names
-
-        Raises
-        ------
-        IndexError
-            Raise IndexError if no metadata have been loaded.
-        """
-        if not self.__names:
-            if not self._metadata_list:
-                raise IndexError('Must import a list of metadata before retrieving names')
-            self.__names = [metadata.name for metadata in self._metadata_list]
-        return list(self.__names)
+        if not self._metadata_list:
+            raise AttributeError('Must import a list of metadata before retrieving names')
+        return [metadata.name for metadata in self._metadata_list]
 
     def add_metadata(self, metadata: MetaData):
         """Appends new MetaData object to self._metadata.
@@ -212,7 +173,6 @@ class MultiMetaData(ABC):
             metadata to append
         """
         self._metadata_list.append(metadata)
-        self.__names.append(metadata.name)
 
     def name_to_id(self, name):
         """Converts the name of one of the MetaData classes to it's associated
@@ -233,9 +193,10 @@ class MultiMetaData(ABC):
         IndexError
             Raise IndexError if no metadata have been loaded.
         """
-        if not self.__names:
+        names = self.names
+        if name not in names:
             raise IndexError('{} is not a valid name.'.format(name))
-        return self.__names.index(name)
+        return names.index(name)
 
     def id_to_name(self, id):
         """Converts the index of one of the MetaData classes to it's associated
@@ -251,7 +212,7 @@ class MultiMetaData(ABC):
         str
             the name of the metadata class
         """
-        return self.__names[id]
+        return self.names[id]
 
     def __getitem__(self, item):
         return self._metadata_list[item]
@@ -271,9 +232,11 @@ class MultiMetaData(ABC):
         filename : str
              (Default value = 'state.json')
         """
-        json.dump(self.get_as_single_dataset(), open(filename, 'w'))
+        with open(filename, 'w') as fh:
+            json.dump(self.get_as_single_dataset(), fh)
 
-    def read_from_json(self, filename='state.json'):
+    @classmethod
+    def from_json(cls, filename='state.json'):
         """Reads state from json.
 
         Parameters
@@ -281,13 +244,9 @@ class MultiMetaData(ABC):
         filename : str
              (Default value = 'state.json')
         """
-        # TODO: decide on expected behavior here if there's a pre-existing list of
-        #  data. For now, overwrite
-        self._metadata_list = []
-        self.__names = []
-        data = json.load(open(filename, 'r'))
+        with open(filename, 'r') as fh:
+            data = json.load(fh)
         for name, metadata in data.items():
-            self.__names.append(name)
             metadata_obj = MetaData(name=name)
             metadata_obj.set_from_dictionary(metadata)
             self._metadata_list.append(metadata_obj)

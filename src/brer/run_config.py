@@ -10,7 +10,6 @@ import pathlib
 import shutil
 import typing
 import warnings
-from copy import deepcopy
 from typing import Sequence
 from typing import Union
 
@@ -213,8 +212,8 @@ class RunConfig:
         # "general" data and
         # the data unique to that restraint.
         for name in self.__names:
-            pair_params = self.run_data.general_params.get_as_dictionary()
-            pair_params.update(self.run_data.pair_params[name].get_as_dictionary())
+            pair_params = dataclasses.asdict(self.run_data.general_params)
+            pair_params.update(dataclasses.asdict(self.run_data.pair_params[name]))
             new_restraint = plugin_config.create_from(pair_params)
             self.__plugins.append(new_restraint.build_plugin())
 
@@ -223,7 +222,7 @@ class RunConfig:
         # ensemble_path/member_path/iteration/phase)
         dir_help = DirectoryHelper(
             top_dir=self.ens_dir,
-            param_dict=self.run_data.general_params.get_as_dictionary())
+            param_dict=dataclasses.asdict(self.run_data.general_params))
         dir_help.build_working_dir()
         workdir = dir_help.change_dir('phase')
         if self._communicator is None or self._communicator.Get_size() == 1:
