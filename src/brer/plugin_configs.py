@@ -2,10 +2,31 @@
 
 Each class corresponds to ONE restraint since gmxapi plugins each correspond to one restraint.
 """
+import dataclasses
+import sys
 import typing
+from abc import ABC
 from abc import abstractmethod
+from functools import singledispatchmethod
 
-from brer.metadata import MetaData
+assert sys.version_info.major >= 3
+
+if sys.version_info.major > 3 or sys.version_info.minor >= 9:
+    List = list
+else:
+    from typing import List
+
+# We are trying to reduce ambiguity by confirming that the `name` field is often
+# redundant with a key used to store such an object. To that end, we are trying
+# to be more mindful of how these objects are constructed. We will try to prevent
+# some previous usage patterns in which data structures were initialized with a
+# positional *name* argument, which was then overwritten by a subsequent *set()*.
+# Dataclass init arguments can be provided positionally in the order in which
+# fields are defined, unless *kw_only=True* (after Py 3.10).
+if sys.version_info.major > 3 or sys.version_info.minor >= 10:
+    field_kwargs = {'kw_only': True}
+else:
+    field_kwargs = {}
 
 
 def _get_workelement() -> typing.Type:
@@ -24,52 +45,13 @@ def _get_workelement() -> typing.Type:
     return WorkElement
 
 
-class PluginConfig(MetaData):
+@dataclasses.dataclass
+class PluginConfig(ABC):
     """Abstract class used to build training, convergence, and production
     plugins."""
-
-    def __init__(self):
-        super().__init__('build_plugin')
-
-    def scan_dictionary(self, dictionary):
-        """Scans a dictionary and stores whatever parameters it needs for the
-        build_plugin.
-
-        Parameters
-        ----------
-        dictionary : dict
-            a dictionary containing metadata, some of which may be needed for the run.
-            The dictionary may contain *extra* data, i.e., this can be a superset of the
-            needed plugin data.
-        """
-
-        for requirement in self.get_requirements():
-            if requirement in dictionary.keys():
-                self._metadata[requirement] = dictionary[requirement]
-
-    def scan_metadata(self, data):
-        """This scans a RunData or PairData obj and stores whatever parameters
-        it needs for a run.
-
-        Parameters
-        ----------
-        data :
-            either type RunData or type PairData
-        """
-        self.scan_dictionary(data.get_as_dictionary())
-
-    # def set_parameters(self, **kwargs):
-    #     """
-
-    #     Parameters
-    #     ----------
-    #     **kwargs :
-
-    #     Returns
-    #     -------
-
-    #     """
-    #     self.scan_dictionary(kwargs)
+    name: str = dataclasses.field(init=False, **field_kwargs)
+    sites: List[int] = dataclasses.field(**field_kwargs)
+    logging_filename: str = dataclasses.field(**field_kwargs)
 
     @abstractmethod
     def build_plugin(self):
@@ -80,7 +62,27 @@ class PluginConfig(MetaData):
         """
         pass
 
+    @singledispatchmethod
+    @classmethod
+    def create_from(cls, obj):
+        """Get an instance of the appropriate type from the provided data structure.
 
+        Source *obj* is either a :py:class:`~collections.abc.Mapping` or an object
+        with the fields necessary to initialize a *cls* instance.
+
+        Extra fields in *obj* are ignored.
+        """
+        return cls(**{key: getattr(obj, key) for key in [field.name for field in dataclasses.fields(cls) if
+                                                         field.init] if hasattr(obj, key)})
+
+    @create_from.register(dict)
+    @classmethod
+    def _(cls, obj: dict):
+        return cls(**{key: obj[key] for key in [field.name for field in dataclasses.fields(cls) if
+                                                field.init] if key in obj})
+
+
+@dataclasses.dataclass
 class TrainingPluginConfig(PluginConfig):
     """Configure BRER potential for the training phase.
 
@@ -88,12 +90,13 @@ class TrainingPluginConfig(PluginConfig):
 
     See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
     """
+    name: str = dataclasses.field(init=False, default='training', **field_kwargs)
 
-    def __init__(self):
-        super().__init__()
-        self.name = 'training'
-        self.set_requirements(['sites', 'target', 'A', 'tau', 'tolerance', 'num_samples',
-                               'logging_filename'])
+    A: float = dataclasses.field(**field_kwargs)
+    num_samples: int = dataclasses.field(**field_kwargs)
+    target: float = dataclasses.field(**field_kwargs)
+    tau: float = dataclasses.field(**field_kwargs)
+    tolerance: float = dataclasses.field(**field_kwargs)
 
     def build_plugin(self):
         """Builds training phase plugin for BRER simulations.
@@ -102,24 +105,19 @@ class TrainingPluginConfig(PluginConfig):
         -------
         WorkElement
             a gmxapi WorkElement to be added to the workflow graph
-
-        Raises
-        ------
-        KeyError
-            if required parameters for building the plugin are missing.
         """
         WorkElement = _get_workelement()
-        if self.get_missing_keys():
-            raise KeyError('Must define {}'.format(self.get_missing_keys()))
         potential = WorkElement(
             namespace="brer.md",
             operation="brer_restraint",
             depends=[],
-            params=self.get_as_dictionary())
-        potential.name = '{}'.format(self.get('sites'))
+            params=dataclasses.asdict(self)
+        )
+        potential.name = str(self.sites)
         return potential
 
 
+@dataclasses.dataclass
 class ConvergencePluginConfig(PluginConfig):
     """Configure BRER potential for the convergence phase.
 
@@ -127,12 +125,12 @@ class ConvergencePluginConfig(PluginConfig):
 
     See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
     """
+    name: str = dataclasses.field(init=False, default='convergence', **field_kwargs)
 
-    def __init__(self):
-        super().__init__()
-        self.name = 'convergence'
-        self.set_requirements(['sites', 'alpha', 'target', 'tolerance', 'sample_period',
-                               'logging_filename'])
+    alpha: float = dataclasses.field(**field_kwargs)
+    sample_period: float = dataclasses.field(**field_kwargs)
+    target: float = dataclasses.field(**field_kwargs)
+    tolerance: float = dataclasses.field(**field_kwargs)
 
     def build_plugin(self):
         """Builds convergence phase plugin for BRER simulations.
@@ -144,23 +142,22 @@ class ConvergencePluginConfig(PluginConfig):
 
         Raises
         ------
-        KeyError
-            if required parameters for building the plugin are missing.
+        ValueError
+            If inappropriate values are detected for any fields.
         """
-        WorkElement = _get_workelement()
-        if self.get_missing_keys():
-            raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        if self.get('alpha') == 0.0:
+        if self.alpha == 0.0:
             raise ValueError('Read a non-sensical alpha value: 0.0')
+        WorkElement = _get_workelement()
         potential = WorkElement(
             namespace="brer.md",
             operation="linearstop_restraint",
             depends=[],
-            params=self.get_as_dictionary())
-        potential.name = '{}'.format(self.get('sites'))
+            params=dataclasses.asdict(self))
+        potential.name = str(self.sites)
         return potential
 
 
+@dataclasses.dataclass
 class ProductionPluginConfig(PluginConfig):
     """Configure BRER potential for the convergence phase.
 
@@ -168,12 +165,11 @@ class ProductionPluginConfig(PluginConfig):
 
     See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
     """
+    name: str = dataclasses.field(init=False, default='production', **field_kwargs)
 
-    def __init__(self):
-        super().__init__()
-        self.name = 'production'
-        self.set_requirements(['sites', 'target', 'alpha', 'sample_period',
-                               'logging_filename'])
+    alpha: float = dataclasses.field(**field_kwargs)
+    sample_period: float = dataclasses.field(**field_kwargs)
+    target: float = dataclasses.field(**field_kwargs)
 
     def build_plugin(self):
         """Builds production phase plugin for BRER simulations.
@@ -185,18 +181,16 @@ class ProductionPluginConfig(PluginConfig):
 
         Raises
         ------
-        KeyError
-            if required parameters for building the plugin are missing.
+        ValueError
+            If inappropriate values are detected for any fields.
         """
-        WorkElement = _get_workelement()
-        if self.get_missing_keys():
-            raise KeyError('Must define {}'.format(self.get_missing_keys()))
-        if self.get('alpha') == 0.0:
+        if self.alpha == 0.0:
             raise ValueError('Read a non-sensical alpha value: 0.0')
+        WorkElement = _get_workelement()
         potential = WorkElement(
             namespace="brer.md",
             operation="linear_restraint",
             depends=[],
-            params=self.get_as_dictionary())
-        potential.name = '{}'.format(self.get('sites'))
+            params=dataclasses.asdict(self))
+        potential.name = str(self.sites)
         return potential
