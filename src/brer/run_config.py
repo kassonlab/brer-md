@@ -2,11 +2,13 @@
 __all__ = ('RunConfig',)
 
 import collections.abc
+import dataclasses
 import json
 import logging
 import os
 import pathlib
 import shutil
+import typing
 import warnings
 from copy import deepcopy
 from typing import Sequence
@@ -189,7 +191,7 @@ class RunConfig:
 
         # atexit.register(cleanup)
 
-    def build_plugins(self, plugin_config: PluginConfig):
+    def build_plugins(self, plugin_config: typing.Type[PluginConfig]):
         """Builds the plugin configuration.
 
         For each pair-wise restraint,
@@ -207,17 +209,13 @@ class RunConfig:
         # TODO: what is the expected behavior when a list of plugins exists? Probably
         #  wipe them.
         self.__plugins = []
-        general_params = self.run_data.general_params
         # For each pair-wise restraint, populate the plugin with data: both the
         # "general" data and
         # the data unique to that restraint.
         for name in self.__names:
-            pair_params = self.run_data.pair_params[name]
-            new_restraint = deepcopy(plugin_config)
-            new_restraint.scan_metadata(general_params)  # load general data into
-            # current restraint
-            new_restraint.scan_metadata(pair_params)  # load pair-specific data into
-            # current restraint
+            pair_params = self.run_data.general_params.get_as_dictionary()
+            pair_params.update(self.run_data.pair_params[name].get_as_dictionary())
+            new_restraint = plugin_config.create_from(pair_params)
             self.__plugins.append(new_restraint.build_plugin())
 
     def __set_workdir(self):
@@ -353,7 +351,7 @@ class RunConfig:
         # Build the gmxapi session.
         tpr_list: Sequence[str] = self._tprs
         md = from_tpr(tpr_list, append_output=False, **kwargs)
-        self.build_plugins(TrainingPluginConfig())
+        self.build_plugins(TrainingPluginConfig)
         if len(self.__plugins) == 0:
             warnings.warn('No BRER restraints are being applied! User error?')
         for plugin in self.__plugins:
@@ -418,7 +416,7 @@ class RunConfig:
         self.__prep_input(tpr_file)
 
         md = from_tpr(self._tprs, append_output=False, **kwargs)
-        self.build_plugins(ConvergencePluginConfig())
+        self.build_plugins(ConvergencePluginConfig)
         if len(self.__plugins) == 0:
             warnings.warn('No BRER restraints are being applied! User error?')
         for plugin in self.__plugins:
@@ -479,7 +477,7 @@ class RunConfig:
 
         md = from_tpr(tpr_list, end_time=target_end_time, append_output=False, **kwargs)
 
-        self.build_plugins(ProductionPluginConfig())
+        self.build_plugins(ProductionPluginConfig)
         if len(self.__plugins) == 0:
             warnings.warn('No BRER restraints are being applied! User error?')
         for plugin in self.__plugins:
