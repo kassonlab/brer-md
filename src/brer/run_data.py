@@ -1,13 +1,36 @@
 """Class that handles the simulation data for BRER simulations.
 """
+import dataclasses
 import json
+import sys
 import typing
+import warnings
+from dataclasses import dataclass
+from dataclasses import field
 
-from brer.metadata import MetaData
-from brer.pair_data import PairData
+from .pair_data import PairData
+
+if sys.version_info.major > 3 or sys.version_info.minor >= 9:
+    List = list
+else:
+    from typing import List
+
+# In Python >= 3.10, the *slots* option to dataclasses will help keep fields
+# from accidentally getting added to instances.
+if sys.version_info.major == 3 and sys.version_info.minor < 10:
+    __dataclass_has_slots = False
+else:
+    assert sys.version_info.major >= 3
+    __dataclass_has_slots = True
+
+if __dataclass_has_slots:
+    dataclass_kwargs = {'slots': True}
+else:
+    dataclass_kwargs = {}
 
 
-class GeneralParams(MetaData):
+@dataclass(**dataclass_kwargs)
+class GeneralParams:
     """Stores the parameters that are shared by all restraints in a single
     simulation.
 
@@ -17,68 +40,38 @@ class GeneralParams(MetaData):
         The *end_time* parameter.
 
     """
-
-    def __init__(self):
-        super().__init__('general')
-        self.set_requirements([
-            'A',
-            'end_time',
-            'ensemble_num',
-            'iteration',
-            'num_samples',
-            'phase',
-            'production_time',
-            'sample_period',
-            'start_time',
-            'tau',
-            'tolerance',
-        ])
-
-    def set_to_defaults(self):
-        """Sets general parameters to their default values."""
-        self.set_from_dictionary(self.get_defaults())
-
-    @staticmethod
-    def get_defaults():
-        return {
-            'A': 50,
-            'end_time': 0.,
-            'ensemble_num': 1,
-            'iteration': 0,
-            'num_samples': 50,
-            'phase': 'training',
-            'production_time': 10000,  # 10 ns
-            'sample_period': 100,
-            'start_time': 0.,
-            'tau': 50,
-            'tolerance': 0.25,
-        }
+    name: str = field(init=False, default='general')
+    A: float = 50.
+    end_time: float = 0.
+    ensemble_num: int = 1
+    iteration: int = 0
+    num_samples: int = 50
+    phase: str = 'training'
+    production_time: float = 10000.
+    sample_period: float = 100.
+    start_time: float = 0.
+    tau: float = 50
+    tolerance: float = 0.25
 
 
-class PairParams(MetaData):
+@dataclass(**dataclass_kwargs)
+class PairParams:
     """Stores the parameters that are unique to a specific restraint."""
+    name: str
+    sites: List[int]
+    logging_filename: str = None
+    alpha: float = 0.
+    # TODO: Are we sure we should have defaults, especially for `target`?
+    target: float = 3.
 
-    def __init__(self, name):
-        super().__init__(name)
-        self.set_requirements(['sites', 'logging_filename', 'alpha', 'target'])
-
-    def set_to_defaults(self):
-        self.set(alpha=0., target=3.)
-
-    def load_sites(self, sites: list):
-        """Loads the atom ids for the restraint. This also sets the logging
-        filename, which is named using the atom ids.
-
-        Parameters
-        ----------
-        sites : list
-            A list of the atom ids for a single restraint.
-
-        Example
-        -------
-        >>> load_sites([3673, 5636])
-        """
-        self.set(sites=sites, logging_filename="{}.log".format(self.name))
+    def __post_init__(self):
+        logging_filename = f'{self.name}.log'
+        if self.logging_filename and self.logging_filename != logging_filename:
+            warnings.warn(
+                f'Specified logging filename {self.logging_filename} overrides default ("'
+                f'{logging_filename}")')
+        else:
+            self.logging_filename = logging_filename
 
 
 class RunData:
@@ -89,7 +82,6 @@ class RunData:
         """The full set of metadata for a single BRER run include both the
         general parameters and the pair-specific parameters."""
         self.general_params = GeneralParams()
-        self.general_params.set_to_defaults()
         self.pair_params: typing.MutableMapping[str, PairParams] = {}
         self.__names = []
 
@@ -117,19 +109,22 @@ class RunData:
             # If a restraint name is not specified, it is assumed that the parameter is
             # a "general" parameter.
             if not name:
-                if key in self.general_params.get_requirements():
-                    self.general_params.set(key, value)
+                if any(field.name == key for field in dataclasses.fields(self.general_params)):
+                    setattr(self.general_params, key, value)
+                    continue
                 else:
-                    raise ValueError(
-                        'You have not provided a name; this means you are probably trying '
-                        'to set a '
-                        'general parameter. {} is pair-specific'.format(key))
+                    if any(field.name == key for field in dataclasses.fields(PairParams)):
+                        raise ValueError(
+                            f'You must provide pair *name* for which to set pair parameter {key}.')
             else:
-                if key in self.pair_params[name].get_requirements():
-                    self.pair_params[name].set(key, value)
+                if any(field.name == key for field in dataclasses.fields(self.pair_params[name])):
+                    setattr(self.pair_params[name], key, value)
+                    continue
                 else:
-                    raise ValueError('{} is not a pair-specific parameter'.format(key)
-                                     + ' but you have provided a name.')
+                    if any(field.name == key for field in dataclasses.fields(GeneralParams)):
+                        raise ValueError(
+                            f'{key} is a general parameter but you have provided a pair name.')
+            raise ValueError(f'{key} is not a valid parameter.')
 
     def get(self, key, *, name=None):
         """get either a general or a pair-specific parameter.
@@ -146,15 +141,17 @@ class RunData:
         -------
             the parameter value.
         """
-        if key in self.general_params.get_requirements():
-            return self.general_params.get(key)
-        elif name:
-            return self.pair_params[name].get(key)
+        if name:
+            return getattr(self.pair_params[name], key)
         else:
-            raise ValueError(
-                'You have not provided a name, but are trying to get a pair-specific '
-                'parameter. '
-                'Please provide a pair name')
+            try:
+                return getattr(self.general_params, key)
+            except AttributeError as e:
+                if hasattr(PairParams, key):
+                    raise ValueError(
+                        f'Must specify pair *name* for parameter {key}.')
+                else:
+                    raise e
 
     def as_dictionary(self):
         """Get the run metadata as a heirarchical dictionary:
@@ -180,12 +177,11 @@ class RunData:
         >>>     ├── ...
 
         """
-        pair_param_dict = {}
-        for name in self.pair_params.keys():
-            pair_param_dict[name] = self.pair_params[name].get_as_dictionary()
+        pair_param_dict = dict(
+            (name, dataclasses.asdict(pair_params)) for name, pair_params in self.pair_params.items())
 
         return {
-            'general parameters': self.general_params.get_as_dictionary(),
+            'general parameters': dataclasses.asdict(self.general_params),
             'pair parameters': pair_param_dict
         }
 
@@ -197,10 +193,14 @@ class RunData:
         data : dict
             RunData metadata as a dictionary.
         """
-        self.general_params.set_from_dictionary(data['general parameters'])
-        for name in data['pair parameters'].keys():
-            self.pair_params[name] = PairParams(name)
-            self.pair_params[name].set_from_dictionary(data['pair parameters'][name])
+        _replacements = data['general parameters'].copy()
+        del _replacements['name']
+        self.general_params: GeneralParams = dataclasses.replace(self.general_params,
+                                                                 **_replacements)
+        for name in data['pair parameters']:
+            # Check our assumption about the redundancy of *name*
+            assert data['pair parameters'][name]['name'] == name
+            self.pair_params[name] = PairParams(**data['pair parameters'][name])
 
     def from_pair_data(self, pd: PairData):
         """Load some of the run metadata from a PairData object. Useful at the
@@ -212,13 +212,11 @@ class RunData:
             object from which metadata are loaded
         """
         name = pd.name
-        self.pair_params[name] = PairParams(name)
-        self.pair_params[name].load_sites(pd.get('sites'))
-        self.pair_params[name].set_to_defaults()
+        self.pair_params[name] = PairParams(name=name, sites=pd.sites)
 
     def clear_pair_data(self):
         """Removes all the pair parameters, replace with empty dict."""
-        self.pair_params = {}
+        self.pair_params.clear()
 
     def save_config(self, fnm='state.json'):
         """Saves the run parameters to a log file.

@@ -23,17 +23,13 @@ def test_plugins(raw_pair_data):
     cpc: ConvergencePluginConfig
     ppc: ProductionPluginConfig
 
-    gp = GeneralParams()
-    general_parameter_defaults = gp.get_defaults()
-
+    general_parameter_defaults = dataclasses.asdict(GeneralParams())
     name = list(raw_pair_data.keys())[0]
     sites = raw_pair_data[name]["sites"]
-    pp = PairParams(name)
-    pp.load_sites(sites)
-    # pp.set_to_defaults()
+    pp = PairParams(name=name, sites=sites)
 
     param_dict = general_parameter_defaults.copy()
-    param_dict.update(pp.get_as_dictionary())
+    param_dict.update(**dataclasses.asdict(pp))
 
     # 'target' is a run-time parameter, and needs to be provided.
     # Here we choose an arbitrary value.
