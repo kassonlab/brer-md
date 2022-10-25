@@ -8,25 +8,6 @@ directory_helper
 .. autoclass:: brer.directory_helper.DirectoryHelper
     :members:
 
-metadata
-========
-.. automodule:: brer.metadata
-
-.. autoclass:: brer.metadata.MetaData
-    :members:
-.. autoclass:: brer.metadata.MultiMetaData
-    :members:
-
-pair_data
-=========
-.. automodule:: brer.pair_data
-
-.. autoclass:: brer.pair_data.PairData
-    :members:
-
-.. autoclass:: brer.pair_data.MultiPair
-    :members:
-
 plugin_configs
 ==============
 .. automodule:: brer.plugin_configs

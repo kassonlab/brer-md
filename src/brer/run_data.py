@@ -1,4 +1,19 @@
-"""Class that handles the simulation data for BRER simulations.
+"""Handle simulation data for BRER simulations.
+
+`RunData` manages general parameters (`GeneralParams`) and pair-specific
+parameters (`PairParams`) for a single simulator for a specific phase of the
+BRER method.
+
+Parameters are initially provided through the
+:py:class:`~brer.run_config.RunConfig`, and are then stored to (and restored
+from) an internally managed :file:`state.json` file.
+
+Not all parameters are applicable to all BRER phases.
+
+See Also
+--------
+:py:mod:`brer.plugin_configs`
+
 """
 import dataclasses
 import json
@@ -31,14 +46,16 @@ else:
 
 @dataclass(**dataclass_kwargs)
 class GeneralParams:
-    """Stores the parameters that are shared by all restraints in a single
-    simulation.
+    """Store the parameters shared by all restraints in a single simulation.
 
-    These include some of the "Voth" parameters: tau, A, tolerance
+    These include some of the "Voth" parameters: *tau*, *A*, *tolerance*
 
     .. versionadded:: 2.0
         The *end_time* parameter.
 
+    Update general parameters before a call to
+    :py:meth:`brer.run_config.RunConfig.run()` by calling
+    :py:meth:`brer.run_data.RunData.set()` without a *name* argument.
     """
     name: str = field(init=False, default='general')
     A: float = 50.
@@ -56,7 +73,19 @@ class GeneralParams:
 
 @dataclass(**dataclass_kwargs)
 class PairParams:
-    """Stores the parameters that are unique to a specific restraint."""
+    """Stores the parameters that are unique to a specific restraint.
+
+    *PairParams* is a mutable structure for run time data. Fields such as
+    *alpha* and *target* may be updated automatically while running *brer*.
+
+    *PairParams* should not be confused with
+    :py:class:`~brer.pair_data.PairData` (an input data structure).
+
+    Update pair-specific parameters before a call to
+    :py:meth:`brer.run_config.RunConfig.run()` by calling
+    :py:meth:`brer.run_data.RunData.set()`, providing the pair name with the
+    *name* argument.
+    """
     name: str
     sites: List[int]
     logging_filename: str = None
@@ -75,8 +104,7 @@ class PairParams:
 
 
 class RunData:
-    """Stores (and manipulates, to a lesser extent) all the metadata for a BRER
-    run."""
+    """Store (and manipulate, to a lesser extent) all the metadata for a BRER run."""
 
     def __init__(self):
         """The full set of metadata for a single BRER run include both the
