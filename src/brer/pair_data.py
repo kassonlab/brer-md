@@ -1,5 +1,11 @@
-"""Classes to handle 1) pair metadata 2) resampling from DEER distributions at
-each new BRER iteration."""
+"""BRER data for site pairs.
+
+Coordinate the experimental reference data and molecular model data for the
+labeled / restrained pairs.
+
+Support the statistical (re)sampling of target pair distances when beginning a
+BRER iteration.
+"""
 import dataclasses
 import json
 import sys
@@ -32,15 +38,51 @@ class PairData:
 
     Essential pair data to support BRER MD plugin code. All data must be
     provided when the object is initialized. (Fields are read-only.)
+
+    Fields here correspond to the fields for each named pair
+    (JSON *objects*) in a :file:`pair_data.json` file (the *pairs_json* argument
+    of :py:func:`~brer.run_config.RunConfig()`).
     """
     # Historically, *name* has sometimes been provided as a positional argument,
     # but this led to ambiguity in the source of the final value of the field.
     # We define the *name* field first in case we overlook some legacy usage.
     name: str = dataclasses.field(**field_kwargs)
+    """Identifier for the pair of sites on the molecule.
+    
+    This string is chosen by the researcher. For example, the name may
+    include identifiers for the two residues in a scheme that can be easily
+    cross-referenced with experimental data.
+    """
 
     bins: List[float] = dataclasses.field(**field_kwargs)
+    """Histogram edges for the distance distribution data.
+    
+    (Simulation length units.)
+    """
+
     distribution: List[float] = dataclasses.field(**field_kwargs)
+    """Site distance distribution.
+    
+    Histogram values (weights or relative probabilities) for distances between
+    the sites. (Generally derived from experimental data.)
+    """
+
     sites: List[int] = dataclasses.field(**field_kwargs)
+    """Indices defining the distance vector.
+    
+    A list of indices for sites in the molecular model. The first and last
+    list elements are the sites associated with the distance data. Additional
+    indices can be inserted in the list to define a chain of distance vectors
+    that will be added without applying periodic boundary conditions.
+    
+    If, at any point in the simulation, the two molecular sites in the pair
+    might be farther apart than half of the shortest simulation box dimension,
+    the distance might accidentally get calculated between sites on different
+    molecule "images" (periodic boundary conditions). To make sure that site-site
+    distances are calculated on the same molecule, provide a sequence of sites
+    on the molecule (that are never more than half a box-length apart) so that
+    the correct vector between sites is unambiguous.
+    """
 
 
 class MultiPair(MultiMetaData):

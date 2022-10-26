@@ -47,8 +47,11 @@ def _get_workelement() -> typing.Type:
 
 @dataclasses.dataclass
 class PluginConfig(ABC):
-    """Abstract class used to build training, convergence, and production
-    plugins."""
+    """Abstract class for the BRER potential configurations.
+
+    Provide base class functionality and required interface to build ``training``,
+    ``convergence``, and ``production`` phase pluggable MD potentials.
+    """
     name: str = dataclasses.field(init=False, **field_kwargs)
     sites: List[int] = dataclasses.field(**field_kwargs)
     logging_filename: str = dataclasses.field(**field_kwargs)
@@ -72,6 +75,8 @@ class PluginConfig(ABC):
 
         Extra fields in *obj* are ignored.
         """
+        if cls is PluginConfig:
+            raise NotImplementedError
         return cls(**{key: getattr(obj, key) for key in [field.name for field in dataclasses.fields(cls) if
                                                          field.init] if hasattr(obj, key)})
 

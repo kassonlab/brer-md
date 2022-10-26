@@ -50,7 +50,48 @@ except (ImportError, ModuleNotFoundError):
 
 
 class RunConfig:
-    """Run configuration for single BRER ensemble member."""
+    """Run configuration for single BRER ensemble member.
+
+    The run configuration specifies the files and directory structure
+    used for the run. It determines whether the run is in the training,
+    convergence, or production phase, then performs the run.
+
+    Note that all instances of RunConfig need the same sized array of TPR input
+    files across all ranks in an MPI ensemble because they must all be capable of
+    constructing a compatible copy of the ensemble simulation work description.
+
+    Source data for the pair restraints is provided through a JSON file
+    (*pairs_json*). The JSON file contains one *JSON object* for each
+    :py:class:`~brer.pair_data.PairData` to be read.
+
+    For each object, the object key is assumed to be the
+    :py:data:`~brer.pair_data.PairData.name` of a pair.
+    The JSON object contents are used to initialize a
+    :py:class:`~brer.pair_data.PairData` for each named pair.
+
+    The data file is usually constructed manually by the researcher after
+    inspection of a molecular model and available experimental data. An example
+    of what such a file should look like is provided in the :file:`brer/data`
+    directory of the installed package or
+    `in the source <https://github.com/kassonlab/brer-md/tree/main/src/brer/data>`__
+    repository. Note that JSON is not a Python-specific file format, but
+    :py:mod:`json` may be helpful.
+
+    Parameters
+    ----------
+    tpr : str
+        path (or paths) to tpr input. Must be compatible with the GROMACS version
+        providing gmxapi.
+    ensemble_dir : str
+        path to top directory which contains the full ensemble.
+    ensemble_num : int, optional
+        the ensemble member to run, by default 1
+    pairs_json : str, default="pair_data.json"
+        path to file containing *ALL* the pair metadata.
+        (A collection of serialized :py:class:`brer.pair_data.PairData` objects.)
+
+
+    """
 
     @property
     def tpr(self):
@@ -61,29 +102,6 @@ class RunConfig:
                  ensemble_dir,
                  ensemble_num: int = None,
                  pairs_json='pair_data.json'):
-        """The run configuration specifies the files and directory structure
-        used for the run. It determines whether the run is in the training,
-        convergence, or production phase, then performs the run.
-
-        Parameters
-        ----------
-        tpr : str
-            path (or paths) to tpr input. Must be compatible with the GROMACS version
-            providing gmxapi.
-        ensemble_dir : str
-            path to top directory which contains the full ensemble.
-        ensemble_num : int, optional
-            the ensemble member to run, by default 1
-        pairs_json : str, optional
-            path to file containing *ALL* the pair metadata.
-            An example of what such a file should look like is provided in the data
-            directory,
-            by default 'pair_data.json'
-
-        Note that all instances of RunConfig need the same sized array of TPR input
-        files across all ranks in an MPI ensemble because they must all be capable of
-        constructing a compatible copy of the ensemble simulation work description.
-        """
         if isinstance(tpr, (str, pathlib.Path, os.PathLike)):
             self._tprs = tuple([str(tpr)])
             self._ensemble_size = 1

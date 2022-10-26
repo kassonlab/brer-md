@@ -77,7 +77,7 @@ source_suffix = '.rst'
 exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+# pygments_style = None
 
 default_role = 'any'
 
@@ -126,8 +126,10 @@ extlinks = {'issue': ('https://github.com/kassonlab/brer-md/issues/%s',
             'Issue': ('https://github.com/kassonlab/brer-md/issues/%s',
                       'Issue #%s')}
 
-# -- Extension configuration -------------------------------------------------
+# -- Autodoc extension configuration -------------------------------------------------
+# Ref https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#configuration
 autoclass_content = 'both'
+autodoc_typehints = 'description'
 
 # -- Options for intersphinx extension ---------------------------------------
 
@@ -143,3 +145,20 @@ intersphinx_mapping = {
 todo_include_todos = False
 # Override from the command line with `-D todo_include_todos=1`.
 # E.g. `cd docs; sphinx-build -b html -D todo_include_todos=1 source _build/html`
+
+# Napoleon settings
+# Ref https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html#configuration
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+# napoleon_include_init_with_doc = False
+# napoleon_include_private_with_doc = False
+# napoleon_include_special_with_doc = True
+# napoleon_use_admonition_for_examples = False
+# napoleon_use_admonition_for_notes = False
+# napoleon_use_admonition_for_references = False
+# napoleon_use_ivar = False
+# napoleon_use_param = True
+# napoleon_use_rtype = True
+# napoleon_preprocess_types = False
+# napoleon_type_aliases = None
+# napoleon_attr_annotations = True
