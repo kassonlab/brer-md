@@ -49,9 +49,9 @@ class PairData:
     name: str = dataclasses.field(**field_kwargs)
     """Identifier for the pair of sites on the molecule.
     
-    Conventionally, this is a string constructed from the two integer indices
-    of relevant atoms in the molecular model that best correspond to the
-    labeled sites of interest.
+    This string is chosen by the researcher. For example, the name may
+    include identifiers for the two residues in a scheme that can be easily
+    cross-referenced with experimental data.
     """
 
     bins: List[float] = dataclasses.field(**field_kwargs)
