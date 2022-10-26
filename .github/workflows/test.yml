@@ -225,17 +225,30 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         fail_ci_if_error: true
+    - name: Docs preview
+      run: |
+        . $HOME/venv/bin/activate
+        pip install -r docs/requirements.txt
+        TODO_OPTIONS="-D todo_include_todos=1"
+        SPHINX_OPTIONS="${TODO_OPTIONS} -D html_theme_options.source_branch=${GITHUB_HEAD_REF:-main}"
+        (cd docs && sphinx-build -b html ${SPHINX_OPTIONS} source _build/html)
     - name: Docs
       if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
       run: |
         . $HOME/venv/bin/activate
-        pip install sphinx sphinx-rtd-theme
         pip install -r docs/requirements.txt
         export GITHUB_ACTOR=$GITHUB_ACTOR
         export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
         export GITHUB_REPOSITORY=$GITHUB_REPOSITORY
         bash -x ./ci_scripts/docs/buildsite.sh
-    - name: "Upload artifacts"
+    - name: "Upload documentation artifacts"
+      if: success()
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ github.job }}-${{ env.GROMACS }}
+        path: |
+          docs/_build/html/
+    - name: "Upload artifacts for failure"
       if: failure()
       uses: actions/upload-artifact@v3
       with:
