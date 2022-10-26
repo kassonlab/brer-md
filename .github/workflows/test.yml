@@ -245,7 +245,7 @@ jobs:
       if: success()
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ github.job }}-${{ env.GROMACS }}
+        name: brer-docs-${{ github.job }}-${{ env.GROMACS }}
         path: |
           docs/_build/html/
     - name: "Upload artifacts for failure"
