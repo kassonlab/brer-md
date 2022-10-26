@@ -12,10 +12,14 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath('../'))
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('../'))
 
+# The BRER project documentation uses autodoc to extract docstrings from the
+# compiled brer.md extension. For this to work, the package should be installed
+# in the current Python environment. An "editable" install (`pip install -e ...`)
+# should suffice.
 
 # -- Project information -----------------------------------------------------
 
@@ -51,7 +55,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+# templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -81,13 +85,18 @@ default_role = 'any'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = "furo"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
-# html_theme_options = {}
+# Ref: https://pradyunsg.me/furo/customisation/
+html_theme_options = {
+    # Add an "edit" button to the rendered web pages.
+    "source_repository": "https://github.com/kassonlab/brer-md/",
+    "source_branch": "main",
+    "source_directory": "docs/source/",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -108,7 +117,7 @@ html_theme = 'sphinx_rtd_theme'
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'runBRERdoc'
+htmlhelp_basename = 'BRERdoc'
 
 # -- options for extlinks extension -
 extlinks = {'issue': ('https://github.com/kassonlab/brer-md/issues/%s',
