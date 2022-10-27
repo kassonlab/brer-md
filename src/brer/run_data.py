@@ -17,34 +17,17 @@ See Also
 """
 import dataclasses
 import json
-import sys
-import typing
 import warnings
 from dataclasses import dataclass
 from dataclasses import field
 
+from ._compat import dataclass_slots
+from ._compat import List
+from ._compat import MutableMapping
 from .pair_data import PairData
 
-if sys.version_info.major > 3 or sys.version_info.minor >= 9:
-    List = list
-else:
-    from typing import List
 
-# In Python >= 3.10, the *slots* option to dataclasses will help keep fields
-# from accidentally getting added to instances.
-if sys.version_info.major == 3 and sys.version_info.minor < 10:
-    __dataclass_has_slots = False
-else:
-    assert sys.version_info.major >= 3
-    __dataclass_has_slots = True
-
-if __dataclass_has_slots:
-    dataclass_kwargs = {'slots': True}
-else:
-    dataclass_kwargs = {}
-
-
-@dataclass(**dataclass_kwargs)
+@dataclass(**dataclass_slots)
 class GeneralParams:
     """Store the parameters shared by all restraints in a single simulation.
 
@@ -71,7 +54,7 @@ class GeneralParams:
     tolerance: float = 0.25
 
 
-@dataclass(**dataclass_kwargs)
+@dataclass(**dataclass_slots)
 class PairParams:
     """Stores the parameters that are unique to a specific restraint.
 
@@ -110,7 +93,7 @@ class RunData:
         """The full set of metadata for a single BRER run include both the
         general parameters and the pair-specific parameters."""
         self.general_params = GeneralParams()
-        self.pair_params: typing.MutableMapping[str, PairParams] = {}
+        self.pair_params: MutableMapping[str, PairParams] = {}
         self.__names = []
 
     def set(self, name=None, **kwargs):
