@@ -53,6 +53,9 @@ class GeneralParams:
     .. versionadded:: 2.0
         The *end_time* parameter.
 
+    .. versionchanged:: 2.0
+        *ensemble_num* now defaults to 0 for consistency with :py:class:`~brer.run_config.RunConfig`
+
     Update general parameters before a call to
     :py:meth:`brer.run_config.RunConfig.run()` by calling
     :py:meth:`brer.run_data.RunData.set()` without a *name* argument.
@@ -60,7 +63,7 @@ class GeneralParams:
     name: str = field(init=False, default='general')
     A: float = 50.
     end_time: float = 0.
-    ensemble_num: int = 1
+    ensemble_num: int = 0
     iteration: int = 0
     num_samples: int = 50
     phase: str = 'training'
