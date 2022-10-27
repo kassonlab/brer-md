@@ -250,33 +250,6 @@ class RunData:
             'pair parameters': pair_param_dict
         }
 
-    # def update(self, data: dict):
-    #     """Loads metadata into the class from a dictionary.
-    #
-    #     .. versionchanged:: 2.0
-    #
-    #         Renamed from ``from_dictionary``
-    #
-    #     Parameters
-    #     ----------
-    #     data : dict
-    #         RunData metadata as a dictionary.
-    #
-    #
-    #     The structure of *data* is expected to follow that of `as_dictionary()`.
-    #     """
-    #     _replacements = data['general parameters'].copy()
-    #     del _replacements['name']
-    #     self.general_params: GeneralParams = dataclasses.replace(self.general_params,
-    #                                                              **_replacements)
-    #     for name in data['pair parameters']:
-    #         # Check our assumption about the redundancy of *name*
-    #         assert data['pair parameters'][name]['name'] == name
-    #         if name not in self.pair_params:
-    #             raise ValueError(f'Pair {name} cannot be added after initializations.')
-    #         self.pair_params[name] = dataclasses.replace(self.pair_params[name], **data['pair
-    #         parameters'][name])
-
     def save_config(self, fnm='state.json'):
         """Saves the run parameters to a log file.
 
