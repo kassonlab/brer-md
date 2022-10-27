@@ -84,8 +84,8 @@ class RunConfig:
         providing gmxapi.
     ensemble_dir : str
         path to top directory which contains the full ensemble.
-    ensemble_num : int, optional
-        the ensemble member to run, by default 1
+    ensemble_num : int, default=0
+        the ensemble member to run
     pairs_json : str, default="pair_data.json"
         path to file containing *ALL* the pair metadata.
         (A collection of serialized :py:class:`brer.pair_data.PairData` objects.)
@@ -126,13 +126,12 @@ class RunConfig:
             self._communicator = communicator
             self._rank = communicator.Get_rank()
 
-        # WARNING: Previous behavior defaulted to ensemble_num=1
         if ensemble_num is None:
             ensemble_num = self._rank
         else:
             if self._communicator is not None:
                 # Greater future flexibility is described at
-                # https://github.com/kassonlab/run_brer/issues/18
+                # https://github.com/kassonlab/brer-md/issues/7
                 raise TypeError(
                     'RunConfig does not allow *ensemble_num* with mpi4py ensembles.')
 
