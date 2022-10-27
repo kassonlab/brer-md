@@ -8,7 +8,7 @@ the package.
 * Dataclasses allow tighter control in Python 3.10
 
 """
-__all__ = ['List', 'MutableMapping', 'dataclass_kw_only', 'dataclass_slots']
+__all__ = ['Iterable', 'List', 'Mapping', 'MutableMapping', 'dataclass_kw_only', 'dataclass_slots']
 
 import collections.abc
 import sys
@@ -26,8 +26,12 @@ else:
     from typing import List
 
 if sys.version_info.major > 3 or sys.version_info.minor >= 9:
+    Iterable = collections.abc.Iterable
+    Mapping = collections.abc.Mapping
     MutableMapping = collections.abc.MutableMapping
 else:
+    Iterable = typing.Iterable
+    Mapping = typing.Mapping
     MutableMapping = typing.MutableMapping
 
 dataclass_kw_only: collections.abc.Mapping
