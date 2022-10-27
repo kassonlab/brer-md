@@ -180,5 +180,5 @@ def test_mpi_ensemble(tmpdir, pair_data_file, simulation_input):
         rc.run(threads=4, max_hours=0.001)
 
         if comm.Get_size() > 1:
-            # TODO(#7): Confirm that we actually ran different ensemble members.
+            # TODO(https://github.com/kassonlab/run_brer/issues/7): Confirm that we actually ran different ensemble members.
             ...
