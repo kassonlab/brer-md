@@ -8,28 +8,12 @@ BRER iteration.
 """
 import dataclasses
 import json
-import sys
 
 import numpy as np
 
-from brer.metadata import MultiMetaData
-
-if sys.version_info.major > 3 or sys.version_info.minor >= 9:
-    List = list
-else:
-    from typing import List
-
-# We are trying to reduce ambiguity by confirming that the `name` field is often
-# redundant with a key used to store such an object. To that end, we are trying
-# to be more mindful of how these objects are constructed. We will try to prevent
-# some previous usage patterns in which data structures were initialized with a
-# positional *name* argument, which was then overwritten by a subsequent *set()*.
-# Dataclass init arguments can be provided positionally in the order in which
-# fields are defined, unless *kw_only=True* (after Py 3.10).
-if sys.version_info.major >= 3 and sys.version_info.minor >= 10:
-    field_kwargs = {'kw_only': True}
-else:
-    field_kwargs = {}
+from ._compat import dataclass_kw_only
+from ._compat import List
+from .metadata import MultiMetaData
 
 
 @dataclasses.dataclass(frozen=True)
@@ -46,7 +30,7 @@ class PairData:
     # Historically, *name* has sometimes been provided as a positional argument,
     # but this led to ambiguity in the source of the final value of the field.
     # We define the *name* field first in case we overlook some legacy usage.
-    name: str = dataclasses.field(**field_kwargs)
+    name: str = dataclasses.field(**dataclass_kw_only)
     """Identifier for the pair of sites on the molecule.
     
     This string is chosen by the researcher. For example, the name may
@@ -54,20 +38,20 @@ class PairData:
     cross-referenced with experimental data.
     """
 
-    bins: List[float] = dataclasses.field(**field_kwargs)
+    bins: List[float] = dataclasses.field(**dataclass_kw_only)
     """Histogram edges for the distance distribution data.
     
     (Simulation length units.)
     """
 
-    distribution: List[float] = dataclasses.field(**field_kwargs)
+    distribution: List[float] = dataclasses.field(**dataclass_kw_only)
     """Site distance distribution.
     
     Histogram values (weights or relative probabilities) for distances between
     the sites. (Generally derived from experimental data.)
     """
 
-    sites: List[int] = dataclasses.field(**field_kwargs)
+    sites: List[int] = dataclasses.field(**dataclass_kw_only)
     """Indices defining the distance vector.
     
     A list of indices for sites in the molecular model. The first and last

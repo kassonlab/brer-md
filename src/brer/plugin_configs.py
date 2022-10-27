@@ -3,30 +3,13 @@
 Each class corresponds to ONE restraint since gmxapi plugins each correspond to one restraint.
 """
 import dataclasses
-import sys
 import typing
 from abc import ABC
 from abc import abstractmethod
 from functools import singledispatchmethod
 
-assert sys.version_info.major >= 3
-
-if sys.version_info.major > 3 or sys.version_info.minor >= 9:
-    List = list
-else:
-    from typing import List
-
-# We are trying to reduce ambiguity by confirming that the `name` field is often
-# redundant with a key used to store such an object. To that end, we are trying
-# to be more mindful of how these objects are constructed. We will try to prevent
-# some previous usage patterns in which data structures were initialized with a
-# positional *name* argument, which was then overwritten by a subsequent *set()*.
-# Dataclass init arguments can be provided positionally in the order in which
-# fields are defined, unless *kw_only=True* (after Py 3.10).
-if sys.version_info.major > 3 or sys.version_info.minor >= 10:
-    field_kwargs = {'kw_only': True}
-else:
-    field_kwargs = {}
+from ._compat import dataclass_kw_only
+from ._compat import List
 
 
 def _get_workelement() -> typing.Type:
@@ -52,9 +35,9 @@ class PluginConfig(ABC):
     Provide base class functionality and required interface to build ``training``,
     ``convergence``, and ``production`` phase pluggable MD potentials.
     """
-    name: str = dataclasses.field(init=False, **field_kwargs)
-    sites: List[int] = dataclasses.field(**field_kwargs)
-    logging_filename: str = dataclasses.field(**field_kwargs)
+    name: str = dataclasses.field(init=False, **dataclass_kw_only)
+    sites: List[int] = dataclasses.field(**dataclass_kw_only)
+    logging_filename: str = dataclasses.field(**dataclass_kw_only)
 
     @abstractmethod
     def build_plugin(self):
@@ -95,13 +78,13 @@ class TrainingPluginConfig(PluginConfig):
 
     See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
     """
-    name: str = dataclasses.field(init=False, default='training', **field_kwargs)
+    name: str = dataclasses.field(init=False, default='training', **dataclass_kw_only)
 
-    A: float = dataclasses.field(**field_kwargs)
-    num_samples: int = dataclasses.field(**field_kwargs)
-    target: float = dataclasses.field(**field_kwargs)
-    tau: float = dataclasses.field(**field_kwargs)
-    tolerance: float = dataclasses.field(**field_kwargs)
+    A: float = dataclasses.field(**dataclass_kw_only)
+    num_samples: int = dataclasses.field(**dataclass_kw_only)
+    target: float = dataclasses.field(**dataclass_kw_only)
+    tau: float = dataclasses.field(**dataclass_kw_only)
+    tolerance: float = dataclasses.field(**dataclass_kw_only)
 
     def build_plugin(self):
         """Builds training phase plugin for BRER simulations.
@@ -130,12 +113,12 @@ class ConvergencePluginConfig(PluginConfig):
 
     See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
     """
-    name: str = dataclasses.field(init=False, default='convergence', **field_kwargs)
+    name: str = dataclasses.field(init=False, default='convergence', **dataclass_kw_only)
 
-    alpha: float = dataclasses.field(**field_kwargs)
-    sample_period: float = dataclasses.field(**field_kwargs)
-    target: float = dataclasses.field(**field_kwargs)
-    tolerance: float = dataclasses.field(**field_kwargs)
+    alpha: float = dataclasses.field(**dataclass_kw_only)
+    sample_period: float = dataclasses.field(**dataclass_kw_only)
+    target: float = dataclasses.field(**dataclass_kw_only)
+    tolerance: float = dataclasses.field(**dataclass_kw_only)
 
     def build_plugin(self):
         """Builds convergence phase plugin for BRER simulations.
@@ -170,11 +153,11 @@ class ProductionPluginConfig(PluginConfig):
 
     See https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407 for details.
     """
-    name: str = dataclasses.field(init=False, default='production', **field_kwargs)
+    name: str = dataclasses.field(init=False, default='production', **dataclass_kw_only)
 
-    alpha: float = dataclasses.field(**field_kwargs)
-    sample_period: float = dataclasses.field(**field_kwargs)
-    target: float = dataclasses.field(**field_kwargs)
+    alpha: float = dataclasses.field(**dataclass_kw_only)
+    sample_period: float = dataclasses.field(**dataclass_kw_only)
+    target: float = dataclasses.field(**dataclass_kw_only)
 
     def build_plugin(self):
         """Builds production phase plugin for BRER simulations.
