@@ -3,7 +3,6 @@ __all__ = ('RunConfig',)
 
 import collections.abc
 import dataclasses
-import json
 import logging
 import os
 import pathlib
@@ -13,13 +12,15 @@ import warnings
 from typing import Sequence
 from typing import Union
 
+from .pair_data import PairDataCollection
+from .pair_data import sample_all
+
 try:
     import mpi4py.MPI as _MPI
 except (ImportError, ModuleNotFoundError):
     _MPI = None
 
 from .directory_helper import DirectoryHelper
-from .pair_data import MultiPair
 from .plugin_configs import ConvergencePluginConfig
 from .plugin_configs import PluginConfig
 from .plugin_configs import ProductionPluginConfig
@@ -49,6 +50,23 @@ except (ImportError, ModuleNotFoundError):
         WorkElement = _gmxapi_missing
 
 
+def check_consistency(*, data: PairDataCollection, state: RunData):
+    """Check for mismatched data sources.
+
+    Returns
+    -------
+    bool
+        True if pairs match across sources, False otherwise.
+
+    """
+    if set(data.keys()) != set(state.pair_params.keys()):
+        return False
+    for name in data:
+        if data[name].sites != state.pair_params[name].sites:
+            return False
+    return True
+
+
 class RunConfig:
     """Run configuration for single BRER ensemble member.
 
@@ -61,21 +79,7 @@ class RunConfig:
     constructing a compatible copy of the ensemble simulation work description.
 
     Source data for the pair restraints is provided through a JSON file
-    (*pairs_json*). The JSON file contains one *JSON object* for each
-    :py:class:`~brer.pair_data.PairData` to be read.
-
-    For each object, the object key is assumed to be the
-    :py:data:`~brer.pair_data.PairData.name` of a pair.
-    The JSON object contents are used to initialize a
-    :py:class:`~brer.pair_data.PairData` for each named pair.
-
-    The data file is usually constructed manually by the researcher after
-    inspection of a molecular model and available experimental data. An example
-    of what such a file should look like is provided in the :file:`brer/data`
-    directory of the installed package or
-    `in the source <https://github.com/kassonlab/brer-md/tree/main/src/brer/data>`__
-    repository. Note that JSON is not a Python-specific file format, but
-    :py:mod:`json` may be helpful.
+    (*pairs_json*). See :py:class:`brer.pair_data.PairDataCollection` for details.
 
     Parameters
     ----------
@@ -88,7 +92,7 @@ class RunConfig:
         the ensemble member to run
     pairs_json : str, default="pair_data.json"
         path to file containing *ALL* the pair metadata.
-        (A collection of serialized :py:class:`brer.pair_data.PairData` objects.)
+        (A serialized :py:class:`brer.pair_data.PairDataCollection`.)
 
 
     """
@@ -139,37 +143,32 @@ class RunConfig:
             raise RuntimeError(f'Ensemble directory {ensemble_dir} does not exist!')
         self.ens_dir = ensemble_dir
 
-        # a list of identifiers of the residue-residue pairs that will be restrained
-        self.__names = []
-
         # Load the pair data from a json. Use this to set up the run metadata
-        self.pairs = MultiPair()
-        self.pairs.read_from_json(pairs_json)
+        self.pairs = PairDataCollection.create_from(pairs_json)
         # use the same identifiers for the pairs here as those provided in the pair
         # metadata
         # file this prevents mixing up pair data amongst the different pairs (i.e.,
         # accidentally applying the restraints for pair 1 to pair 2.)
-        self.__names = self.pairs.names
-
-        self.run_data = RunData()
-        self.run_data.set(ensemble_num=ensemble_num)
+        self.__names = tuple(name for name in self.pairs)
+        """A list of identifiers of the residue-residue pairs that will be restrained."""
 
         member_directory = os.path.join(self.ens_dir, f'mem_{ensemble_num}')
         if not os.path.exists(member_directory):
             os.mkdir(member_directory)
 
         self.state_json = '{}/mem_{}/state.json'.format(ensemble_dir,
-                                                        self.run_data.get('ensemble_num'))
+                                                        ensemble_num)
         # If we're in the middle of a run, load the BRER checkpoint file and continue from
         # the current state.
         if os.path.exists(self.state_json):
-            self.run_data.from_dictionary(json.load(open(self.state_json)))
-        # Otherwise, populate the state information using the pre-loaded pair data.
-        # Then save
-        # the current state.
+            self.run_data = RunData.create_from(self.state_json, ensemble_num=ensemble_num)
+            if not check_consistency(data=self.pairs, state=self.run_data):
+                raise RuntimeError('Checkpoint data inconsistent with pair data source.')
+        # Otherwise, populate the state information using the provided pair data
+        # and default parameter values.
+        # Then save the current state.
         else:
-            for pd in self.pairs:
-                self.run_data.from_pair_data(pd)
+            self.run_data = RunData.create_from(self.pairs, ensemble_num=ensemble_num)
             self.run_data.save_config(self.state_json)
 
         # List of plugins
@@ -222,8 +221,6 @@ class RunConfig:
         """
 
         # One plugin per restraint.
-        # TODO: what is the expected behavior when a list of plugins exists? Probably
-        #  wipe them.
         self.__plugins = []
         # For each pair-wise restraint, populate the plugin with data: both the
         # "general" data and
@@ -336,7 +333,7 @@ class RunConfig:
                     key))
 
         # do re-sampling
-        targets = self.pairs.re_sample()
+        targets = sample_all(self.pairs)
         self._logger.info('New targets: {}'.format(targets))
         for name in self.__names:
             self.run_data.set(name=name, target=targets[name])
@@ -400,8 +397,6 @@ class RunConfig:
             raise RuntimeError('Invalid gmxapi Context: missing "potentials" attribute.')
 
         for i in range(len(self.__names)):
-            # TODO: ParallelArrayContext.potentials needs to be declared to avoid IDE
-            #  warnings.
             # noinspection PyUnresolvedReferences
             current_name = sites_to_name[context.potentials[i].name]
             # In the future runs (convergence, production) we need the ABSOLUTE VALUE
@@ -624,7 +619,7 @@ class RunConfig:
                     'Training alpha value has not converged.')
         elif phase == 'convergence':
             context = self.__converge(tpr_file=tpr_file, **kwargs)
-            # TODO(#18): Investigate for robustness in the case of
+            # TODO(https://github.com/kassonlab/run_brer/issues/18): Investigate for robustness in the case of
             #  batch workflows and MPI-enabled GROMACS.
             if all(getattr(potential, 'stop_called', True) for potential in context.potentials):
                 self.run_data.set(phase='production')

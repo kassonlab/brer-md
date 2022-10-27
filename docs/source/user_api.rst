@@ -15,11 +15,6 @@ BRER parameters
 ------------------------
 
 .. automodule:: brer.pair_data
-
-.. autoclass:: brer.pair_data.PairData
-    :members:
-
-.. autoclass:: brer.pair_data.MultiPair
     :members:
 
 *run_data* module
