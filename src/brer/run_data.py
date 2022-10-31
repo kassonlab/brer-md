@@ -77,7 +77,7 @@ class PairParams:
     :py:meth:`brer.run_data.RunData.set()`, providing the pair name with the
     *name* argument.
 
-    *logging_filename* is derived from the pair *name* (use-provided;
+    *logging_filename* is derived from the pair *name* (user-provided;
     usually derived from the residue IDs defining the pair).
     Overriding the default produces a warning.
 
@@ -121,7 +121,7 @@ class RunData:
     because of potential confusion with concepts like energetic, conformational,
     or thermodynamic state, but we use the filename :file:`state.json` for the
     serialized object. RunData instances can be serialized to a file with
-    :py:meth:`~brer.run_data.RunData.save()` or deserialized (restored from a file)
+    :py:meth:`~brer.run_data.RunData.save_config()` or deserialized (restored from a file)
     with :py:meth:`~brer.run_data.RunData.create_from()`.
 
 
@@ -167,9 +167,8 @@ class RunData:
 
         Parameters
         ----------
-        name : str, optional
-            restraint name.
-            These are the same identifiers that are used in the RunConfig, by default None
+        name : str, default=None
+            Restraint name, as used in the `brer.run_config.RunConfig`.
 
         Raises
         ------
@@ -204,19 +203,21 @@ class RunData:
             raise ValueError(f'{key} is not a valid parameter.')
 
     def get(self, key, *, name=None):
-        """get either a general or a pair-specific parameter.
+        """Get either a general or a pair-specific parameter.
 
         Parameters
         ----------
         key : str
-            the parameter to get.
-        name : str
-            if getting a pair-specific parameter, specify the restraint name. (Default
-            value = None)
+            The parameter to get.
+        name : str, default=None
+            If getting a pair-specific parameter, specify the restraint name.
 
         Returns
         -------
+        typing.Any
             the parameter value.
+
+
         """
         if name:
             return getattr(self.pair_params[name], key)
@@ -238,6 +239,7 @@ class RunData:
         dict
             hierarchical dictionary of metadata
 
+
         For historical reasons, the top level dictionary keys are not exact string
         matches for the object attributes.
 
@@ -255,8 +257,8 @@ class RunData:
 
         Parameters
         ----------
-        fnm : str, optional
-            log file for state parameters, by default 'state.json'
+        fnm : str, default='state.json'
+            Log file for state parameters.
         """
         with open(fnm, 'w') as fh:
             json.dump(self.as_dictionary(), fh, indent=4)
