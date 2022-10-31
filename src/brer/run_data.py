@@ -167,9 +167,8 @@ class RunData:
 
         Parameters
         ----------
-        name : str, optional
-            restraint name.
-            These are the same identifiers that are used in the RunConfig, by default None
+        name : str, default=None
+            Restraint name, as used in the `brer.run_config.RunConfig`.
 
         Raises
         ------
@@ -209,10 +208,9 @@ class RunData:
         Parameters
         ----------
         key : str
-            the parameter to get.
-        name : str
-            if getting a pair-specific parameter, specify the restraint name. (Default
-            value = None)
+            The parameter to get.
+        name : str, default=None
+            If getting a pair-specific parameter, specify the restraint name.
 
         Returns
         -------
@@ -259,8 +257,8 @@ class RunData:
 
         Parameters
         ----------
-        fnm : str, optional
-            log file for state parameters, by default 'state.json'
+        fnm : str, default='state.json'
+            Log file for state parameters.
         """
         with open(fnm, 'w') as fh:
             json.dump(self.as_dictionary(), fh, indent=4)
