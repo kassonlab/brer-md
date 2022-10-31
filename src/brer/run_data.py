@@ -121,7 +121,7 @@ class RunData:
     because of potential confusion with concepts like energetic, conformational,
     or thermodynamic state, but we use the filename :file:`state.json` for the
     serialized object. RunData instances can be serialized to a file with
-    :py:meth:`~brer.run_data.RunData.save()` or deserialized (restored from a file)
+    :py:meth:`~brer.run_data.RunData.save_config()` or deserialized (restored from a file)
     with :py:meth:`~brer.run_data.RunData.create_from()`.
 
 
