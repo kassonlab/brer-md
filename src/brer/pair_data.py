@@ -8,12 +8,16 @@ BRER iteration.
 """
 import dataclasses
 import json
+import os
+import pathlib
+import typing
+from typing import Iterator
 
 import numpy as np
 
 from ._compat import dataclass_kw_only
 from ._compat import List
-from .metadata import MultiMetaData
+from ._compat import Mapping
 
 
 @dataclasses.dataclass(frozen=True)
@@ -69,61 +73,76 @@ class PairData:
     """
 
 
-class MultiPair(MultiMetaData):
-    """Single class for handling multiple pair data.
+class PairDataCollection(Mapping[str, PairData]):
+    """Data for all the restrained pairs in a BRER simulation.
 
-    Handles resampling of targets.
+    Source data for the pair restraints is provided through a JSON file
+    (*pairs_json*). The JSON file contains one *JSON object* for each
+    `PairData` to be read.
+
+    For each object, the object key is assumed to be the
+    `PairData.name` of a pair.
+    The JSON object contents are used to initialize a
+    `PairData` for each named pair.
+
+    The data file is usually constructed manually by the researcher after
+    inspection of a molecular model and available experimental data. An example
+    of what such a file should look like is provided in the :file:`brer/data`
+    directory of the installed package or
+    `in the source <https://github.com/kassonlab/brer-md/tree/main/src/brer/data>`__
+    repository.
+
+    Note that JSON is not a Python-specific file format, but
+    :py:mod:`json` may be helpful.
+
+    A *PairDataCollection* can be initialized from a sequence of `PairData`
+    objects, or created from a JSON pair data file by using `create_from()`.
+
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *pairs: PairData):
+        if len(pairs) < 1 or not all(isinstance(pair, PairData) for pair in pairs):
+            raise TypeError('Must be initialized with one or more PairData instances.')
+        self._pairs = {pair.name: pair for pair in pairs}
 
-    def get_as_single_dataset(self):
-        single_dataset = {}
-        for metadata in self._metadata_list:
-            single_dataset[metadata.name] = dataclasses.asdict(metadata)
-        return single_dataset
+    def __getitem__(self, key: str) -> PairData:
+        return self._pairs[key]
 
-    def read_from_json(self, filename='state.json'):
-        """Reads pair data from json file. For an example file, see
-        pair_data.json in the data directory.
+    def __iter__(self) -> Iterator[str]:
+        yield from self._pairs
+
+    def __len__(self) -> int:
+        return len(self._pairs)
+
+    @staticmethod
+    def create_from(filename: typing.Union[str, os.PathLike, pathlib.Path]):
+        """Reads pair data from json file.
 
         Parameters
         ----------
-        filename : str, optional
-            filename of the pair data, by default 'state.json'
+        filename :
+            filename of the pair data
+
+
         """
-        self._metadata_list = []
         with open(filename, 'r') as fh:
-            data = json.load(fh)
-        for name, metadata in data.items():
-            # Schema check: @eirrgang _thinks_ these values are intentionally
-            # redundant, but we should check for a while until we are sure. Then
-            # we can try to make a stronger enforcement.
-            assert name == metadata['name']
-            # Note that in earlier versions of the software, the PairData object
-            # was initialized with the name from data.keys() and then
-            # overwritten with a value from data.values() by a subsequent
-            # `set()`.
-            metadata_obj = PairData(**metadata)
-            self._metadata_list.append(metadata_obj)
+            pairs = PairDataCollection(*(PairData(**obj) for obj in json.load(fh).values()))
+        return pairs
 
-    def re_sample(self):
-        """Re-sample from the joint space. Do normalization just in case the
-        data aren't normalized already.
+    def as_dict(self):
+        """Encode the full collection as a single Python dictionary."""
+        return {pair.name: dataclasses.asdict(pair) for pair in self._pairs.values()}
 
-        Returns
-        -------
-        dict
-            dictionary of targets, drawn from DEER distributions.
-        """
-        answer = {}
-        for pair_data in self._metadata_list:
-            name = pair_data.name
-            distribution = pair_data.distribution
-            bins = pair_data.bins
 
-            normalized = np.divide(distribution, np.sum(distribution))
-            answer[name] = np.random.choice(bins, p=normalized)
+def sample(pair_data: PairData):
+    """Choose a bin edge according to the probability distribution."""
+    distribution = pair_data.distribution
+    bins = pair_data.bins
 
-        return answer
+    normalized = np.divide(distribution, np.sum(distribution))
+    return np.random.choice(bins, p=normalized)
+
+
+def sample_all(pairs: PairDataCollection):
+    """Get a mapping of pair names to freshly sampled targets."""
+    return {name: sample(pair) for name, pair in pairs.items()}

@@ -16,8 +16,6 @@ import typing
 
 assert sys.version_info.major >= 3
 _T = typing.TypeVar('_T')
-_KT = typing.TypeVar('_KT')
-_VT_co = typing.TypeVar('_VT_co', covariant=True)
 
 if sys.version_info.major > 3 or sys.version_info.minor >= 9:
     List: typing.Generic[_T] = list

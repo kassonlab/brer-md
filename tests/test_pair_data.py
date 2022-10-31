@@ -1,35 +1,30 @@
 """Unit tests and regression for PairData classes."""
-from brer.pair_data import MultiPair
+import dataclasses
+import json
+
 from brer.pair_data import PairData
+from brer.pair_data import PairDataCollection
+from brer.pair_data import sample_all
 
 
-def test_pair_data(raw_pair_data, pair_data_file):
-    """Ensures that multipair constructs multiple PairData objects."""
-    mp = MultiPair()
-    mp.read_from_json(pair_data_file)
+def test_pair_data_collection(raw_pair_data, pair_data_file):
+    """Ensure correct structure and typing of PairData collections."""
+    with open(pair_data_file, 'r') as fh:
+        pairs = PairDataCollection(*(PairData(**obj) for obj in json.load(fh).values()))
 
-    assert mp.get_as_single_dataset() == raw_pair_data
-    for name in mp.names:
-        assert isinstance(mp[mp.name_to_id(name)], PairData)
+    for name in pairs:
+        assert isinstance(pairs[name], PairData)
 
-    samples = mp.re_sample()
-    assert list(samples.keys()) == mp.names
-
-# def test_pair_data(multi_pair_data, raw_pair_data):
-#     """Ensures that multipair constructs multiple PairData objects.
-
-#     Parameters
-#     ----------
-#     multi_pair_data : [type]
-#         [description]
-#     raw_pair_data : [type]
-#         [description]
-#     """
-#     assert (multi_pair_data.get_as_single_dataset() == raw_pair_data)
-#     for name in multi_pair_data.get_names():
-#         assert (type(
-#             multi_pair_data[multi_pair_data.name_to_id(name)]) == PairData)
+    assert {pair.name: dataclasses.asdict(pair) for pair in pairs.values()} == raw_pair_data
+    assert pairs.as_dict() == raw_pair_data
+    assert pairs == PairDataCollection.create_from(pair_data_file)
 
 
-# def test_resampling(multi_pair_data):
-#     print(multi_pair_data.re_sample())
+def test_pair_data_helpers(pair_data_file):
+    """Test the module functions for accessing PairData and PairDataCollection."""
+    pairs = PairDataCollection.create_from(pair_data_file)
+    samples = sample_all(pairs)
+    assert set(samples.keys()) == set(pairs.keys())
+    for pair in pairs:
+        assert samples[pair] >= min(pairs[pair].bins)
+        assert samples[pair] <= max(pairs[pair].bins)

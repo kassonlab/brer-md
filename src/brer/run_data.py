@@ -15,16 +15,21 @@ See Also
 :py:mod:`brer.plugin_configs`
 
 """
+import collections.abc
 import dataclasses
 import json
+import os
+import pathlib
+import typing
 import warnings
 from dataclasses import dataclass
 from dataclasses import field
 
 from ._compat import dataclass_slots
 from ._compat import List
+from ._compat import Mapping
 from ._compat import MutableMapping
-from .pair_data import PairData
+from .pair_data import PairDataCollection
 
 
 @dataclass(**dataclass_slots)
@@ -71,6 +76,16 @@ class PairParams:
     :py:meth:`brer.run_config.RunConfig.run()` by calling
     :py:meth:`brer.run_data.RunData.set()`, providing the pair name with the
     *name* argument.
+
+    *logging_filename* is derived from the pair *name* (use-provided;
+    usually derived from the residue IDs defining the pair).
+    Overriding the default produces a warning.
+
+    .. versionchanged:: 2.0
+
+        *sites* is required to initialize the object.
+
+
     """
     name: str
     sites: List[int]
@@ -90,17 +105,65 @@ class PairParams:
 
 
 class RunData:
-    """Store (and manipulate, to a lesser extent) all the metadata for a BRER run."""
+    """Store (and manipulate, to a lesser extent) all the metadata for a BRER run.
 
-    def __init__(self):
-        """The full set of metadata for a single BRER run include both the
-        general parameters and the pair-specific parameters."""
-        self.general_params = GeneralParams()
-        self.pair_params: MutableMapping[str, PairParams] = {}
-        self.__names = []
+    The full set of metadata for a single BRER run includes both the general
+    parameters and the pair-specific parameters.
+
+    Key-value pairs provided to *general_params* will be used to update the
+    default values of a new :py:class:`GeneralParams` instance.
+
+    *pair_params* is a mapping of named `PairParams` instances.
+
+    Both general and pair-specific parameters may be updated with *set()*.
+
+    This is the BRER program state data structure. We avoid the name "state"
+    because of potential confusion with concepts like energetic, conformational,
+    or thermodynamic state, but we use the filename :file:`state.json` for the
+    serialized object. RunData instances can be serialized to a file with
+    :py:meth:`~brer.run_data.RunData.save()` or deserialized (restored from a file)
+    with :py:meth:`~brer.run_data.RunData.create_from()`.
+
+
+    Examples
+    --------
+    ::
+
+        ├── pair parameters
+        │   ├── name of pair 1
+        │   │   ├── alpha
+        │   │   ├── target
+        │   │   └── ...
+        │   ├── name of pair 2
+        |
+        ├── general parameters
+            ├── A
+            ├── tau
+            ├── ...
+
+
+    """
+    general_params: GeneralParams
+    pair_params: MutableMapping[str, PairParams]
+
+    def __init__(self, *,
+                 general_params: GeneralParams,
+                 pair_params: Mapping[str, PairParams]):
+        if not isinstance(general_params, GeneralParams):
+            raise ValueError('*general_params* must be a GeneralParams instance.')
+        if not all(isinstance(obj, PairParams) for obj in pair_params.values()):
+            raise ValueError('*pair_params* must be a collection of PairParams instances.')
+
+        self.general_params = general_params
+        self.pair_params = dict(**pair_params)
 
     def set(self, name=None, **kwargs):
-        """method used to set either general or a pair-specific parameter.
+        """Set either general or pair-specific parameters.
+
+        When a *name* argument is present, sets pair-specific parameters for
+        the named restraint.
+
+        When *name* is not provided, sets general parameters.
 
         Parameters
         ----------
@@ -168,27 +231,15 @@ class RunData:
                     raise e
 
     def as_dictionary(self):
-        """Get the run metadata as a heirarchical dictionary:
+        """Get the run metadata as a hierarchical dictionary.
 
         Returns
         -------
-        type
-            heirarchical dictionary of metadata
+        dict
+            hierarchical dictionary of metadata
 
-        Examples
-        --------
-
-        >>> ├── pair parameters
-        >>> │   ├── name of pair 1
-        >>> │   │   ├── alpha
-        >>> │   │   ├── target
-        >>> │   │   └── ...
-        >>> │   ├── name of pair 2
-        >>> |
-        >>> ├── general parameters
-        >>>     ├── A
-        >>>     ├── tau
-        >>>     ├── ...
+        For historical reasons, the top level dictionary keys are not exact string
+        matches for the object attributes.
 
         """
         pair_param_dict = dict(
@@ -198,39 +249,6 @@ class RunData:
             'general parameters': dataclasses.asdict(self.general_params),
             'pair parameters': pair_param_dict
         }
-
-    def from_dictionary(self, data: dict):
-        """Loads metadata into the class from a dictionary.
-
-        Parameters
-        ----------
-        data : dict
-            RunData metadata as a dictionary.
-        """
-        _replacements = data['general parameters'].copy()
-        del _replacements['name']
-        self.general_params: GeneralParams = dataclasses.replace(self.general_params,
-                                                                 **_replacements)
-        for name in data['pair parameters']:
-            # Check our assumption about the redundancy of *name*
-            assert data['pair parameters'][name]['name'] == name
-            self.pair_params[name] = PairParams(**data['pair parameters'][name])
-
-    def from_pair_data(self, pd: PairData):
-        """Load some of the run metadata from a PairData object. Useful at the
-        beginning of a run.
-
-        Parameters
-        ----------
-        pd : PairData
-            object from which metadata are loaded
-        """
-        name = pd.name
-        self.pair_params[name] = PairParams(name=name, sites=pd.sites)
-
-    def clear_pair_data(self):
-        """Removes all the pair parameters, replace with empty dict."""
-        self.pair_params.clear()
 
     def save_config(self, fnm='state.json'):
         """Saves the run parameters to a log file.
@@ -243,13 +261,70 @@ class RunData:
         with open(fnm, 'w') as fh:
             json.dump(self.as_dictionary(), fh, indent=4)
 
-    def load_config(self, fnm='state.json'):
-        """Load state parameters from file.
+    @typing.overload
+    @classmethod
+    def create_from(cls,
+                    source: typing.Union[str, os.PathLike, pathlib.Path],
+                    ensemble_num: int = None) -> 'RunData':
+        ...
+
+    @typing.overload
+    @classmethod
+    def create_from(cls, source: Mapping[str, dict], ensemble_num: int = None) -> 'RunData':
+        ...
+
+    @typing.overload
+    @classmethod
+    def create_from(cls, source: PairDataCollection, ensemble_num: int = None) -> 'RunData':
+        ...
+
+    @classmethod
+    def create_from(cls, source, *, ensemble_num: int = None):
+        """Create a new instance from provided data.
+
+        Warns if *ensemble_num* is specified but contradicts *source*.
+        If *ensemble_num* is not specified and is not found in *source*, the
+        default value is determined by :py:class:`GeneralParams`.
+
+        *source* is usually either a :file:`state.json` file or a
 
         Parameters
         ----------
-        fnm : str, optional
-            log file of state parameters, by default 'state.json'
+        source :
+            File or Python objects from which to initialize RunData.
+        ensemble_num :
+            Member index in the ensemble (if any).
+
         """
-        with open(fnm, 'r') as fh:
-            self.from_dictionary(json.load(fh))
+        if isinstance(source, (str, os.PathLike, pathlib.Path)):
+            if not os.path.exists(source):
+                raise ValueError(f'Source file not found: {source}')
+            else:
+                with open(source, 'r') as fh:
+                    data = json.load(fh)
+                return cls.create_from(source=data, ensemble_num=ensemble_num)
+        elif isinstance(source, PairDataCollection):
+            # PairParams comes from PairData names and sites and default values.
+            pair_params = {name: PairParams(name=name, sites=pair.sites) for name, pair in source.items()}
+            # GeneralParams comes from defaults
+            run_data = cls(general_params=GeneralParams(), pair_params=pair_params)
+            if ensemble_num is not None:
+                run_data.set(ensemble_num=ensemble_num)
+            return run_data
+        elif isinstance(source, collections.abc.Mapping):
+            # Check for *ensemble_num* agreement.
+            general_params = source['general parameters']
+            if 'name' in general_params:
+                del general_params['name']
+            general_params = GeneralParams(**general_params)
+            if ensemble_num is not None:
+                _source_id = general_params.ensemble_num
+                if ensemble_num != _source_id:
+                    warnings.warn(f'Caller provided ensemble_num={ensemble_num} overrides {_source_id} '
+                                  f'from {source}.')
+                    general_params.ensemble_num = ensemble_num
+            pair_params = {name: PairParams(fields['name'], sites=fields['sites']) for name, fields in
+                           source['pair parameters'].items()}
+            return RunData(general_params=general_params, pair_params=pair_params)
+        else:
+            raise ValueError(f'{source} is not a valid source of RunData.')

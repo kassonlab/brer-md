@@ -27,6 +27,7 @@ exclude_lines =
 
     # Don't complain about abstract methods, they aren't run:
     @(abc\.)?abstractmethod
+    \.\.\.
 
 ignore_errors = True
 
