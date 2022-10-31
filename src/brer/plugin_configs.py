@@ -1,6 +1,7 @@
 """Classes used to build gmxapi plugins for all phases of a BRER iteration.
 
-Each class corresponds to ONE restraint since gmxapi plugins each correspond to one restraint.
+Each class corresponds to restraint potential. Each instance corresponds to
+one restrained pair in a single simulation phase.
 """
 import dataclasses
 import typing

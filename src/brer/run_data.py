@@ -77,7 +77,7 @@ class PairParams:
     :py:meth:`brer.run_data.RunData.set()`, providing the pair name with the
     *name* argument.
 
-    *logging_filename* is derived from the pair *name* (use-provided;
+    *logging_filename* is derived from the pair *name* (user-provided;
     usually derived from the residue IDs defining the pair).
     Overriding the default produces a warning.
 
@@ -204,7 +204,7 @@ class RunData:
             raise ValueError(f'{key} is not a valid parameter.')
 
     def get(self, key, *, name=None):
-        """get either a general or a pair-specific parameter.
+        """Get either a general or a pair-specific parameter.
 
         Parameters
         ----------
@@ -216,7 +216,10 @@ class RunData:
 
         Returns
         -------
+        typing.Any
             the parameter value.
+
+
         """
         if name:
             return getattr(self.pair_params[name], key)
@@ -237,6 +240,7 @@ class RunData:
         -------
         dict
             hierarchical dictionary of metadata
+
 
         For historical reasons, the top level dictionary keys are not exact string
         matches for the object attributes.

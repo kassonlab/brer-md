@@ -74,7 +74,9 @@ class DirectoryHelper:
 
         Returns
         -------
-            the path to the specified directory 'level' as a str.
+        str
+            the path to the specified directory *level*.
+
         """
         pdict = self._param_dict
         if level == 'top':
