@@ -3,14 +3,13 @@ BRER MD
 
 |Build and test| |Documentation| |codecov|
 
-This project is hosted in a git repository at
-https://github.com/kassonlab/brer-md
+Source: https://github.com/kassonlab/brer-md
 
-Project documentation is available in the repository or at
-https://kassonlab.github.io/brer-md/.
+Documentation: https://kassonlab.github.io/brer-md/
 
 The ``brer`` Python package provides a set of scripts for running
-BRER simulations using `gmxapi <https://gmxapi.org/>`__. Details of this
+Bias-Resampling Ensemble Refinement (BRER) simulations using
+`gmxapi <https://gmxapi.org/>`__. Details of the BRER
 method may be found in:
 
 Hays, J. M., Cafiso, D. S., & Kasson, P. M. Hybrid Refinement of
