@@ -96,7 +96,7 @@ def get_requires_for_build_sdist(self, config_settings=None):
 
 # PEP 660: editable installs
 # Ref: https://peps.python.org/pep-0660/
-if not _orig.LEGACY_EDITABLE:
+if hasattr(_orig, 'LEGACY_EDITABLE') and not _orig.LEGACY_EDITABLE:
     build_editable = _orig.build_editable
     get_requires_for_build_editable = _orig.get_requires_for_build_editable
     prepare_metadata_for_build_editable = _orig.prepare_metadata_for_build_editable
