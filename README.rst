@@ -89,7 +89,7 @@ Example::
     # Version: 0.3.1
     wget https://github.com/kassonlab/brer-md/blob/main/requirements.txt
     pip install -r requirements.txt
-    pip install brer
+    pip install --no-deps --no-build-isolation brer
 
 The Python package builder will manage compilation of the C++ GROMACS client
 using `cmake
