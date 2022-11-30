@@ -11,6 +11,7 @@ import json
 import os
 import pathlib
 import typing
+import warnings
 from typing import Iterator
 
 import numpy as np
@@ -30,6 +31,15 @@ class PairData:
     Fields here correspond to the fields for each named pair
     (JSON *objects*) in a :file:`pair_data.json` file (the *pairs_json* argument
     of :py:func:`~brer.run_config.RunConfig()`).
+
+    .. versionchanged:: 2.0
+
+        When reading from
+        :file:`pair_data.json` or :file:`state.json`, the *name* used for
+        PairData comes from the object key, not from the *name* field of the object.
+        The *name* field in the serialized (JSON) representation is ignored
+        when reading, but is preserved for backward compatibility when writing.
+
     """
     # Historically, *name* has sometimes been provided as a positional argument,
     # but this led to ambiguity in the source of the final value of the field.
@@ -125,9 +135,22 @@ class PairDataCollection(Mapping[str, PairData]):
 
 
         """
+        pairs = []
         with open(filename, 'r') as fh:
-            pairs = PairDataCollection(*(PairData(**obj) for obj in json.load(fh).values()))
-        return pairs
+            for name, obj in json.load(fh).items():
+                kwargs = {}
+                for key, value in obj.items():
+                    if key == 'name':
+                        message = '*name* field is ignored from brer-md 2.0.'
+                        if name == value:
+                            warnings.warn(message, DeprecationWarning)
+                        else:
+                            message += f' Using {name} instead of {value}.'
+                            warnings.warn(message, UserWarning)
+                    else:
+                        kwargs[key] = value
+                pairs.append(PairData(name=name, **kwargs))
+        return PairDataCollection(*pairs)
 
     def as_dict(self):
         """Encode the full collection as a single Python dictionary."""

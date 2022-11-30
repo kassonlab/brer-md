@@ -1,4 +1,6 @@
 """Unit tests and regression for RunData classes."""
+import json
+import tempfile
 
 import pytest
 
@@ -19,11 +21,11 @@ def test_pair_parameters(raw_pair_data):
 
 
     """
-    for name in raw_pair_data:
-        # Check our assumption about the redundancy of 'name'.
-        assert name == raw_pair_data[name]['name']
-        pd = PairData(**raw_pair_data[name])
-        pp = PairParams(name, sites=pd.sites)
+    for key, data in raw_pair_data.items():
+        # We removed the *name* field from input pair_data.json in 2.0.
+        assert 'name' not in data
+        pd = PairData(name=key, **data)
+        pp = PairParams(key, sites=pd.sites)
         for default_param in ('alpha', 'target'):
             assert hasattr(pp, default_param)
 
@@ -41,7 +43,7 @@ def test_run_data(tmpdir, raw_pair_data):
 
 
     """
-    pairs = PairDataCollection(*[PairData(**pair) for pair in raw_pair_data.values()])
+    pairs = PairDataCollection(*[PairData(name=name, **pair) for name, pair in raw_pair_data.items()])
     rd = RunData.create_from(pairs)
 
     # Get an arbitrary but valid name.
@@ -65,4 +67,26 @@ def test_run_data(tmpdir, raw_pair_data):
 
     assert old_rd.as_dictionary() != rd.as_dictionary()
     rd.set(alpha=1., name=name)
+    # Confirm that the restored data is the same as the original.
     assert old_rd.as_dictionary() == rd.as_dictionary()
+
+    with tempfile.NamedTemporaryFile(suffix='.json', mode='w') as tmp:
+        test_data = raw_pair_data.copy()
+        for name in test_data:
+            test_data[name]['name'] = name
+        json.dump(obj=test_data, fp=tmp)
+        tmp.flush()
+        # Tolerates redundant *name* field in the pair_data.json file,
+        # but issues deprecation warning.
+        with pytest.deprecated_call():
+            PairDataCollection.create_from(tmp.name)
+
+    with tempfile.NamedTemporaryFile(suffix='.json', mode='w') as tmp:
+        test_data = raw_pair_data.copy()
+        for name in test_data:
+            test_data[name]['name'] = f'{name}_different'
+        json.dump(test_data, tmp)
+        tmp.flush()
+        # Tolerates redundant *name* field. Warns if inconsistent.
+        with pytest.warns(match='instead of'):
+            PairDataCollection.create_from(tmp.name)

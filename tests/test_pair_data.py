@@ -10,13 +10,19 @@ from brer.pair_data import sample_all
 def test_pair_data_collection(raw_pair_data, pair_data_file):
     """Ensure correct structure and typing of PairData collections."""
     with open(pair_data_file, 'r') as fh:
-        pairs = PairDataCollection(*(PairData(**obj) for obj in json.load(fh).values()))
+        pairs = PairDataCollection(*(PairData(name=name, **obj) for name, obj in json.load(fh).items()))
 
     for name in pairs:
         assert isinstance(pairs[name], PairData)
 
-    assert {pair.name: dataclasses.asdict(pair) for pair in pairs.values()} == raw_pair_data
-    assert pairs.as_dict() == raw_pair_data
+    assert set(pairs.keys()) == set(raw_pair_data.keys())
+    for pair_name, pair_data in pairs.items():
+        for key, value in dataclasses.asdict(pair_data).items():
+            if key != 'name':
+                assert value == raw_pair_data[pair_name][key]
+        for key, value in raw_pair_data[pair_name].items():
+            assert getattr(pair_data, key) == value
+
     assert pairs == PairDataCollection.create_from(pair_data_file)
 
 

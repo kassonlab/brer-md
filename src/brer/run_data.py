@@ -154,8 +154,16 @@ class RunData:
         if not all(isinstance(obj, PairParams) for obj in pair_params.values()):
             raise ValueError('*pair_params* must be a collection of PairParams instances.')
 
+        self.pair_params = dict()
+        for name, obj in pair_params.items():
+            replacements = dict()
+            if not obj.name:
+                replacements[name] = name
+            elif obj.name != name:
+                raise ValueError(f'*pair_params* key {name} does not match *name* field in {obj}.')
+            self.pair_params[name] = dataclasses.replace(obj, **replacements)
+
         self.general_params = general_params
-        self.pair_params = dict(**pair_params)
 
     def set(self, name=None, **kwargs):
         """Set either general or pair-specific parameters.
@@ -249,7 +257,7 @@ class RunData:
 
         return {
             'general parameters': dataclasses.asdict(self.general_params),
-            'pair parameters': pair_param_dict
+            'pair parameters': dict((key, value) for key, value in pair_param_dict.items() if key != 'name')
         }
 
     def save_config(self, fnm='state.json'):
@@ -325,7 +333,7 @@ class RunData:
                     warnings.warn(f'Caller provided ensemble_num={ensemble_num} overrides {_source_id} '
                                   f'from {source}.')
                     general_params.ensemble_num = ensemble_num
-            pair_params = {name: PairParams(fields['name'], sites=fields['sites']) for name, fields in
+            pair_params = {name: PairParams(name=name, sites=fields['sites']) for name, fields in
                            source['pair parameters'].items()}
             return RunData(general_params=general_params, pair_params=pair_params)
         else:
