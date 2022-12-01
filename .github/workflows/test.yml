@@ -38,7 +38,6 @@ jobs:
     - name: Install Python dependencies
       run: |
         pip install --upgrade pip setuptools wheel
-        pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging scikit-build
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
         pip install pytest codecov pytest-cov MarkupSafe networkx numpy
@@ -107,7 +106,6 @@ jobs:
           ${{ env.GROMACS }}-ccache-
     - name: Install Python dependencies
       run: |
-        pip install --upgrade pip setuptools wheel
         pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging scikit-build
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
