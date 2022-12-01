@@ -9,11 +9,11 @@ pushd $HOME
   mkdir -p build
   pushd build
    cmake --version
-   cmake .. -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DPYTHON_EXECUTABLE=$PYTHON
+   cmake .. -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_C_COMPILER=$CC -DPYTHON_EXECUTABLE=`which python`
    make -j2 install
   popd
  popd
- mpiexec -n 2 $PYTHON -m mpi4py -m pytest --log-cli-level=WARN --pyargs gmx -s
-# mpiexec -n 2 $PYTHON -m mpi4py -m pytest --log-cli-level=DEBUG --pyargs gmx -s --verbose
+ mpiexec -n 2 `which python` -m mpi4py -m pytest --log-cli-level=WARN --pyargs gmx -s
+# mpiexec -n 2 `which python` -m mpi4py -m pytest --log-cli-level=DEBUG --pyargs gmx -s --verbose
  ccache -s
 popd

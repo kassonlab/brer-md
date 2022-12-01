@@ -21,6 +21,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "${{ env.PY }}"
+        cache: 'pip' # caching pip dependencies
     - name: Prepare ccache variables
       id: ccache_cache
       run: |
@@ -35,10 +36,7 @@ jobs:
           ${{ env.GROMACS }}-ccache-
     - name: Install Python dependencies
       run: |
-        python -m venv $HOME/venv
-        . $HOME/venv/bin/activate
-        export PYTHON=$VIRTUAL_ENV/bin/python
-        $PYTHON -m pip install --upgrade pip setuptools wheel
+        pip install --upgrade pip setuptools wheel
         pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging scikit-build
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
@@ -54,9 +52,7 @@ jobs:
       timeout-minutes: 8
       run: |
         . ./ci_scripts/set_compilers
-        . $HOME/venv/bin/activate
         pip install -r requirements.txt
-        export PYTHON=$VIRTUAL_ENV/bin/python
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && bash -x ${GITHUB_WORKSPACE}/ci_scripts/pygmx_0_0_7.sh
         pwd
         ls
@@ -65,7 +61,7 @@ jobs:
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
         pip install --no-deps --no-build-isolation ${GITHUB_WORKSPACE}/
-        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
+        python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
       continue-on-error: true
       uses: codecov/codecov-action@v3
@@ -95,6 +91,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "${{ env.PY }}"
+        cache: 'pip' # caching pip dependencies
     - name: Prepare ccache variables
       id: ccache_cache
       run: |
@@ -109,10 +106,7 @@ jobs:
           ${{ env.GROMACS }}-ccache-
     - name: Install Python dependencies
       run: |
-        python -m venv $HOME/venv
-        . $HOME/venv/bin/activate
-        export PYTHON=$VIRTUAL_ENV/bin/python
-        $PYTHON -m pip install --upgrade pip setuptools wheel
+        pip install --upgrade pip setuptools wheel
         pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging scikit-build
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
@@ -121,7 +115,6 @@ jobs:
     - name: Install GROMACS
       run: |
         ccache -s
-        . $HOME/venv/bin/activate
         . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
         ccache -s
@@ -129,20 +122,18 @@ jobs:
       timeout-minutes: 8
       run: |
         . ./ci_scripts/set_compilers
-        . $HOME/venv/bin/activate
         pip install -r requirements.txt
-        export PYTHON=$VIRTUAL_ENV/bin/python
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && \
         mkdir -p $HOME/pip-tmp && \
         TMPDIR=$HOME/pip-tmp \
-        $PYTHON -m pip install --no-clean --verbose "${{ env.GMXAPI }}"
+        pip install --no-clean --verbose "${{ env.GMXAPI }}"
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
-        $PYTHON -m build
+        python -m build
         pip install dist/*whl
-        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
+        python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
       continue-on-error: true
       uses: codecov/codecov-action@v3
@@ -172,6 +163,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "${{ env.PY }}"
+        cache: 'pip' # caching pip dependencies
     - name: Prepare ccache variables
       id: ccache_cache
       run: |
@@ -186,10 +178,7 @@ jobs:
           ${{ env.GROMACS }}-ccache-
     - name: Install Python dependencies
       run: |
-        python -m venv $HOME/venv
-        . $HOME/venv/bin/activate
-        export PYTHON=$VIRTUAL_ENV/bin/python
-        $PYTHON -m pip install --upgrade pip setuptools wheel
+        pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
         pip install pytest codecov pytest-cov numpy
@@ -205,21 +194,19 @@ jobs:
       timeout-minutes: 8
       run: |
         . ./ci_scripts/set_compilers
-        . $HOME/venv/bin/activate
         pip install -r requirements.txt
-        export PYTHON=$HOME/venv/bin/python
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && \
         mkdir -p $HOME/pip-tmp && \
         TMPDIR=$HOME/pip-tmp \
-        $PYTHON -m pip install --no-clean --verbose "${{ env.GMXAPI }}"
+        pip install --no-clean --verbose "${{ env.GMXAPI }}"
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
-        $PYTHON -m build --sdist
+        python -m build --sdist
         pip install dist/*
         echo "github.ref_name: ${{ github.ref_name }}"
-        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
+        python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
       continue-on-error: true
       uses: codecov/codecov-action@v3
@@ -227,7 +214,6 @@ jobs:
         fail_ci_if_error: true
     - name: Docs preview
       run: |
-        . $HOME/venv/bin/activate
         pip install -r docs/requirements.txt
         TODO_OPTIONS="-D todo_include_todos=1"
         SPHINX_OPTIONS="${TODO_OPTIONS} -D html_theme_options.source_branch=${GITHUB_HEAD_REF:-main}"
@@ -235,7 +221,6 @@ jobs:
     - name: Docs
       if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
       run: |
-        . $HOME/venv/bin/activate
         pip install -r docs/requirements.txt
         export GITHUB_ACTOR=$GITHUB_ACTOR
         export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
@@ -272,6 +257,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "${{ env.PY }}"
+        cache: 'pip' # caching pip dependencies
     - name: Prepare ccache variables
       id: ccache_cache
       run: |
@@ -286,10 +272,7 @@ jobs:
           ${{ env.GROMACS }}-ccache-
     - name: Install Python dependencies
       run: |
-        python -m venv $HOME/venv
-        . $HOME/venv/bin/activate
-        export PYTHON=$VIRTUAL_ENV/bin/python
-        $PYTHON -m pip install --upgrade pip setuptools wheel
+        pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging cmake
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
         pip install pytest codecov pytest-cov numpy
@@ -305,10 +288,8 @@ jobs:
       timeout-minutes: 8
       run: |
         . ./ci_scripts/set_compilers
-        . $HOME/venv/bin/activate
         pip install -r requirements.txt
         pip install "cmake>=3.16" "pybind11>=2.6" "setuptools>=42.0" "wheel"
-        export PYTHON=$HOME/venv/bin/python
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC
         mkdir -p $HOME/pip-tmp
         TMPDIR=$HOME/pip-tmp \
@@ -317,11 +298,11 @@ jobs:
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
-        $PYTHON -m build --sdist
+        python -m build --sdist
         pip install dist/*
-        $PYTHON -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
+        python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
         # Ref https://github.com/kassonlab/run_brer/issues/81
-        # mpiexec -n 2 $PYTHON -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests
+        # mpiexec -n 2 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests
         echo "github.ref_name: ${{ github.ref_name }}"
     - name: "Upload coverage to Codecov"
       continue-on-error: true
