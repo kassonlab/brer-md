@@ -186,7 +186,6 @@ jobs:
     - name: Install GROMACS
       run: |
         ccache -s
-        . $HOME/venv/bin/activate
         . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
         ccache -s
@@ -280,7 +279,6 @@ jobs:
     - name: Install GROMACS
       run: |
         ccache -s
-        . $HOME/venv/bin/activate
         . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
         ccache -s
