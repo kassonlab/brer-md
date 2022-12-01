@@ -26,8 +26,8 @@ jobs:
     - name: Prepare ccache variables
       id: ccache_cache
       run: |
-        echo "name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
-        echo "name=dir::$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+        echo "dir=$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
     - name: ccache cache files
       uses: actions/cache@v3
       with:
@@ -96,8 +96,8 @@ jobs:
     - name: Prepare ccache variables
       id: ccache_cache
       run: |
-        echo "name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
-        echo "name=dir::$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+        echo "dir=$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
     - name: ccache cache files
       uses: actions/cache@v3
       with:
@@ -168,8 +168,8 @@ jobs:
     - name: Prepare ccache variables
       id: ccache_cache
       run: |
-        echo "name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
-        echo "name=dir::$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+        echo "dir=$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
     - name: ccache cache files
       uses: actions/cache@v3
       with:
@@ -261,8 +261,8 @@ jobs:
     - name: Prepare ccache variables
       id: ccache_cache
       run: |
-        echo "name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
-        echo "name=dir::$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+        echo "dir=$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
     - name: ccache cache files
       uses: actions/cache@v3
       with:
