@@ -126,7 +126,7 @@ jobs:
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && \
         mkdir -p $HOME/pip-tmp && \
         TMPDIR=$HOME/pip-tmp \
-        pip install --no-clean --verbose "${{ env.GMXAPI }}"
+        pip install --no-cache-dir --no-clean --verbose "${{ env.GMXAPI }}"
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
@@ -197,19 +197,12 @@ jobs:
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && \
         mkdir -p $HOME/pip-tmp && \
         TMPDIR=$HOME/pip-tmp \
-        pip install --no-clean --verbose "${{ env.GMXAPI }}"
+        pip install --no-cache-dir --no-clean --verbose "${{ env.GMXAPI }}"
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
-        rm -rf dist
-        python -m build --wheel -x -n
-        pip install --verbose dist/*
-        rm -rf dist
-        pip list
-        pip uninstall -y brer-md
-        python -m build --sdist
-        pip install --no-build-isolation --no-deps --verbose dist/*
+        TMPDIR=$HOME/pip-tmp pip install --no-clean --no-build-isolation --no-deps --verbose .
         echo "github.ref_name: ${{ github.ref_name }}"
         python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
@@ -297,7 +290,7 @@ jobs:
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC
         mkdir -p $HOME/pip-tmp
         TMPDIR=$HOME/pip-tmp \
-        pip install --no-clean --no-build-isolation --verbose --extra-index-url https://test.pypi.org/simple/ --pre "${{ env.GMXAPI }}"
+        pip install --no-clean --no-build-isolation --no-cache-dir --verbose --extra-index-url https://test.pypi.org/simple/ --pre "${{ env.GMXAPI }}"
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
