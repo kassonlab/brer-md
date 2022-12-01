@@ -40,8 +40,8 @@ jobs:
         pip install --upgrade pip setuptools wheel
         pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging scikit-build
-        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
-        pip install pytest codecov pytest-cov numpy
+        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
+        pip install pytest codecov pytest-cov MarkupSafe networkx numpy
     - name: Install GROMACS
       run: |
         ccache -s
@@ -110,8 +110,8 @@ jobs:
         pip install --upgrade pip setuptools wheel
         pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging scikit-build
-        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
-        pip install pytest codecov pytest-cov numpy
+        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
+        pip install pytest codecov pytest-cov MarkupSafe networkx numpy
     - name: Install GROMACS
       run: |
         ccache -s
@@ -131,8 +131,8 @@ jobs:
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
-        python -m build
-        pip install dist/*whl
+        python -m build -x -n
+        pip install --no-deps dist/*whl
         python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
       continue-on-error: true
@@ -181,8 +181,8 @@ jobs:
       run: |
         pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging
-        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
-        pip install pytest codecov pytest-cov numpy
+        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
+        pip install pytest codecov pytest-cov MarkupSafe networkx numpy
     - name: Install GROMACS
       run: |
         ccache -s
@@ -203,7 +203,7 @@ jobs:
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
         python -m build --sdist
-        pip install dist/*
+        pip install --no-build-isolation --no-deps dist/*
         echo "github.ref_name: ${{ github.ref_name }}"
         python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
@@ -274,8 +274,8 @@ jobs:
       run: |
         pip install --upgrade pip setuptools wheel
         pip install --upgrade packaging cmake
-        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
-        pip install pytest codecov pytest-cov numpy
+        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
+        pip install pytest codecov pytest-cov MarkupSafe networkx numpy
     - name: Install GROMACS
       run: |
         ccache -s
