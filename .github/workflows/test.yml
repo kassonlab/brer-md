@@ -202,7 +202,9 @@ jobs:
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
-        TMPDIR=$HOME/pip-tmp pip install --no-clean --no-build-isolation --no-deps --verbose .
+        rm -rf dist build
+        python -m build --sdist -x -n
+        TMPDIR=$HOME/pip-tmp pip install --no-clean --no-build-isolation --no-deps --verbose dist/*
         echo "github.ref_name: ${{ github.ref_name }}"
         python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
     - name: "Upload coverage to Codecov"
@@ -295,8 +297,9 @@ jobs:
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
-        python -m build --sdist
-        pip install dist/*
+        rm -rf dist
+        python -m build --sdist -x -n
+        TMPDIR=$HOME/pip-tmp pip install --no-clean --no-build-isolation --no-deps --verbose dist/*
         python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
         # Ref https://github.com/kassonlab/run_brer/issues/81
         # mpiexec -n 2 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests
