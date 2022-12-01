@@ -17,6 +17,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ env.PY }}
       uses: actions/setup-python@v4
       with:
@@ -28,7 +29,7 @@ jobs:
         echo "::set-output name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')"
         echo "::set-output name=dir::$(ccache -k cache_dir)"
     - name: ccache cache files
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.ccache_cache.outputs.dir }}
         key: ${{ env.GROMACS }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
@@ -41,7 +42,6 @@ jobs:
         pip install --upgrade packaging scikit-build
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
         pip install pytest codecov pytest-cov numpy
-    - uses: actions/checkout@v2
     - name: Install GROMACS
       run: |
         ccache -s
@@ -87,6 +87,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ env.PY }}
       uses: actions/setup-python@v4
       with:
@@ -98,7 +99,7 @@ jobs:
         echo "::set-output name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')"
         echo "::set-output name=dir::$(ccache -k cache_dir)"
     - name: ccache cache files
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.ccache_cache.outputs.dir }}
         key: ${{ env.GROMACS }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
@@ -111,7 +112,6 @@ jobs:
         pip install --upgrade packaging scikit-build
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
         pip install pytest codecov pytest-cov numpy
-    - uses: actions/checkout@v2
     - name: Install GROMACS
       run: |
         ccache -s
@@ -159,6 +159,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ env.PY }}
       uses: actions/setup-python@v4
       with:
@@ -170,7 +171,7 @@ jobs:
         echo "::set-output name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')"
         echo "::set-output name=dir::$(ccache -k cache_dir)"
     - name: ccache cache files
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.ccache_cache.outputs.dir }}
         key: ${{ env.GROMACS }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
@@ -182,7 +183,6 @@ jobs:
         pip install --upgrade packaging
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
         pip install pytest codecov pytest-cov numpy
-    - uses: actions/checkout@v2
     - name: Install GROMACS
       run: |
         ccache -s
@@ -253,6 +253,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ env.PY }}
       uses: actions/setup-python@v4
       with:
@@ -264,7 +265,7 @@ jobs:
         echo "::set-output name=timestamp::$(date +'%Y-%m-%d-%H-%M-%S')"
         echo "::set-output name=dir::$(ccache -k cache_dir)"
     - name: ccache cache files
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ steps.ccache_cache.outputs.dir }}
         key: ${{ env.GROMACS }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
@@ -276,7 +277,6 @@ jobs:
         pip install --upgrade packaging cmake
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall networkx mpi4py MarkupSafe
         pip install pytest codecov pytest-cov numpy
-    - uses: actions/checkout@v2
     - name: Install GROMACS
       run: |
         ccache -s
