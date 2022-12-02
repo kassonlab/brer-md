@@ -380,7 +380,7 @@ def get_search_paths(prefix: pathlib.Path, package: str):
                                 yield third
 
 
-def is_valid_package_root(path: typing.Optional[pathlib.Path], package: str, targets: tuple):
+def is_valid_package_root(*, path: typing.Optional[pathlib.Path], package: str, targets: tuple):
     if not path or not path.exists():
         return False
     for subdirectory in get_search_paths(prefix=path, package=package):
@@ -410,8 +410,10 @@ def package_root_from_expanded_config(
         environment variables or *config* entries to check.
 
     """
+    if not isinstance(targets, tuple):
+        raise ValueError('targets must be a tuple')
     for prefix in guess_prefixes(config=config, keys=keys):
-        if is_valid_package_root(prefix, package=package, targets=tuple(*targets)):
+        if is_valid_package_root(path=prefix, package=package, targets=targets):
             return prefix
 
 
@@ -452,7 +454,7 @@ def get_gmxapi_root(*, config: dict, args: typing.Sequence[str]):
     targets = ('gmxapi-config.cmake', 'gmxapiConfig.cmake')
     # Check the environment. Let CMake defines override environment variables.
     cmake_vars = get_cmake_defines(args)
-    if not path or not is_valid_package_root(path, targets=targets, package='gmxapi'):
+    if not path or not is_valid_package_root(path=path, targets=targets, package='gmxapi'):
         path = package_root_from_expanded_config(
             package='gmxapi',
             targets=targets,
@@ -460,7 +462,7 @@ def get_gmxapi_root(*, config: dict, args: typing.Sequence[str]):
             keys=('gmxapi_ROOT', 'GMXAPI_ROOT', 'GMXAPI_DIR', 'GROMACS_DIR', 'CMAKE_PREFIX_PATH'))
 
     # One more try...
-    if not path or not is_valid_package_root(path, targets=targets, package='gmxapi'):
+    if not path or not is_valid_package_root(path=path, targets=targets, package='gmxapi'):
         # Try to guess from args.
         hint = ''
         if '-C' in args:
