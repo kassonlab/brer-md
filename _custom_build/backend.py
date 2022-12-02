@@ -314,11 +314,12 @@ def get_search_paths(prefix: pathlib.Path, package: str):
     # but is structured procedurally so that its logic can be most easily compared with
     # the heuristics documented for CMake.
     yield prefix.resolve()
+    package_upper = package.upper()
     for first in [_ for _ in prefix.resolve().iterdir() if _.is_dir()]:
         # < prefix > / (cmake | CMake) /
         if first.name.upper() == 'CMAKE':
             yield first
-        elif first.name.upper().startswith(package.upper()):
+        elif first.name.upper().startswith(package_upper):
             # < prefix > / < name > * /
             yield first
             for second in [_ for _ in first.iterdir() if _.is_dir()]:
@@ -327,7 +328,7 @@ def get_search_paths(prefix: pathlib.Path, package: str):
                     yield second
                     # < prefix > / < name > * / (cmake | CMake) / < name > * /
                     for third in [_ for _ in second.iterdir() if _.is_dir()]:
-                        if third.name.upper().startswith(package.upper()):
+                        if third.name.upper().startswith(package_upper):
                             yield third
                 elif second.name == 'lib':
                     logging.debug(
@@ -340,9 +341,9 @@ def get_search_paths(prefix: pathlib.Path, package: str):
                         if third.name == 'cmake':
                             for fourth in [_ for _ in third.iterdir() if _.is_dir()]:
                                 # < prefix > / < name > * / (lib / < arch >| lib * | share) / cmake / < name > * /
-                                if fourth.name.upper().startswith(package.upper()):
+                                if fourth.name.upper().startswith(package_upper):
                                     yield fourth
-                        elif third.name.upper().startswith(package.upper()):
+                        elif third.name.upper().startswith(package_upper):
                             # < prefix > / < name > * / (lib / < arch >| lib * | share) / < name > * /
                             yield third
                             # < prefix > / < name > * / (lib / < arch >| lib * | share) / < name > * / (cmake | CMake) /
@@ -365,9 +366,9 @@ def get_search_paths(prefix: pathlib.Path, package: str):
                     if second.name == 'cmake':
                         # < prefix > / (lib / < arch >| lib * | share) / cmake / < name > * /
                         for third in [_ for _ in second.iterdir() if _.is_dir()]:
-                            if third.name.upper().startswith(package.upper()):
+                            if third.name.upper().startswith(package_upper):
                                 yield third
-                    elif second.name.upper().startswith(package.upper()):
+                    elif second.name.upper().startswith(package_upper):
                         # < prefix > / (lib / < arch >| lib * | share) / < name > * /
                         yield second
                         # < prefix > / (lib / < arch >| lib * | share) / < name > * / (cmake | CMake) /
