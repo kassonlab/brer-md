@@ -70,7 +70,7 @@ class BrerBuildSystemError(Exception):
 # officially allowed as root level keys, and allowed global options are not officially
 # extensible. See setuptools.build_meta._ConfigSettings.
 
-#Mandatory hooks
+# Mandatory hooks
 build_wheel = _orig.build_wheel
 build_sdist = _orig.build_sdist
 # If we can't get _BuildMetaBackend.build_wheel() to call run_setup() with our
@@ -81,17 +81,17 @@ build_sdist = _orig.build_sdist
 #     return _orig.build_wheel()
 
 
-#Optional hooks
+# Optional hooks
 
 prepare_metadata_for_build_wheel = _orig.prepare_metadata_for_build_wheel
 
 
 def get_requires_for_build_wheel(config_settings=None):
-    return _orig.get_requires_for_build_wheel(config_settings) # + [...]
+    return _orig.get_requires_for_build_wheel(config_settings)  # + [...]
 
 
 def get_requires_for_build_sdist(self, config_settings=None):
-    return _orig.get_requires_for_build_sdist(config_settings) # + [...]
+    return _orig.get_requires_for_build_sdist(config_settings)  # + [...]
 
 
 # PEP 660: editable installs
@@ -282,6 +282,57 @@ def cmake_defined(key: str, args: typing.Sequence[str]):
     return get_cmake_defines(args).get(key, None)
 
 
+def path_from_expanded_config(
+        *,
+        markers: typing.Iterable[str],
+        config: dict,
+        keys: typing.Iterable[str],
+        guess: typing.Optional[pathlib.Path] = None) -> typing.Optional[pathlib.Path]:
+    """Scan the configuration dictionary and environment for a marked path.
+
+    Parameters
+    ----------
+    markers : Iterable[str]
+        path elements that would indicate a valid directory.
+    config : dict[str, str]
+        dictionary of CMake definitions or other config values.
+    keys : Iterable[str]
+        environment variables or *config* entries to check.
+    guess : pathlib.Path, optional
+        attempt at a valid path that we will try to refine.
+
+    """
+    candidate_found = False
+
+    for key in keys:
+        if key in config:
+            # Let explicit configuration dictionary take precedence over environment variables.
+            _var = config[key]
+        else:
+            _var = os.getenv(key)
+        if _var:
+            # PATH-like environment variables or config values may be lists delimited by : or ;
+            candidates = [_second_split for _first_split in _var.split(':') for _second_split in
+                          _first_split.split(';')]
+            for _element in candidates:
+                candidate = pathlib.Path(_element).resolve()
+                if guess and (guess.samefile(candidate) or candidate in guess.parents):
+                    # Skip if candidate provides the same or less information than config path.
+                    continue
+                for sentry in markers:
+                    if (candidate / sentry).exists():
+                        if guess:
+                            message = f'Overriding gmxapi config path {guess} with -Dgmxapi_ROOT={candidate} from {key}'
+                            if key in config:
+                                message += ' in user input.'
+                            else:
+                                message += ' environment variable.'
+                            warnings.warn(message)
+                        # One hit on one sentry is sufficient confirmation.
+                        return candidate
+    return guess
+
+
 def get_gmxapi_root(*, config: dict, args: typing.Sequence[str]):
     """Get the value for the gmxapi_ROOT CMake variable.
 
@@ -314,30 +365,14 @@ def get_gmxapi_root(*, config: dict, args: typing.Sequence[str]):
             if path and path.exists():
                 break
     # Check the environment. Let CMake defines override environment variables.
-    candidate_found = False
     cmake_vars = get_cmake_defines(args)
-    for key in ('gmxapi_ROOT', 'GMXAPI_ROOT', 'GMXAPI_DIR', 'GROMACS_DIR', 'CMAKE_PREFIX_PATH'):
-        if key in cmake_vars:
-            _var = cmake_vars[key]
-        else:
-            _var = os.getenv(key)
-        if _var:
-            candidate = pathlib.Path(_var).resolve()
-            if path and (path.samefile(candidate) or candidate in path.parents):
-                # Skip if candidate provides the same or less information than config path.
-                continue
-            for sentry in sentries:
-                if (candidate / sentry).exists():
-                    if path:
-                        warnings.warn(
-                            f'Overriding gmxapi config path {path} with -Dgmxapi_ROOT={candidate} from '
-                            f'{key} environment variable.'
-                        )
-                    path = candidate
-                    candidate_found = True
-                    break
-        if candidate_found:
-            break
+    path = path_from_expanded_config(
+        markers=sentries,
+        config=cmake_vars,
+        keys=('gmxapi_ROOT', 'GMXAPI_ROOT', 'GMXAPI_DIR', 'GROMACS_DIR', 'CMAKE_PREFIX_PATH'),
+        guess=path)
+
+    # One more try...
     if not path:
         # Try to guess from args.
         hint = ''
