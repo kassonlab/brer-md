@@ -24,6 +24,7 @@ Example:
     pip install brer-md
 
 """
+import logging
 import os
 import pathlib
 import re
@@ -70,7 +71,7 @@ class BrerBuildSystemError(Exception):
 # officially allowed as root level keys, and allowed global options are not officially
 # extensible. See setuptools.build_meta._ConfigSettings.
 
-#Mandatory hooks
+# Mandatory hooks
 build_wheel = _orig.build_wheel
 build_sdist = _orig.build_sdist
 # If we can't get _BuildMetaBackend.build_wheel() to call run_setup() with our
@@ -81,17 +82,17 @@ build_sdist = _orig.build_sdist
 #     return _orig.build_wheel()
 
 
-#Optional hooks
+# Optional hooks
 
 prepare_metadata_for_build_wheel = _orig.prepare_metadata_for_build_wheel
 
 
 def get_requires_for_build_wheel(config_settings=None):
-    return _orig.get_requires_for_build_wheel(config_settings) # + [...]
+    return _orig.get_requires_for_build_wheel(config_settings)  # + [...]
 
 
 def get_requires_for_build_sdist(self, config_settings=None):
-    return _orig.get_requires_for_build_sdist(config_settings) # + [...]
+    return _orig.get_requires_for_build_sdist(config_settings)  # + [...]
 
 
 # PEP 660: editable installs
@@ -282,20 +283,148 @@ def cmake_defined(key: str, args: typing.Sequence[str]):
     return get_cmake_defines(args).get(key, None)
 
 
+def guess_prefixes(
+        *,
+        config: dict,
+        keys: typing.Iterable[str]):
+    """Generate search roots from the configuration dictionary and environment.
+
+    Parameters
+    ----------
+    config : dict[str, str]
+        dictionary of CMake definitions or other config values.
+    keys : Iterable[str]
+        environment variables or *config* entries to check.
+
+    """
+    sources = [config[key] if key in config else os.getenv(key) for key in keys]
+    for source in sources:
+        if source:
+            # PATH-like environment variables or config values may be lists delimited by : or ;
+            for _first_split in source.split(':'):
+                for _second_split in _first_split.split(';'):
+                    yield pathlib.Path(_second_split).resolve()
+
+
+def get_search_paths(prefix: pathlib.Path, package: str):
+    """Generator to produce the minimum number of search paths."""
+    # Follow the search logic described at
+    # https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure
+    # This generator function tries to minimize the amount of filesystem interaction,
+    # but is structured procedurally so that its logic can be most easily compared with
+    # the heuristics documented for CMake.
+    yield prefix.resolve()
+    package_upper = package.upper()
+    for first in [_ for _ in prefix.resolve().iterdir() if _.is_dir()]:
+        # < prefix > / (cmake | CMake) /
+        if first.name.upper() == 'CMAKE':
+            yield first
+        elif first.name.upper().startswith(package_upper):
+            # < prefix > / < name > * /
+            yield first
+            for second in [_ for _ in first.iterdir() if _.is_dir()]:
+                # < prefix > / < name > * / (cmake | CMake) /
+                if second.name.upper() == 'CMAKE':
+                    yield second
+                    # < prefix > / < name > * / (cmake | CMake) / < name > * /
+                    for third in [_ for _ in second.iterdir() if _.is_dir()]:
+                        if third.name.upper().startswith(package_upper):
+                            yield third
+                elif second.name == 'lib':
+                    logging.debug(
+                        f'Skipping search for {str(second)}/<arch>. '
+                        'This backend does not interpret CMAKE_LIBRARY_ARCHITECTURE. '
+                        'Please provide an exact directory for the gmxapi CMake config file.')
+                    continue
+                elif second.name == 'share' or second.name.startswith('lib'):
+                    for third in [_ for _ in second.iterdir() if _.is_dir()]:
+                        if third.name == 'cmake':
+                            for fourth in [_ for _ in third.iterdir() if _.is_dir()]:
+                                # < prefix > / < name > * / (lib / < arch >| lib * | share) / cmake / < name > * /
+                                if fourth.name.upper().startswith(package_upper):
+                                    yield fourth
+                        elif third.name.upper().startswith(package_upper):
+                            # < prefix > / < name > * / (lib / < arch >| lib * | share) / < name > * /
+                            yield third
+                            # < prefix > / < name > * / (lib / < arch >| lib * | share) / < name > * / (cmake | CMake) /
+                            fourth = third / 'cmake'
+                            if fourth.exists() and fourth.is_dir():
+                                yield fourth
+                            else:
+                                fourth = third / 'CMake'
+                                if fourth.exists() and fourth.is_dir():
+                                    yield fourth
+        else:
+            if first.name == 'lib':
+                logging.debug(
+                    f'Skipping search for {str(first)}/<arch>. '
+                    'This backend does not interpret CMAKE_LIBRARY_ARCHITECTURE. '
+                    'Please provide an exact directory for the gmxapi CMake config file.')
+                continue
+            if first.name.startswith('lib') or first.name == 'share':
+                for second in [_ for _ in first.iterdir() if _.is_dir()]:
+                    if second.name == 'cmake':
+                        # < prefix > / (lib / < arch >| lib * | share) / cmake / < name > * /
+                        for third in [_ for _ in second.iterdir() if _.is_dir()]:
+                            if third.name.upper().startswith(package_upper):
+                                yield third
+                    elif second.name.upper().startswith(package_upper):
+                        # < prefix > / (lib / < arch >| lib * | share) / < name > * /
+                        yield second
+                        # < prefix > / (lib / < arch >| lib * | share) / < name > * / (cmake | CMake) /
+                        third = second / 'cmake'
+                        if third.exists() and third.is_dir():
+                            yield third
+                        else:
+                            third = second / 'CMake'
+                            if third.exists() and third.is_dir():
+                                yield third
+
+
+def is_valid_package_root(*, path: typing.Optional[pathlib.Path], package: str, targets: tuple):
+    if not path or not path.exists():
+        return False
+    for subdirectory in get_search_paths(prefix=path, package=package):
+        for target in targets:
+            if os.path.exists(subdirectory / target):
+                return True
+    return False
+
+
+def package_root_from_expanded_config(
+        *,
+        package: str,
+        targets: typing.Iterable[str],
+        config: dict,
+        keys: typing.Iterable[str]) -> typing.Optional[pathlib.Path]:
+    """Scan the configuration dictionary and environment for a marked path.
+
+    Parameters
+    ----------
+    package : str
+        CMake package name.
+    targets : Iterable[str]
+        config file names that would indicate a valid directory.
+    config : dict[str, str]
+        dictionary of CMake definitions or other config values.
+    keys : Iterable[str]
+        environment variables or *config* entries to check.
+
+    """
+    if not isinstance(targets, tuple):
+        raise ValueError('targets must be a tuple')
+    for prefix in guess_prefixes(config=config, keys=keys):
+        if is_valid_package_root(path=prefix, package=package, targets=targets):
+            return prefix
+
+
 def get_gmxapi_root(*, config: dict, args: typing.Sequence[str]):
     """Get the value for the gmxapi_ROOT CMake variable.
 
     First examine the *config* dictionary for hints. Then check the environment,
     """
-    # The gmxapi CMake config file is in a path that looks something like
-    # $CMAKE_INSTALL_PREFIX/share/cmake/gmxapi/gmxapiConfig.cmake
-    # Various gromacs components are installed to directories that are parallel
-    # to some part of this path.
-    # directory contents that would indicate a viable gmxapi_ROOT.
+    # directory contents that might indicate a viable gmxapi_ROOT or CMake package root.
     sentries = ('gmxapi', 'cmake', 'share', 'gmxapi-config.cmake', 'gmxapiConfig.cmake')
-    # Config values that might serve as hints:
-    hints = ('gmx_cmake_hints', 'gmx_cmake_toolchain', 'gmx_executable', 'gmx_bindir')
-
     path = config.get('gmxapi_root', None)
     if path:
         path = pathlib.Path(path).resolve()
@@ -303,6 +432,8 @@ def get_gmxapi_root(*, config: dict, args: typing.Sequence[str]):
         warnings.warn(f'Installed gmxapi reports non-existent root path {path}.')
         path = None
     if not path:
+        # Config values that might serve as hints:
+        hints = ('gmx_cmake_hints', 'gmx_cmake_toolchain', 'gmx_executable', 'gmx_bindir')
         for hint in [pathlib.Path(config[key]).resolve() for key in hints if key in config]:
             guess = hint.parent
             while guess != guess.root and not path:
@@ -313,32 +444,26 @@ def get_gmxapi_root(*, config: dict, args: typing.Sequence[str]):
                 guess = guess.parent
             if path and path.exists():
                 break
+
+    # The gmxapi CMake config file is in a path that looks something like
+    # $CMAKE_INSTALL_PREFIX/share/cmake/gmxapi/gmxapiConfig.cmake
+    # Various gromacs components are installed to directories that are parallel
+    # to some part of this path.
+    # One of the following files must be discoverable in gmxapi_ROOT.
+    # Ref https://cmake.org/cmake/help/latest/command/find_package.html#config-mode-search-procedure
+    # Reduce globbing: These are the only two config file names possible through gmxapi 0.4.
+    targets = ('gmxapi-config.cmake', 'gmxapiConfig.cmake')
     # Check the environment. Let CMake defines override environment variables.
-    candidate_found = False
     cmake_vars = get_cmake_defines(args)
-    for key in ('gmxapi_ROOT', 'GMXAPI_ROOT', 'GMXAPI_DIR', 'GROMACS_DIR', 'CMAKE_PREFIX_PATH'):
-        if key in cmake_vars:
-            _var = cmake_vars[key]
-        else:
-            _var = os.getenv(key)
-        if _var:
-            candidate = pathlib.Path(_var).resolve()
-            if path and (path.samefile(candidate) or candidate in path.parents):
-                # Skip if candidate provides the same or less information than config path.
-                continue
-            for sentry in sentries:
-                if (candidate / sentry).exists():
-                    if path:
-                        warnings.warn(
-                            f'Overriding gmxapi config path {path} with -Dgmxapi_ROOT={candidate} from '
-                            f'{key} environment variable.'
-                        )
-                    path = candidate
-                    candidate_found = True
-                    break
-        if candidate_found:
-            break
-    if not path:
+    if not path or not is_valid_package_root(path=path, targets=targets, package='gmxapi'):
+        path = package_root_from_expanded_config(
+            package='gmxapi',
+            targets=targets,
+            config=cmake_vars,
+            keys=('gmxapi_ROOT', 'GMXAPI_ROOT', 'GMXAPI_DIR', 'GROMACS_DIR', 'CMAKE_PREFIX_PATH'))
+
+    # One more try...
+    if not path or not is_valid_package_root(path=path, targets=targets, package='gmxapi'):
         # Try to guess from args.
         hint = ''
         if '-C' in args:
