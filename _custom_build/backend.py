@@ -44,6 +44,13 @@ from setuptools import Extension
 from setuptools.command.build_ext import build_ext
 from setuptools import build_meta as _orig
 
+# Suppress automatic MPI initialization from transitive `import mpi4py.MPI` module code.
+try:
+    import mpi4py
+    mpi4py.rc.initialize = False
+except ImportError:
+    mpi4py = None
+
 if hasattr(str, 'removeprefix'):
     removeprefix = str.removeprefix
 else:
