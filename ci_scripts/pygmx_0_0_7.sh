@@ -5,6 +5,8 @@ pushd $HOME
  rm -rf gmxapi
  git clone --depth=1 -b release-0_0_7 https://github.com/kassonlab/gmxapi.git
  pushd gmxapi
+  rm -rf pybind11
+  git clone -b v2.10 https://github.com/pybind/pybind11.git
   rm -rf build
   mkdir -p build
   pushd build
