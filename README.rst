@@ -232,6 +232,30 @@ For GROMACS 2021 and older,
 See `GROMACS release
 notes <https://manual.gromacs.org/2022/release-notes/2022/major/portability.html#cmake-toolchain-file-replaced-with-cache-file>`__.
 
+Problems building a GROMACS 2019 stack
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For some C++ standard library installations, GROMACS 2019 exhibits compiler errors.
+The sources need to be patched. You can use the `ci_scripts/limits.patch` file in this
+repository as a guide to manually edit the source, or use the `patch` command line tool.
+Example::
+
+    cd /path/to/gromacs2019/sources
+    wget https://raw.githubusercontent.com/kassonlab/brer-md/main/ci_scripts/limits.patch
+    patch -p1 < limits.patch
+
+For GROMACS 2019, you will need gmxapi 0.0.7.
+See https://gmxapi.readthedocs.io/en/release-0_0_7/.
+
+You will have to prevent `brer-md` from trying to install a more recent version of gmxapi.
+Install the dependencies explicitly, then suppress automatic dependency resolution
+when installing brer-md.
+Exxample::
+
+    wget https://raw.githubusercontent.com/kassonlab/brer-md/main/requirements.txt
+    pip install -r requirements.txt
+    pip install --no-deps brer-md
+
 References
 ----------
 

@@ -18,6 +18,11 @@ pushd $HOME
         ${GMX_SRC_DIR}
  pushd ${GMX_SRC_DIR}
   pwd
+  if [ -f "${PATCH_FILE}" ]; then
+    echo "Applying ${PATCH_FILE}:"
+    cat ${PATCH_FILE}
+    patch -p1 < ${PATCH_FILE}
+  fi
   rm -rf build
   mkdir build
   pushd build
