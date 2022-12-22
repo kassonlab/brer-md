@@ -15,11 +15,6 @@ from typing import Union
 from .pair_data import PairDataCollection
 from .pair_data import sample_all
 
-try:
-    import mpi4py.MPI as _MPI
-except (ImportError, ModuleNotFoundError):
-    _MPI = None
-
 from .directory_helper import DirectoryHelper
 from .plugin_configs import ConvergencePluginConfig
 from .plugin_configs import PluginConfig
@@ -65,6 +60,23 @@ def check_consistency(*, data: PairDataCollection, state: RunData):
         if data[name].sites != state.pair_params[name].sites:
             return False
     return True
+
+
+def _get_communicator(ensemble_size: int):
+    try:
+        import mpi4py.MPI as _MPI
+    except (ImportError, ModuleNotFoundError):
+        _MPI = None
+    if _MPI is None or _MPI.COMM_WORLD.Get_size() < ensemble_size:
+        raise RuntimeError('Need mpi4py and one MPI rank per ensemble member.')
+    else:
+        communicator: _MPI.Comm = _MPI.COMM_WORLD
+        assert communicator.Get_size() >= ensemble_size
+        # TODO: Handle mismatched ensemble size.
+        if communicator.Get_size() > ensemble_size:
+            warnings.warn('brer does not yet attempt to handle communicators '
+                          'larger than the ensemble.')
+        return communicator
 
 
 class RunConfig:
@@ -118,17 +130,9 @@ class RunConfig:
         if self._ensemble_size == 1:
             self._communicator = None
             self._rank = 0
-        elif _MPI is None or _MPI.COMM_WORLD.Get_size() < self._ensemble_size:
-            raise RuntimeError('Need mpi4py and one MPI rank per ensemble member.')
         else:
-            communicator: _MPI.Comm = _MPI.COMM_WORLD
-            assert communicator.Get_size() >= self._ensemble_size
-            # TODO: Handle mismatched ensemble size.
-            if communicator.Get_size() > self._ensemble_size:
-                warnings.warn('brer does not yet attempt to handle communicators '
-                              'larger than the ensemble.')
-            self._communicator = communicator
-            self._rank = communicator.Get_rank()
+            self._communicator = _get_communicator(self._ensemble_size)
+            self._rank = self._communicator.Get_rank()
 
         if ensemble_num is None:
             ensemble_num = self._rank
