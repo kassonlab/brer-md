@@ -236,8 +236,8 @@ Problems building a GROMACS 2019 stack
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For some C++ standard library installations, GROMACS 2019 exhibits compiler errors.
-The sources need to be patched. You can use the `ci_scripts/limits.patch` file in this
-repository as a guide to manually edit the source, or use the `patch` command line tool.
+The sources need to be patched. You can use the ``ci_scripts/limits.patch`` file in this
+repository as a guide to manually edit the source, or use the ``patch`` command line tool.
 Example::
 
     cd /path/to/gromacs2019/sources
@@ -247,7 +247,7 @@ Example::
 For GROMACS 2019, you will need gmxapi 0.0.7.
 See https://gmxapi.readthedocs.io/en/release-0_0_7/.
 
-You will have to prevent `brer-md` from trying to install a more recent version of gmxapi.
+You will have to prevent ``brer-md`` from trying to install a more recent version of gmxapi.
 Install the dependencies explicitly, then suppress automatic dependency resolution
 when installing brer-md.
 Exxample::
