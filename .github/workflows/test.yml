@@ -45,6 +45,7 @@ jobs:
       run: |
         ccache -s
         . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
+        export PATCH_FILE=${GITHUB_WORKSPACE}/ci_scripts/limits.patch
         bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_2019.sh
         ccache -s
     - name: Test
