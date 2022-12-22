@@ -86,7 +86,7 @@ jobs:
     - name: Prepare OS
       run: |
         sudo apt-get update
-        sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
+        sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libopenmpi-dev libxml2-dev ninja-build openmpi-bin
     - uses: actions/checkout@v3
     - name: Set up Python ${{ env.PY }}
       uses: actions/setup-python@v4
@@ -247,17 +247,98 @@ jobs:
           ~/install/gromacs-${{ env.GROMACS }}/share/
           ~/pip-tmp/
 
-  gmx-dev:
+  gmx-2023:
     runs-on: ubuntu-latest
     env:
-      PY: "3.9"
-      GROMACS: main
+      PY: "3.11"
+      GROMACS: release-2023
       GMXAPI: "gmxapi"
     steps:
     - name: Prepare OS
       run: |
         sudo apt-get update
         sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libmpich-dev libxml2-dev mpich ninja-build
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ env.PY }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: "${{ env.PY }}"
+        cache: 'pip' # caching pip dependencies
+    - name: Prepare ccache variables
+      id: ccache_cache
+      run: |
+        echo "timestamp=$(date +'%Y-%m-%d-%H-%M-%S')" >> $GITHUB_OUTPUT
+        echo "dir=$(ccache -k cache_dir)" >> $GITHUB_OUTPUT
+    - name: ccache cache files
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.ccache_cache.outputs.dir }}
+        key: ${{ env.GROMACS }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
+        restore-keys: |
+          ${{ env.GROMACS }}-ccache-
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip setuptools wheel
+        pip install --upgrade packaging cmake
+        pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
+        pip install pytest codecov pytest-cov MarkupSafe networkx numpy
+    - name: Install GROMACS
+      run: |
+        ccache -s
+        . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
+        BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
+        ccache -s
+    - name: Test
+      timeout-minutes: 8
+      run: |
+        . ./ci_scripts/set_compilers
+        env
+        pip install -r requirements.txt
+        pip install "cmake>=3.16" "pybind11>=2.6" "setuptools>=42.0" "wheel"
+        source $HOME/install/gromacs-${GROMACS}/bin/GMXRC
+        mkdir -p $HOME/pip-tmp
+        TMPDIR=$HOME/pip-tmp \
+        RDMAV_FORK_SAFE=1 \
+        pip install --no-clean --no-build-isolation --no-cache-dir --verbose --pre "${{ env.GMXAPI }}"
+        git tag --list
+        pip list
+        export VERSIONINGIT_LOG_LEVEL=INFO
+        versioningit .
+        rm -rf dist
+        python -m build --sdist -x -n
+        # Not sure why libfabric is complaining about `fork()` here, and nowhere else,
+        # but we can work around it with `RDMAV_FORK_SAFE=1` in libfabric < 1.13 and
+        # with `FI_EFA_FORK_SAFE=1` in more recent versions.
+        TMPDIR=$HOME/pip-tmp RDMAV_FORK_SAFE=1 pip install --no-clean --no-build-isolation --no-deps --verbose dist/*
+        python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
+        # Ref https://github.com/kassonlab/run_brer/issues/81
+        # mpiexec -n 2 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests
+        echo "github.ref_name: ${{ github.ref_name }}"
+    - name: "Upload coverage to Codecov"
+      continue-on-error: true
+      uses: codecov/codecov-action@v3
+      with:
+        fail_ci_if_error: true
+    - name: "Upload artifacts"
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ github.job }}-${{ env.GROMACS }}
+        path: |
+          ~/install/gromacs-${{ env.GROMACS }}/share/
+          ~/pip-tmp/
+
+  gmx-dev:
+    runs-on: ubuntu-latest
+    env:
+      PY: "3.8"
+      GROMACS: main
+      GMXAPI: "gmxapi"
+    steps:
+    - name: Prepare OS
+      run: |
+        sudo apt-get update
+        sudo apt-get install ccache libblas-dev libfftw3-dev liblapack-dev libopenmpi-dev libxml2-dev ninja-build openmpi-bin
     - uses: actions/checkout@v3
     - name: Set up Python ${{ env.PY }}
       uses: actions/setup-python@v4
