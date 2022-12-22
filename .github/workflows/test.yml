@@ -299,6 +299,7 @@ jobs:
         mkdir -p $HOME/pip-tmp
         TMPDIR=$HOME/pip-tmp \
         RDMAV_FORK_SAFE=1 \
+        # TODO: Remove `--pre` once 0.4 release is final.
         pip install --no-clean --no-build-isolation --no-cache-dir --verbose --pre "${{ env.GMXAPI }}"
         git tag --list
         pip list
