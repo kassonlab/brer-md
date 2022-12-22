@@ -122,6 +122,8 @@ jobs:
       run: |
         . ./ci_scripts/set_compilers
         pip install -r requirements.txt
+        pip install pybind11
+        export CMAKE_ARGS="-DGMXAPI_USE_BUNDLED_PYBIND=OFF -DCMAKE_PREFIX_PATH=$(python -c 'import pybind11; print(pybind11.get_cmake_dir())')"
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && \
         mkdir -p $HOME/pip-tmp && \
         TMPDIR=$HOME/pip-tmp \
