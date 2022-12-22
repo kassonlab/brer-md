@@ -28,7 +28,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 enable_language(CXX)
 
 find_package(Python3 3.7 COMPONENTS Interpreter Development)
-find_package(pybind11 2.6 QUIET CONFIG)
+find_package(pybind11 2.6 CONFIG)
 # If we are not running through setup.py, we may need to look for the pybind11 headers.
 if (NOT pybind11_FOUND)
     execute_process(
