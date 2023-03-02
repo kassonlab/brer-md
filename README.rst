@@ -7,7 +7,7 @@ Source: https://github.com/kassonlab/brer-md
 
 Documentation: https://kassonlab.github.io/brer-md/
 
-The ``brer`` Python package provides a set of scripts for running
+The ``brer-md`` Python package provides a set of scripts for running
 Bias-Resampling Ensemble Refinement (BRER) simulations using
 `gmxapi <https://gmxapi.org/>`__. Details of the BRER
 method may be found in:
@@ -29,7 +29,7 @@ If you’re going to use a pip or a conda environment, you’ll need:
 -  A GROMACS installation supporting client software builds.
 -  `gmxapi <https://manual.gromacs.org/current/gmxapi>`__ for GROMACS.
 
-``brer`` includes a simple C++ extension module that can be attached to a GROMACS
+``brer-md`` includes a simple C++ extension module that can be attached to a GROMACS
 molecular dynamics (MD) simulator through the gmxapi Python interface.
 GROMACS installations (and GROMACS dependencies) can be built rather specifically
 for their computing environments. The ``brer`` package is distributed as source
@@ -72,6 +72,8 @@ defined a GROMACS_DIR environment variable), then the ``gmxapi`` Python package
 will be installed automatically with the ``brer`` package.
 Simply::
 
+    pip install --pre brer-md
+    # or
     pip install git+https://github.com/kassonlab/brer-md.git
 
 If you prefer to install ``gmxapi`` separately (such as to specify an older
