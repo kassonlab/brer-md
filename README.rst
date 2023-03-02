@@ -72,7 +72,7 @@ defined a GROMACS_DIR environment variable), then the ``gmxapi`` Python package
 will be installed automatically with the ``brer`` package.
 Simply::
 
-    pip install brer
+    pip install git+https://github.com/kassonlab/brer-md.git
 
 If you prefer to install ``gmxapi`` separately (such as to specify an older
 package version), you can provide ``--no-deps`` and ``--no-build-isolation``
