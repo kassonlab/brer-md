@@ -9,7 +9,6 @@ import tempfile
 import warnings
 from contextlib import contextmanager
 
-import gmxapi.commandline
 import pytest
 
 if sys.version_info.major > 3 or sys.version_info.minor >= 10:
@@ -164,8 +163,9 @@ def cleandir(remove_tempdir):
 @pytest.fixture(scope='session')
 def gmxcli():
     try:
+        import gmxapi.commandline
         command = gmxapi.commandline.cli_executable()
-    except AttributeError:
+    except (ImportError, AttributeError):
         # The gmxapi version predates the cli_executable() utility.
         # Search for the cli binary.
         allowed_command_names = ['gmx', 'gmx_mpi']
