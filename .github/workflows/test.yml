@@ -253,7 +253,7 @@ jobs:
     env:
       PY: "3.11"
       GROMACS: release-2023
-      GMXAPI: "gmxapi"
+      GMXAPI: "gmxapi==0.4.1rc2"
       GMX_MPI: "ON"
     steps:
     - name: Prepare OS
@@ -300,8 +300,8 @@ jobs:
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC
         mkdir -p $HOME/pip-tmp
         TMPDIR=$HOME/pip-tmp \
-        # TODO: Remove `--pre` once 0.4 release is final.
-        pip install --no-clean --no-build-isolation --no-cache-dir --verbose --pre "${{ env.GMXAPI }}"
+        pip install --no-clean --no-build-isolation --no-cache-dir --verbose --extra-index-url https://test.pypi.org/simple/ --pre "${{ env.GMXAPI }}"
+        # pip install --no-clean --no-build-isolation --no-cache-dir --verbose "${{ env.GMXAPI }}"
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
@@ -309,7 +309,7 @@ jobs:
         rm -rf dist
         python -m build --sdist -x -n
         TMPDIR=$HOME/pip-tmp pip install --no-clean --no-build-isolation --no-deps --verbose dist/*
-        python -m pytest -rA -l --log-cli-level=info --cov=brer --cov-report=xml tests
+        python -m pytest -x -rA -l --log-cli-level=debug --cov=brer --cov-report=xml tests
         # Ref https://github.com/kassonlab/brer-md/issues/5
         # mpiexec -n 2 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests
         echo "github.ref_name: ${{ github.ref_name }}"
