@@ -253,7 +253,7 @@ jobs:
     env:
       PY: "3.11"
       GROMACS: release-2023
-      GMXAPI: "gmxapi==0.4.1rc2"
+      GMXAPI: "gmxapi"
       GMX_MPI: "ON"
     steps:
     - name: Prepare OS
