@@ -275,9 +275,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ steps.ccache_cache.outputs.dir }}
-        key: ${{ env.GROMACS }}-${{ env.GMX_MPI }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
+        key: ${{ env.GROMACS }}-MPI-${{ env.GMX_MPI }}-ccache-${{ steps.ccache_cache.outputs.timestamp }}
         restore-keys: |
-          ${{ env.GROMACS }}-ccache-
+          ${{ env.GROMACS }}-MPI-${{ env.GMX_MPI }}-ccache-
     - name: Install Python dependencies
       run: |
         pip install --upgrade pip setuptools wheel
