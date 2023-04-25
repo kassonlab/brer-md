@@ -307,7 +307,9 @@ jobs:
         TMPDIR=$HOME/pip-tmp pip install --no-clean --no-build-isolation --no-deps --verbose dist/*
         python -m pytest -x -rA -l --log-cli-level=debug --cov=brer --cov-report=xml tests
         # Ref https://github.com/kassonlab/brer-md/issues/5
-        # mpiexec -n 2 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests
+        mpiexec \
+        -n 1 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov-append --cov=brer --cov-report=xml tests : \
+        -n 1 `which python` -m mpi4py -m pytest -x tests 
         echo "github.ref_name: ${{ github.ref_name }}"
     - name: "Upload coverage to Codecov"
       continue-on-error: true
