@@ -188,13 +188,11 @@ jobs:
     - name: Install GROMACS
       run: |
         ccache -s
-        . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
         ccache -s
     - name: Test
       timeout-minutes: 8
       run: |
-        . ./ci_scripts/set_compilers
         env
         pip install -r requirements.txt
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && \
@@ -287,13 +285,11 @@ jobs:
     - name: Install GROMACS
       run: |
         ccache -s
-        . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
         ccache -s
     - name: Test
       timeout-minutes: 8
       run: |
-        . ./ci_scripts/set_compilers
         env
         pip install -r requirements.txt
         pip install "cmake>=3.16" "pybind11>=2.6" "setuptools>=42.0" "wheel"
