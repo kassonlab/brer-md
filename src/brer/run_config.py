@@ -1,8 +1,9 @@
 """RunConfig class handles the actual workflow logic."""
-__all__ = ('RunConfig',)
+__all__ = ("RunConfig",)
 
 import collections.abc
 import dataclasses
+import functools
 import logging
 import os
 import pathlib
@@ -25,24 +26,47 @@ from .run_data import RunData
 _Path = Union[str, pathlib.Path]
 
 
-def _gmxapi_missing(*args, **kwargs):
-    raise RuntimeError('brer requires gmxapi. See https://github.com/kassonlab/brer_md#requirements')
+def _gmxapi_missing(*args, exc_info=None, **kwargs):
+    message = (
+        "brer requires gmxapi. See https://github.com/kassonlab/brer_md#requirements"
+    )
+    if exc_info:
+        message += f" {exc_info}"
+    raise RuntimeError(message)
 
 
 try:
     # noinspection PyPep8Naming,PyUnresolvedReferences
     from gmxapi.simulation.context import Context as _context
-    # noinspection PyUnresolvedReferences
-    from gmxapi.simulation.workflow import WorkElement, from_tpr
-except (ImportError, ModuleNotFoundError):
+except (ImportError, ModuleNotFoundError) as e:
     try:
         # noinspection PyPep8Naming
         from gmx.context import Context as _context
-        from gmx.workflow import from_tpr, WorkElement
-    except (ImportError, ModuleNotFoundError):
-        _context = _gmxapi_missing
-        from_tpr = _gmxapi_missing
-        WorkElement = _gmxapi_missing
+    except (ImportError, ModuleNotFoundError) as e:
+        missing = functools.partial(_gmxapi_missing, exception=str(e))
+        _context = missing
+
+try:
+    # noinspection PyUnresolvedReferences
+    from gmxapi.simulation.workflow import from_tpr
+except (ImportError, ModuleNotFoundError) as e:
+    try:
+        # noinspection PyPep8Naming
+        from gmx.workflow import from_tpr
+    except (ImportError, ModuleNotFoundError) as e:
+        missing = functools.partial(_gmxapi_missing, exception=str(e))
+        from_tpr = missing
+
+try:
+    # noinspection PyUnresolvedReferences
+    from gmxapi.simulation.workflow import WorkElement
+except (ImportError, ModuleNotFoundError) as e:
+    try:
+        # noinspection PyPep8Naming
+        from gmx.workflow import WorkElement
+    except (ImportError, ModuleNotFoundError) as e:
+        missing = functools.partial(_gmxapi_missing, exception=str(e))
+        WorkElement = missing
 
 
 def check_consistency(*, data: PairDataCollection, state: RunData):
