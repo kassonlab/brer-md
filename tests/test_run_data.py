@@ -88,5 +88,5 @@ def test_run_data(tmpdir, raw_pair_data):
         json.dump(test_data, tmp)
         tmp.flush()
         # Tolerates redundant *name* field. Warns if inconsistent.
-        with pytest.warns(match='instead of'):
+        with pytest.warns(UserWarning, match='instead of'):
             PairDataCollection.create_from(tmp.name)

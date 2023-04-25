@@ -9,7 +9,7 @@ networkx>=2.0
 numpy>=1
 pip>=22
 pybind11>=2.6
-pytest>=3.9
+pytest>=7.0.0
 setuptools>=61.0.0
 versioningit~=2.0
 wheel
