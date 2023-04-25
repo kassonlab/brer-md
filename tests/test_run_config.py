@@ -16,6 +16,11 @@ try:
 except ImportError:
     MPI = None
 
+try:
+    from gmxapi.utility import config
+except ImportError:
+    config = dict
+
 # To use PyCharm debug server, you would need something like the following:
 # if rank == 0:
 #     import pydevd_pycharm
@@ -78,8 +83,14 @@ def test_run_config(tmpdir, pair_data_file, simulation_input):
 
         # Allow the training phase to converge.
         rc.run_data.set(tolerance=10000)
+
         # Include a test for kwarg handling.
-        rc.run(threads=num_cpus)
+        kwargs = dict()
+        # From gmxapi/CMakeLists.txt, this is "library", "tmpi", or None
+        mpi_type = config().get("gmx_mpi_type")
+        if mpi_type == "tmpi":
+            kwargs["threads"] = num_cpus
+        rc.run(**kwargs)
 
         # Convergence phase.
         assert rc.run_data.get('phase') == 'convergence'
@@ -161,11 +172,17 @@ def test_mpi_ensemble(tmpdir, pair_data_file, simulation_input):
         # Training phase.
         assert rc.run_data.get('phase') == 'training'
         # Include a test for kwarg handling.
-        rc.run(threads=2)
+        kwargs = dict()
+        mpi_type = config().get("gmx_mpi_type")
+        if mpi_type == "tmpi":
+            kwargs["threads"] = 2
+        rc.run(**kwargs)
 
         # Convergence phase.
         assert rc.run_data.get('phase') == 'convergence'
-        rc.run(threads=4)
+        if mpi_type == "tmpi":
+            kwargs['threads'] = 4
+        rc.run(**kwargs)
 
         # Production phase.
         assert rc.run_data.get('phase') == 'production'
@@ -177,7 +194,8 @@ def test_mpi_ensemble(tmpdir, pair_data_file, simulation_input):
         # inspection.
         assert len(os.listdir()) == 0
         # Test another kwarg.
-        rc.run(threads=4, max_hours=0.001)
+        kwargs['max_hours'] = 0.001
+        rc.run(**kwargs)
 
         if comm.Get_size() > 1:
             # TODO(https://github.com/kassonlab/run_brer/issues/7): Confirm that we actually ran different ensemble members.

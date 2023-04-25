@@ -162,28 +162,31 @@ def cleandir(remove_tempdir):
 
 @pytest.fixture(scope='session')
 def gmxcli():
-    # TODO: (#2896) Find a more canonical way to identify the GROMACS commandline wrapper binary.
-    #  We should be able to get the GMXRC contents and related hints from a gmxapi
-    #  package resource or from module attributes of a ``gromacs`` stub package.
-    allowed_command_names = ['gmx', 'gmx_mpi']
-    command = None
-    for command_name in allowed_command_names:
-        if command is not None:
-            break
-        command = shutil.which(command_name)
-        if command is None:
-            gmxbindir = os.getenv('GMXBIN')
-            if gmxbindir is None:
-                gromacsdir = os.getenv('GROMACS_DIR')
-                if gromacsdir is not None and gromacsdir != '':
-                    gmxbindir = os.path.join(gromacsdir, 'bin')
-            if gmxbindir is None:
-                gmxapidir = os.getenv('gmxapi_DIR')
-                if gmxapidir is not None and gmxapidir != '':
-                    gmxbindir = os.path.join(gmxapidir, 'bin')
-            if gmxbindir is not None:
-                gmxbindir = os.path.abspath(gmxbindir)
-                command = shutil.which(command_name, path=gmxbindir)
+    try:
+        import gmxapi.commandline
+        command = gmxapi.commandline.cli_executable()
+    except (ImportError, AttributeError):
+        # The gmxapi version predates the cli_executable() utility.
+        # Search for the cli binary.
+        allowed_command_names = ['gmx', 'gmx_mpi']
+        command = None
+        for command_name in allowed_command_names:
+            if command is not None:
+                break
+            command = shutil.which(command_name)
+            if command is None:
+                gmxbindir = os.getenv('GMXBIN')
+                if gmxbindir is None:
+                    gromacsdir = os.getenv('GROMACS_DIR')
+                    if gromacsdir is not None and gromacsdir != '':
+                        gmxbindir = os.path.join(gromacsdir, 'bin')
+                if gmxbindir is None:
+                    gmxapidir = os.getenv('gmxapi_DIR')
+                    if gmxapidir is not None and gmxapidir != '':
+                        gmxbindir = os.path.join(gmxapidir, 'bin')
+                if gmxbindir is not None:
+                    gmxbindir = os.path.abspath(gmxbindir)
+                    command = shutil.which(command_name, path=gmxbindir)
     if command is None:
         message = "Tests need 'gmx' command line tool, but could not find it on the path."
         raise RuntimeError(message)
@@ -191,7 +194,7 @@ def gmxcli():
         assert os.access(command, os.X_OK)
     except Exception as E:
         raise RuntimeError('"{}" is not an executable gmx wrapper program'.format(command)) from E
-    yield command
+    yield str(command)
 
 
 @pytest.fixture(scope='class')

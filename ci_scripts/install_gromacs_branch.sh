@@ -2,7 +2,7 @@
 set -ev
 
 export GMX_DOUBLE=OFF
-export GMX_MPI=OFF
+export GMX_MPI=${GMX_MPI:-OFF}
 export GMX_THREAD_MPI=ON
 
 export GMX_SRC_DIR=gromacs-$BRANCH
