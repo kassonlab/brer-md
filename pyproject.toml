@@ -12,7 +12,7 @@ requires = [
     "gmxapi",
     "pybind11>=2.6",
     "setuptools>=61",
-    "versioningit~=2.0",
+    "versioningit>=2.0",
     "wheel"
 ]
 build-backend = "backend"

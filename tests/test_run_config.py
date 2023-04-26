@@ -41,6 +41,21 @@ except Exception:
     num_cpus = 4
 
 
+def test_import_utility(simulation_input):
+    from brer.run_config import _context, from_tpr, WorkElement, get_api_callable
+    _context()
+    element = from_tpr(simulation_input)
+    assert isinstance(element, WorkElement)
+    func = get_api_callable("nonsense", ("missing1",))
+    with pytest.raises(RuntimeError, match="Could not import missing1"):
+        func()
+    func = get_api_callable("nonsense", ("missing1", "missing2"))
+    with pytest.raises(RuntimeError, match="Could not import missing2"):
+        func()
+    with pytest.raises(RuntimeError, match="Could not import missing1"):
+        func()
+
+
 @contextlib.contextmanager
 def working_directory_fence():
     """Ensure restoration of working directory when leaving context manager."""
