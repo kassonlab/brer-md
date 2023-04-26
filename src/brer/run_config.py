@@ -39,7 +39,7 @@ def _gmxapi_missing(*args, msg: str = "", **kwargs):
         "brer requires gmxapi. See https://github.com/kassonlab/brer_md#requirements"
     )
     if msg:
-        _message = " ".join((_message, msg))
+        _message = "\n".join((_message, msg))
     raise RuntimeError(_message)
 
 
