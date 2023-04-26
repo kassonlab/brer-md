@@ -41,7 +41,7 @@ except Exception:
     num_cpus = 4
 
 
-def test_lazy_import(simulation_input):
+def test_import_utility(simulation_input):
     from brer.run_config import _context, from_tpr, WorkElement, get_api_callable
     _context()
     element = from_tpr(simulation_input)
