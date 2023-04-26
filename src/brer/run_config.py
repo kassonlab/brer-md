@@ -4,10 +4,12 @@ __all__ = ("RunConfig",)
 import collections.abc
 import dataclasses
 import functools
+import importlib
 import logging
 import os
 import pathlib
 import shutil
+import sys
 import typing
 import warnings
 from typing import Sequence
@@ -26,47 +28,56 @@ from .run_data import RunData
 _Path = Union[str, pathlib.Path]
 
 
-def _gmxapi_missing(*args, exc_info=None, **kwargs):
-    message = (
+def _gmxapi_missing(*args, msg: str = "", **kwargs):
+    """Placeholder function for missing gmxapi functionality.
+
+    Allows import errors to be deferred until run time to aid in docs builds
+    and troubleshooting. Try to provide a useful RuntimeError that includes
+    the details of the import error(s).
+    """
+    _message = (
         "brer requires gmxapi. See https://github.com/kassonlab/brer_md#requirements"
     )
-    if exc_info:
-        message += f" {exc_info}"
-    raise RuntimeError(message)
+    if msg:
+        _message = " ".join((_message, msg))
+    raise RuntimeError(_message)
 
 
-try:
-    # noinspection PyPep8Naming,PyUnresolvedReferences
-    from gmxapi.simulation.context import Context as _context
-except (ImportError, ModuleNotFoundError) as e:
-    try:
-        # noinspection PyPep8Naming
-        from gmx.context import Context as _context
-    except (ImportError, ModuleNotFoundError) as e:
-        missing = functools.partial(_gmxapi_missing, exception=str(e))
-        _context = missing
+def get_api_callable(attr: str, modules: typing.Iterable[str]):
+    """Get a gmxapi callable or placeholder.
 
-try:
-    # noinspection PyUnresolvedReferences
-    from gmxapi.simulation.workflow import from_tpr
-except (ImportError, ModuleNotFoundError) as e:
-    try:
-        # noinspection PyPep8Naming
-        from gmx.workflow import from_tpr
-    except (ImportError, ModuleNotFoundError) as e:
-        missing = functools.partial(_gmxapi_missing, exception=str(e))
-        from_tpr = missing
+    Try to import *attr* from successive *modules*. Return the first callable
+    found, else return a placeholder that emits a RuntimeError when called.
+    """
+    message = ""
+    version = ""
+    func = None
+    for module in modules:
+        try:
+            mod = importlib.import_module(module)
+            func = getattr(mod, attr)
+            base = module.split(".")[0]
+            version = sys.modules[base].__version__
+        except ImportError as e:
+            message = "\n".join((message, f"Could not import {module}: {str(e)}"))
+        else:
+            break
+    if callable(func):
+        qualname = ".".join((func.__module__, func.__name__))
+    else:
+        func = functools.partial(_gmxapi_missing, msg=message)
+        qualname = ".".join((_gmxapi_missing.__module__, "_gmxapi_missing"))
 
-try:
-    # noinspection PyUnresolvedReferences
-    from gmxapi.simulation.workflow import WorkElement
-except (ImportError, ModuleNotFoundError) as e:
-    try:
-        # noinspection PyPep8Naming
-        from gmx.workflow import WorkElement
-    except (ImportError, ModuleNotFoundError) as e:
-        missing = functools.partial(_gmxapi_missing, exception=str(e))
-        WorkElement = missing
+    report = "Using" \
+             + " ".join((qualname, version)) \
+             + " for {attr}."
+    logging.info(report)
+    return func
+
+
+_context = get_api_callable("Context", ("gmxapi.simulation.context", "gmx.context"))
+from_tpr = get_api_callable("from_tpr", ("gmxapi.simulation.workflow", "gmx.workflow"))
+WorkElement = get_api_callable("WorkElement", ("gmxapi.simulation.workflow", "gmx.workflow"))
 
 
 def check_consistency(*, data: PairDataCollection, state: RunData):
