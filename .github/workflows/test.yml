@@ -281,7 +281,7 @@ jobs:
     - name: Install Python dependencies
       run: |
         pip install --upgrade pip setuptools wheel
-        pip install --upgrade packaging cmake
+        pip install --upgrade packaging cmake build
         pip install --no-cache-dir --upgrade --no-binary ":all:" --force-reinstall mpi4py
         pip install pytest codecov pytest-cov MarkupSafe networkx numpy
     - name: Install GROMACS
@@ -301,14 +301,16 @@ jobs:
         mkdir -p $HOME/pip-tmp
         TMPDIR=$HOME/pip-tmp \
         pip install --no-clean --no-build-isolation --no-cache-dir --verbose "${{ env.GMXAPI }}"
-        # pip install --no-clean --no-build-isolation --no-cache-dir --verbose --extra-index-url https://test.pypi.org/simple/ --pre "${{ env.GMXAPI }}"
         git tag --list
         pip list
         export VERSIONINGIT_LOG_LEVEL=INFO
         versioningit .
         rm -rf dist
-        python -m build --sdist -x -n
-        TMPDIR=$HOME/pip-tmp pip install --no-clean --no-build-isolation --no-deps --verbose dist/*
+        python -m build -x -n
+        TMPDIR=$HOME/pip-tmp pip install --no-clean --no-build-isolation --no-deps --verbose dist/brer*.whl
+        rm -rf tests
+        tar xvf dist/brer-md*.tar.gz
+        mv brer-md*/tests ./
         python -m pytest -x -rA -l --log-cli-level=debug --cov=brer --cov-report=xml tests
         # Ref https://github.com/kassonlab/brer-md/issues/5
         # mpiexec -n 2 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests

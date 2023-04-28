@@ -1,5 +1,6 @@
 include _custom_build/backend.py
 include src/plugin
+include tests/conftest.py
 include tests/pytest.ini
 include tests/testdata.json
 graft src/plugin
