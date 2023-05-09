@@ -56,19 +56,21 @@ def test_run_data(tmpdir, raw_pair_data):
     rd.set(alpha=1., name=name)
 
     # Test getting
-    rd.get("alpha", name=name)
     with pytest.raises(ValueError):
         rd.get("alpha")
+    assert rd.get("alpha", name=name) == 1.
 
     # Test read/write of the state
     rd.save_config("{}/state.json".format(tmpdir))
-    old_rd = rd
-    rd = RunData.create_from("{}/state.json".format(tmpdir))
+    modified_rd = rd
+    rd = RunData.create_from(pairs)
+    assert rd.get("alpha", name=name) != 1.
+    assert modified_rd.as_dictionary() != rd.as_dictionary()
 
-    assert old_rd.as_dictionary() != rd.as_dictionary()
-    rd.set(alpha=1., name=name)
     # Confirm that the restored data is the same as the original.
-    assert old_rd.as_dictionary() == rd.as_dictionary()
+    rd = RunData.create_from("{}/state.json".format(tmpdir))
+    assert rd.get("alpha", name=name) == 1.
+    assert modified_rd.as_dictionary() == rd.as_dictionary()
 
     with tempfile.NamedTemporaryFile(suffix='.json', mode='w') as tmp:
         test_data = raw_pair_data.copy()
