@@ -1,0 +1,643 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="prev" title="User API" href="user_api.html" />
+
+    <!-- Generated with Sphinx 6.2.1 and Furo 2023.03.27 -->
+        <title>Developer API - BRER MD documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">BRER MD  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">BRER MD  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="user_api.html">User API</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Developer API</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/kassonlab/brer-md/edit/main/docs/source/developer_api.rst" title="Edit this page">
+    <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
+      <line x1="13.5" y1="6.5" x2="17.5" y2="10.5" />
+    </svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="developer-api">
+<h1>Developer API<a class="headerlink" href="#developer-api" title="Permalink to this heading">#</a></h1>
+<section id="module-brer.directory_helper">
+<span id="directory-helper"></span><h2>directory_helper<a class="headerlink" href="#module-brer.directory_helper" title="Permalink to this heading">#</a></h2>
+<p>Organizes the directory structure for BRER runs. Creates directories on the
+fly.</p>
+<dl class="simple">
+<dt>How the directory structure is organized:</dt><dd><ul class="simple">
+<li><p>This script should be run from your “top” directory (where
+you are planning to run all your ensemble members)</p></li>
+<li><p>The top directory contains ensemble member subdirectories
+This script is intended to handle just ONE ensemble member,
+so we’ll only be concerned with a single member subdirectory.</p></li>
+<li><p>The example below is for the first iteration (iter 0) of one
+of the members. Future iterations would go in directories
+1,2,…y</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.directory_helper.DirectoryHelper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.directory_helper.</span></span><span class="sig-name descname"><span class="pre">DirectoryHelper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.directory_helper.DirectoryHelper" title="Permalink to this definition">#</a></dt>
+<dd><p>Small class for manipulating a standard directory structure for BRER
+runs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top_dir</strong> – the path to the directory containing all the ensemble members.</p></li>
+<li><p><strong>param_dict</strong> – a dictionary specifying the ensemble number, the iteration,
+and the phase of the simulation.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt; .
+&gt;&gt;&gt; ├── 0
+&gt;&gt;&gt; │   ├── converge_dist
+&gt;&gt;&gt; │   │   ├── state.cpt
+&gt;&gt;&gt; │   │   ├── state_prev.cpt
+&gt;&gt;&gt; │   │   └── traj_comp.part0001.xtc
+&gt;&gt;&gt; │   ├── production
+&gt;&gt;&gt; │   │   ├── confout.part0005.gro
+&gt;&gt;&gt; │   │   ├── state.cpt
+&gt;&gt;&gt; │   │   ├── state_prev.cpt
+&gt;&gt;&gt; │   │   ├── state_step4622560.cpt
+&gt;&gt;&gt; │   │   ├── traj_comp.part0002.xtc
+&gt;&gt;&gt; │   └── training
+&gt;&gt;&gt; │       ├── state.cpt
+&gt;&gt;&gt; │       ├── state_prev.cpt
+&gt;&gt;&gt; │       └── traj_comp.part0001.xtc
+&gt;&gt;&gt; ├── state.json
+&gt;&gt;&gt; ├── state_{iteration}.json
+&gt;&gt;&gt; ├── submit.slurm
+&gt;&gt;&gt; └── syx.tpr
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.directory_helper.DirectoryHelper.build_working_dir">
+<span class="sig-name descname"><span class="pre">build_working_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.directory_helper.DirectoryHelper.build_working_dir" title="Permalink to this definition">#</a></dt>
+<dd><p>Checks to see if the working directory for current state of BRER
+simulation exists. If it does not, creates the directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.directory_helper.DirectoryHelper.change_dir">
+<span class="sig-name descname"><span class="pre">change_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.directory_helper.DirectoryHelper.change_dir" title="Permalink to this definition">#</a></dt>
+<dd><p>Change to directory specified by level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – How far to go down the directory tree.
+Can be one of ‘top’, ‘ensemble_num’, ‘iteration’, or ‘phase’.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.directory_helper.DirectoryHelper.get_dir">
+<span class="sig-name descname"><span class="pre">get_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.directory_helper.DirectoryHelper.get_dir" title="Permalink to this definition">#</a></dt>
+<dd><p>Get the directory for however far you want to go down the directory
+tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – one of ‘top’, ‘ensemble_num’, ‘iteration’, or ‘phase’.
+See the directory structure example provided at the beginning of this class.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the path to the specified directory <em>level</em>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-brer.plugin_configs">
+<span id="plugin-configs"></span><h2>plugin_configs<a class="headerlink" href="#module-brer.plugin_configs" title="Permalink to this heading">#</a></h2>
+<p>Classes used to build gmxapi plugins for all phases of a BRER iteration.</p>
+<p>Each class corresponds to one restraint potential provided by :py:mod`brer.md`.
+Each instance corresponds to one restrained pair in a single simulation phase.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.plugin_configs.PluginConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.plugin_configs.</span></span><span class="sig-name descname"><span class="pre">PluginConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging_filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.PluginConfig" title="Permalink to this definition">#</a></dt>
+<dd><p>Abstract class for the BRER potential configurations.</p>
+<p>Provide base class functionality and required interface to build <code class="docutils literal notranslate"><span class="pre">training</span></code>,
+<code class="docutils literal notranslate"><span class="pre">convergence</span></code>, and <code class="docutils literal notranslate"><span class="pre">production</span></code> phase pluggable MD potentials.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – </p></li>
+<li><p><strong>logging_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.plugin_configs.PluginConfig.build_plugin">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_plugin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.PluginConfig.build_plugin" title="Permalink to this definition">#</a></dt>
+<dd><p>Abstract method for building a plugin.</p>
+<p>To be determined by the phase of the simulation (training,
+convergence, production)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.plugin_configs.PluginConfig.create_from">
+<span class="sig-name descname"><span class="pre">create_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.PluginConfig.create_from" title="Permalink to this definition">#</a></dt>
+<dd><p>Get an instance of the appropriate type from the provided data structure.</p>
+<p>Source <em>obj</em> is either a <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a> or an object
+with the fields necessary to initialize a <em>cls</em> instance.</p>
+<p>Extra fields in <em>obj</em> are ignored.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.plugin_configs.TrainingPluginConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.plugin_configs.</span></span><span class="sig-name descname"><span class="pre">TrainingPluginConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.TrainingPluginConfig" title="Permalink to this definition">#</a></dt>
+<dd><p>Configure BRER potential for the training phase.</p>
+<p>The BRER training phase uses the MD potential provided by <code class="xref py py-func docutils literal notranslate"><span class="pre">brer.brer_restraint()</span></code>.</p>
+<p>See <a class="reference external" href="https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407">https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407</a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – </p></li>
+<li><p><strong>logging_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
+<li><p><strong>A</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>num_samples</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>tau</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.plugin_configs.TrainingPluginConfig.build_plugin">
+<span class="sig-name descname"><span class="pre">build_plugin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.TrainingPluginConfig.build_plugin" title="Permalink to this definition">#</a></dt>
+<dd><p>Builds training phase plugin for BRER simulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a gmxapi WorkElement to be added to the workflow graph</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>WorkElement</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.plugin_configs.ConvergencePluginConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.plugin_configs.</span></span><span class="sig-name descname"><span class="pre">ConvergencePluginConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_period</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.ConvergencePluginConfig" title="Permalink to this definition">#</a></dt>
+<dd><p>Configure BRER potential for the convergence phase.</p>
+<p>The BRER convergence phase uses the MD potential provided by <code class="xref py py-func docutils literal notranslate"><span class="pre">brer.linearstop_restraint()</span></code>.</p>
+<p>See <a class="reference external" href="https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407">https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407</a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – </p></li>
+<li><p><strong>logging_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>sample_period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.plugin_configs.ConvergencePluginConfig.build_plugin">
+<span class="sig-name descname"><span class="pre">build_plugin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.ConvergencePluginConfig.build_plugin" title="Permalink to this definition">#</a></dt>
+<dd><p>Builds convergence phase plugin for BRER simulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a gmxapi WorkElement to be added to the workflow graph</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>WorkElement</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.11)"><strong>ValueError</strong></a> – If inappropriate values are detected for any fields.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.plugin_configs.ProductionPluginConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.plugin_configs.</span></span><span class="sig-name descname"><span class="pre">ProductionPluginConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_period</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.ProductionPluginConfig" title="Permalink to this definition">#</a></dt>
+<dd><p>Configure BRER potential for the convergence phase.</p>
+<p>The BRER production phase uses the MD potential provided by <code class="xref py py-func docutils literal notranslate"><span class="pre">brer.linear_restraint()</span></code>.</p>
+<p>See <a class="reference external" href="https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407">https://pubs.acs.org/doi/10.1021/acs.jpclett.9b01407</a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – </p></li>
+<li><p><strong>logging_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>sample_period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.plugin_configs.ProductionPluginConfig.build_plugin">
+<span class="sig-name descname"><span class="pre">build_plugin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.plugin_configs.ProductionPluginConfig.build_plugin" title="Permalink to this definition">#</a></dt>
+<dd><p>Builds production phase plugin for BRER simulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a gmxapi WorkElement to be added to the workflow graph</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>WorkElement</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.11)"><strong>ValueError</strong></a> – If inappropriate values are detected for any fields.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-brer.md">
+<span id="md-potentials"></span><h2>MD potentials<a class="headerlink" href="#module-brer.md" title="Permalink to this heading">#</a></h2>
+<p>MD potentials for BRER simulation workflows.</p>
+<p>As of 2022, we are still using the old gmxapi 0.0.7 style
+<a class="reference external" href="https://gmxapi.readthedocs.io/en/release-0_0_7/reference.html#gmx.workflow.WorkElement">WorkElement</a>
+to connect pluggable extension code to the GROMACS simulator.
+The WorkElement is constructed by the <a class="reference internal" href="#module-brer.plugin_configs" title="brer.plugin_configs"><code class="xref any py py-mod docutils literal notranslate"><span class="pre">brer.plugin_configs</span></code></a> module by encoding
+an entry point function and its input parameters.</p>
+<section id="entry-points">
+<h3>Entry points<a class="headerlink" href="#entry-points" title="Permalink to this heading">#</a></h3>
+<p>The following creation functions are used to support creation of gmxapi
+pluggable GROMACS restraint potentials.
+The entry point function consumes a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">gmxapi.simulation.workflow.WorkElement</span></code>
+to produce an opaque object that can finish setting up the interactions with the
+gmxapi simulator lifetime management.</p>
+<p>In addition to the parameters described below, all restraint potentials require
+a <a class="reference internal" href="#term-sites"><span class="xref std std-term">sites</span></a> parameter.</p>
+<dl class="simple glossary">
+<dt id="term-sites">sites<a class="headerlink" href="#term-sites" title="Permalink to this term">#</a></dt><dd><p>(<em>list[int]</em>) Describe the pair distance relevant to an instance of a BRER potential.
+The list is a sequence of two or more sites, expressed as atom indices
+in the molecular model. The first and last index define the origin and tip
+of the displacement vector. In the case that this vector may be ambiguous
+with respect to periodic boundary conditions (if the sites are likely to
+ever be further apart on the molecule than half of the shortest simulation
+box dimension), additional indices can be inserted between the first and
+last element to define a sequence of vectors that can reliably sum to the
+intended vector.</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="brer.md.linear_restraint">
+<span class="sig-prename descclassname"><span class="pre">brer.md.</span></span><span class="sig-name descname"><span class="pre">linear_restraint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.md.linear_restraint" title="Permalink to this definition">#</a></dt>
+<dd><p>Configure the BRER potential used for the production phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – coupling parameter.</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – site displacement distance to bias towards.</p></li>
+<li><p><strong>sample_period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – time between samples (simulator time units)</p></li>
+<li><p><strong>logging_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – output file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="brer.md.linearstop_restraint">
+<span class="sig-prename descclassname"><span class="pre">brer.md.</span></span><span class="sig-name descname"><span class="pre">linearstop_restraint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.md.linearstop_restraint" title="Permalink to this definition">#</a></dt>
+<dd><p>Configure the BRER potential used during the convergence phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – coupling parameter.</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – site displacement distance to bias towards.</p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – convergence detection parameter</p></li>
+<li><p><strong>sample_period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – time between samples (simulator time units)</p></li>
+<li><p><strong>logging_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – output file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="brer.md.brer_restraint">
+<span class="sig-prename descclassname"><span class="pre">brer.md.</span></span><span class="sig-name descname"><span class="pre">brer_restraint</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.md.brer_restraint" title="Permalink to this definition">#</a></dt>
+<dd><p>brer_restraint(arg0: object) -&gt; brer.md.BRERBuilder</p>
+<p>Configure the self-tuning potential for the BRER training phase.</p>
+<p>Configure the BRER potential used for the training phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – control the maximum energy input while training the coupling parameter.</p></li>
+<li><p><strong>tau</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – time constant for sample smoothing (simulator time units).</p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – convergence detection parameter</p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – site displacement distance to bias towards.</p></li>
+<li><p><strong>num_samples</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – number of samples to average at each update.</p></li>
+<li><p><strong>logging_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – output file</p></li>
+</ul>
+</dd>
+</dl>
+<p>During execution, the pair distance is regularly sampled. To smooth fluctuations,
+a rolling average is maintained over a period <em>tau</em>. A measurement is recorded
+and the average is updated at intervals of <em>tau/num_samples</em>.</p>
+<p>For additional explanation of <em>A</em>, see White and Voth, <a class="reference external" href="https://doi.org/10.1021/ct500320c">https://doi.org/10.1021/ct500320c</a></p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          <a class="prev-page" href="user_api.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">User API</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Jennifer M. Hays
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Developer API</a><ul>
+<li><a class="reference internal" href="#module-brer.directory_helper">directory_helper</a><ul>
+<li><a class="reference internal" href="#brer.directory_helper.DirectoryHelper"><code class="docutils literal notranslate"><span class="pre">DirectoryHelper</span></code></a><ul>
+<li><a class="reference internal" href="#brer.directory_helper.DirectoryHelper.build_working_dir"><code class="docutils literal notranslate"><span class="pre">DirectoryHelper.build_working_dir()</span></code></a></li>
+<li><a class="reference internal" href="#brer.directory_helper.DirectoryHelper.change_dir"><code class="docutils literal notranslate"><span class="pre">DirectoryHelper.change_dir()</span></code></a></li>
+<li><a class="reference internal" href="#brer.directory_helper.DirectoryHelper.get_dir"><code class="docutils literal notranslate"><span class="pre">DirectoryHelper.get_dir()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-brer.plugin_configs">plugin_configs</a><ul>
+<li><a class="reference internal" href="#brer.plugin_configs.PluginConfig"><code class="docutils literal notranslate"><span class="pre">PluginConfig</span></code></a><ul>
+<li><a class="reference internal" href="#brer.plugin_configs.PluginConfig.build_plugin"><code class="docutils literal notranslate"><span class="pre">PluginConfig.build_plugin()</span></code></a></li>
+<li><a class="reference internal" href="#brer.plugin_configs.PluginConfig.create_from"><code class="docutils literal notranslate"><span class="pre">PluginConfig.create_from()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#brer.plugin_configs.TrainingPluginConfig"><code class="docutils literal notranslate"><span class="pre">TrainingPluginConfig</span></code></a><ul>
+<li><a class="reference internal" href="#brer.plugin_configs.TrainingPluginConfig.build_plugin"><code class="docutils literal notranslate"><span class="pre">TrainingPluginConfig.build_plugin()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#brer.plugin_configs.ConvergencePluginConfig"><code class="docutils literal notranslate"><span class="pre">ConvergencePluginConfig</span></code></a><ul>
+<li><a class="reference internal" href="#brer.plugin_configs.ConvergencePluginConfig.build_plugin"><code class="docutils literal notranslate"><span class="pre">ConvergencePluginConfig.build_plugin()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#brer.plugin_configs.ProductionPluginConfig"><code class="docutils literal notranslate"><span class="pre">ProductionPluginConfig</span></code></a><ul>
+<li><a class="reference internal" href="#brer.plugin_configs.ProductionPluginConfig.build_plugin"><code class="docutils literal notranslate"><span class="pre">ProductionPluginConfig.build_plugin()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-brer.md">MD potentials</a><ul>
+<li><a class="reference internal" href="#entry-points">Entry points</a><ul>
+<li><a class="reference internal" href="#brer.md.linear_restraint"><code class="docutils literal notranslate"><span class="pre">linear_restraint()</span></code></a></li>
+<li><a class="reference internal" href="#brer.md.linearstop_restraint"><code class="docutils literal notranslate"><span class="pre">linearstop_restraint()</span></code></a></li>
+<li><a class="reference internal" href="#brer.md.brer_restraint"><code class="docutils literal notranslate"><span class="pre">brer_restraint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    </body>
+</html>

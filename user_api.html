@@ -1,0 +1,767 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Developer API" href="developer_api.html" /><link rel="prev" title="Welcome to BRER’s documentation!" href="index.html" />
+
+    <!-- Generated with Sphinx 6.2.1 and Furo 2023.03.27 -->
+        <title>User API - BRER MD documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?digest=fad236701ea90a88636c2a8c73b44ae642ed2a53" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">BRER MD  documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">BRER MD  documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">User API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="developer_api.html">Developer API</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/kassonlab/brer-md/edit/main/docs/source/user_api.rst" title="Edit this page">
+    <svg aria-hidden="true" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <path d="M4 20h4l10.5 -10.5a1.5 1.5 0 0 0 -4 -4l-10.5 10.5v4" />
+      <line x1="13.5" y1="6.5" x2="17.5" y2="10.5" />
+    </svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="user-api">
+<h1>User API<a class="headerlink" href="#user-api" title="Permalink to this heading">#</a></h1>
+<section id="module-brer.run_config">
+<span id="brer-runner"></span><h2>BRER runner<a class="headerlink" href="#module-brer.run_config" title="Permalink to this heading">#</a></h2>
+<p>RunConfig class handles the actual workflow logic.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.run_config.RunConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.run_config.</span></span><span class="sig-name descname"><span class="pre">RunConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tpr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairs_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pair_data.json'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_config.RunConfig" title="Permalink to this definition">#</a></dt>
+<dd><p>Run configuration for single BRER ensemble member.</p>
+<p>The run configuration specifies the files and directory structure
+used for the run. It determines whether the run is in the training,
+convergence, or production phase, then performs the run.</p>
+<p>Note that all instances of RunConfig need the same sized array of TPR input
+files across all ranks in an MPI ensemble because they must all be capable of
+constructing a compatible copy of the ensemble simulation work description.</p>
+<p>Source data for the pair restraints is provided through a JSON file
+(<em>pairs_json</em>). See <a class="reference internal" href="#brer.pair_data.PairDataCollection" title="brer.pair_data.PairDataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">brer.pair_data.PairDataCollection</span></code></a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tpr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – path (or paths) to tpr input. Must be compatible with the GROMACS version
+providing gmxapi.</p></li>
+<li><p><strong>ensemble_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – path to top directory which contains the full ensemble.</p></li>
+<li><p><strong>ensemble_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>, </em><em>default=0</em>) – the ensemble member to run</p></li>
+<li><p><strong>pairs_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>default=&quot;pair_data.json&quot;</em>) – path to file containing <em>ALL</em> the pair metadata.
+(A serialized <a class="reference internal" href="#brer.pair_data.PairDataCollection" title="brer.pair_data.PairDataCollection"><code class="xref py py-class docutils literal notranslate"><span class="pre">brer.pair_data.PairDataCollection</span></code></a>.)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.run_config.RunConfig.build_plugins">
+<span class="sig-name descname"><span class="pre">build_plugins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plugin_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_config.RunConfig.build_plugins" title="Permalink to this definition">#</a></dt>
+<dd><p>Builds the plugin configuration.</p>
+<p>For each pair-wise restraint,
+populate the plugin with data: both the “general” data and the data
+unique to that restraint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>plugin_config</strong> (<a class="reference internal" href="developer_api.html#brer.plugin_configs.PluginConfig" title="brer.plugin_configs.PluginConfig"><em>PluginConfig</em></a>) – the particular plugin configuration (Training, Convergence, Production) for
+the run.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.run_config.RunConfig.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tpr_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_config.RunConfig.run" title="Permalink to this definition">#</a></dt>
+<dd><p>Perform the MD simulations.</p>
+<p>Each Python interpreter process runs a separate ensemble member.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tpr_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>optional</em>) – If provided, use this input file instead of the input from the main
+configuration.</p></li>
+<li><p><strong>**kwargs</strong> (<em>optional</em>) – Additional key word arguments are passed on to the simulator.</p></li>
+</ul>
+</dd>
+</dl>
+<p>After the first “iteration”, brer bootstraps the training and convergence
+phase’s trajectory with the checkpoint file from the previous iteration’s
+production phase.</p>
+<p>At the beginning of a production phase (when there is not yet a checkpoint file),
+the checkpoint file from the convergence phase is used to start the production
+trajectory <strong>unless</strong> <em>tpr_file</em> is given.</p>
+<p>When <em>tpr_file</em> is not None, run() does not look for a bootstrapping checkpoint
+file. This can be helpful if a checkpoint file is corrupted or unavailable.
+In general, this means that the <em>tpr_file</em> argument should include
+the starting configuration you intend for the phase that you are about to run().
+If you are providing the <em>tpr_file</em> because you are changing parameters that
+render existing checkpoints incompatible, you need to either generate the file
+with the checkpoint from which you want to continue, or you may remove the
+checkpoint file from the phase directory and restart that phase.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">config_params</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s2">&quot;tpr&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/topol.tpr&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_dir</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="s2">&quot;ensemble_num&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;ensemble_dir&quot;</span><span class="p">:</span> <span class="n">tmpdir</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">&quot;pairs_json&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/pair_data.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rc</span> <span class="o">=</span> <span class="n">RunConfig</span><span class="p">(</span><span class="o">**</span><span class="n">config_params</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">rc</span><span class="o">.</span><span class="n">run_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;phase&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;training&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">threads</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">rc</span><span class="o">.</span><span class="n">run_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;phase&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;convergence&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rc</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">assert</span> <span class="n">rc</span><span class="o">.</span><span class="n">run_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;phase&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;production&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rc</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tpr_file</span><span class="o">=</span><span class="n">new_tpr</span><span class="p">,</span> <span class="n">max_hours</span><span class="o">=</span><span class="mf">23.9</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="brer-parameters">
+<h2>BRER parameters<a class="headerlink" href="#brer-parameters" title="Permalink to this heading">#</a></h2>
+<section id="module-brer.pair_data">
+<span id="pair-data-module"></span><h3><em>pair_data</em> module<a class="headerlink" href="#module-brer.pair_data" title="Permalink to this heading">#</a></h3>
+<p>BRER data for site pairs.</p>
+<p>Coordinate the experimental reference data and molecular model data for the
+labeled / restrained pairs.</p>
+<p>Support the statistical (re)sampling of target pair distances when beginning a
+BRER iteration.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.pair_data.PairData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.pair_data.</span></span><span class="sig-name descname"><span class="pre">PairData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sites</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.pair_data.PairData" title="Permalink to this definition">#</a></dt>
+<dd><p>Pair distance distribution.</p>
+<p>Essential pair data to support BRER MD plugin code. All data must be
+provided when the object is initialized. (Fields are read-only.)</p>
+<p>Fields here correspond to the fields for each named pair
+(JSON <em>objects</em>) in a <code class="file docutils literal notranslate"><span class="pre">pair_data.json</span></code> file (the <em>pairs_json</em> argument
+of <a class="reference internal" href="#brer.run_config.RunConfig" title="brer.run_config.RunConfig"><code class="xref py py-func docutils literal notranslate"><span class="pre">RunConfig()</span></code></a>).</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 2.0: </span>When reading from
+<code class="file docutils literal notranslate"><span class="pre">pair_data.json</span></code> or <code class="file docutils literal notranslate"><span class="pre">state.json</span></code>, the <em>name</em> used for
+PairData comes from the object key, not from the <em>name</em> field of the object.
+The <em>name</em> field in the serialized (JSON) representation is ignored
+when reading, but is preserved for backward compatibility when writing.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
+<li><p><strong>bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em>) – </p></li>
+<li><p><strong>distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a><em>]</em>) – </p></li>
+<li><p><strong>sites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="brer.pair_data.PairData.bins">
+<span class="sig-name descname"><span class="pre">bins</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#brer.pair_data.PairData.bins" title="Permalink to this definition">#</a></dt>
+<dd><p>Histogram edges for the distance distribution data.</p>
+<p>(Simulation length units.)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="brer.pair_data.PairData.distribution">
+<span class="sig-name descname"><span class="pre">distribution</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#brer.pair_data.PairData.distribution" title="Permalink to this definition">#</a></dt>
+<dd><p>Site distance distribution.</p>
+<p>Histogram values (weights or relative probabilities) for distances between
+the sites. (Generally derived from experimental data.)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="brer.pair_data.PairData.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a></em><a class="headerlink" href="#brer.pair_data.PairData.name" title="Permalink to this definition">#</a></dt>
+<dd><p>Identifier for the pair of sites on the molecule.</p>
+<p>This string is chosen by the researcher. For example, the name may
+include identifiers for the two residues in a scheme that can be easily
+cross-referenced with experimental data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="brer.pair_data.PairData.sites">
+<span class="sig-name descname"><span class="pre">sites</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#brer.pair_data.PairData.sites" title="Permalink to this definition">#</a></dt>
+<dd><p>Indices defining the distance vector.</p>
+<p>A list of indices for sites in the molecular model. The first and last
+list elements are the sites associated with the distance data. Additional
+indices can be inserted in the list to define a chain of distance vectors
+that will be added without applying periodic boundary conditions.</p>
+<p>If, at any point in the simulation, the two molecular sites in the pair
+might be farther apart than half of the shortest simulation box dimension,
+the distance might accidentally get calculated between sites on different
+molecule “images” (periodic boundary conditions). To make sure that site-site
+distances are calculated on the same molecule, provide a sequence of sites
+on the molecule (that are never more than half a box-length apart) so that
+the correct vector between sites is unambiguous.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.pair_data.PairDataCollection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.pair_data.</span></span><span class="sig-name descname"><span class="pre">PairDataCollection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">pairs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.pair_data.PairDataCollection" title="Permalink to this definition">#</a></dt>
+<dd><p>Data for all the restrained pairs in a BRER simulation.</p>
+<p>Source data for the pair restraints is provided through a JSON file
+(<em>pairs_json</em>). The JSON file contains one <em>JSON object</em> for each
+<a class="reference internal" href="#brer.pair_data.PairData" title="brer.pair_data.PairData"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PairData</span></code></a> to be read.</p>
+<p>For each object, the object key is assumed to be the
+<a class="reference internal" href="#brer.pair_data.PairData.name" title="brer.pair_data.PairData.name"><code class="xref any py py-attr docutils literal notranslate"><span class="pre">PairData.name</span></code></a> of a pair.
+The JSON object contents are used to initialize a
+<a class="reference internal" href="#brer.pair_data.PairData" title="brer.pair_data.PairData"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PairData</span></code></a> for each named pair.</p>
+<p>The data file is usually constructed manually by the researcher after
+inspection of a molecular model and available experimental data. An example
+of what such a file should look like is provided in the <code class="file docutils literal notranslate"><span class="pre">brer/data</span></code>
+directory of the installed package or
+<a class="reference external" href="https://github.com/kassonlab/brer-md/tree/main/src/brer/data">in the source</a>
+repository.</p>
+<p>Note that JSON is not a Python-specific file format, but
+<a class="reference external" href="https://docs.python.org/3/library/json.html#module-json" title="(in Python v3.11)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">json</span></code></a> may be helpful.</p>
+<p>A <em>PairDataCollection</em> can be initialized from a sequence of <a class="reference internal" href="#brer.pair_data.PairData" title="brer.pair_data.PairData"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PairData</span></code></a>
+objects, or created from a JSON pair data file by using <a class="reference internal" href="#brer.pair_data.PairDataCollection.create_from" title="brer.pair_data.PairDataCollection.create_from"><code class="xref any py py-meth docutils literal notranslate"><span class="pre">create_from()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pairs</strong> (<a class="reference internal" href="#brer.pair_data.PairData" title="brer.pair_data.PairData"><em>PairData</em></a>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.pair_data.PairDataCollection.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.pair_data.PairDataCollection.as_dict" title="Permalink to this definition">#</a></dt>
+<dd><p>Encode the full collection as a single Python dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.pair_data.PairDataCollection.create_from">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.pair_data.PairDataCollection.create_from" title="Permalink to this definition">#</a></dt>
+<dd><p>Reads pair data from json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.11)"><em>PathLike</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.11)"><em>Path</em></a>) – filename of the pair data</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="brer.pair_data.sample">
+<span class="sig-prename descclassname"><span class="pre">brer.pair_data.</span></span><span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pair_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.pair_data.sample" title="Permalink to this definition">#</a></dt>
+<dd><p>Choose a bin edge according to the probability distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pair_data</strong> (<a class="reference internal" href="#brer.pair_data.PairData" title="brer.pair_data.PairData"><em>PairData</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="brer.pair_data.sample_all">
+<span class="sig-prename descclassname"><span class="pre">brer.pair_data.</span></span><span class="sig-name descname"><span class="pre">sample_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pairs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.pair_data.sample_all" title="Permalink to this definition">#</a></dt>
+<dd><p>Get a mapping of pair names to freshly sampled targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pairs</strong> (<a class="reference internal" href="#brer.pair_data.PairDataCollection" title="brer.pair_data.PairDataCollection"><em>PairDataCollection</em></a>) – </p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-brer.run_data">
+<span id="run-data-module"></span><h3><em>run_data</em> module<a class="headerlink" href="#module-brer.run_data" title="Permalink to this heading">#</a></h3>
+<p>Handle simulation data for BRER simulations.</p>
+<p><a class="reference internal" href="#brer.run_data.RunData" title="brer.run_data.RunData"><code class="xref any py py-class docutils literal notranslate"><span class="pre">RunData</span></code></a> manages general parameters (<a class="reference internal" href="#brer.run_data.GeneralParams" title="brer.run_data.GeneralParams"><code class="xref any py py-class docutils literal notranslate"><span class="pre">GeneralParams</span></code></a>) and pair-specific
+parameters (<a class="reference internal" href="#brer.run_data.PairParams" title="brer.run_data.PairParams"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PairParams</span></code></a>) for a single simulator for a specific phase of the
+BRER method.</p>
+<p>Parameters are initially provided through the
+<a class="reference internal" href="#brer.run_config.RunConfig" title="brer.run_config.RunConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunConfig</span></code></a>, and are then stored to (and restored
+from) an internally managed <code class="file docutils literal notranslate"><span class="pre">state.json</span></code> file.</p>
+<p>Not all parameters are applicable to all BRER phases.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="developer_api.html#module-brer.plugin_configs" title="brer.plugin_configs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">brer.plugin_configs</span></code></a></p>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.run_data.RunData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.run_data.</span></span><span class="sig-name descname"><span class="pre">RunData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">general_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pair_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_data.RunData" title="Permalink to this definition">#</a></dt>
+<dd><p>Store (and manipulate, to a lesser extent) all the metadata for a BRER run.</p>
+<p>The full set of metadata for a single BRER run includes both the general
+parameters and the pair-specific parameters.</p>
+<p>Key-value pairs provided to <em>general_params</em> will be used to update the
+default values of a new <a class="reference internal" href="#brer.run_data.GeneralParams" title="brer.run_data.GeneralParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralParams</span></code></a> instance.</p>
+<p><em>pair_params</em> is a mapping of named <a class="reference internal" href="#brer.run_data.PairParams" title="brer.run_data.PairParams"><code class="xref any py py-class docutils literal notranslate"><span class="pre">PairParams</span></code></a> instances.</p>
+<p>Both general and pair-specific parameters may be updated with <em>set()</em>.</p>
+<p>This is the BRER program state data structure. We avoid the name “state”
+because of potential confusion with concepts like energetic, conformational,
+or thermodynamic state, but we use the filename <code class="file docutils literal notranslate"><span class="pre">state.json</span></code> for the
+serialized object. RunData instances can be serialized to a file with
+<a class="reference internal" href="#brer.run_data.RunData.save_config" title="brer.run_data.RunData.save_config"><code class="xref py py-meth docutils literal notranslate"><span class="pre">save_config()</span></code></a> or deserialized (restored from a file)
+with <a class="reference internal" href="#brer.run_data.RunData.create_from" title="brer.run_data.RunData.create_from"><code class="xref py py-meth docutils literal notranslate"><span class="pre">create_from()</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── pair parameters
+│   ├── name of pair 1
+│   │   ├── alpha
+│   │   ├── target
+│   │   └── ...
+│   ├── name of pair 2
+|
+├── general parameters
+    ├── A
+    ├── tau
+    ├── ...
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>general_params</strong> (<a class="reference internal" href="#brer.run_data.GeneralParams" title="brer.run_data.GeneralParams"><em>GeneralParams</em></a>) – </p></li>
+<li><p><strong>pair_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping" title="(in Python v3.11)"><em>MutableMapping</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><a class="reference internal" href="#brer.run_data.PairParams" title="brer.run_data.PairParams"><em>PairParams</em></a><em>]</em>) – </p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.run_data.RunData.as_dictionary">
+<span class="sig-name descname"><span class="pre">as_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_data.RunData.as_dictionary" title="Permalink to this definition">#</a></dt>
+<dd><p>Get the run metadata as a hierarchical dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>hierarchical dictionary of metadata</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)">dict</a></p>
+</dd>
+</dl>
+<p>For historical reasons, the top level dictionary keys are not exact string
+matches for the object attributes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.run_data.RunData.create_from">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/os.html#os.PathLike" title="(in Python v3.11)"><span class="pre">PathLike</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.11)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#brer.run_data.RunData" title="brer.run_data.RunData"><span class="pre">RunData</span></a></span></span><a class="headerlink" href="#brer.run_data.RunData.create_from" title="Permalink to this definition">#</a></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping" title="(in Python v3.11)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.11)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#brer.run_data.RunData" title="brer.run_data.RunData"><span class="pre">RunData</span></a></span></span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_from</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#brer.pair_data.PairDataCollection" title="brer.pair_data.PairDataCollection"><span class="pre">PairDataCollection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#brer.run_data.RunData" title="brer.run_data.RunData"><span class="pre">RunData</span></a></span></span></dt>
+<dd><p>Create a new instance from provided data.</p>
+<p>Warns if <em>ensemble_num</em> is specified but contradicts <em>source</em>.
+If <em>ensemble_num</em> is not specified and is not found in <em>source</em>, the
+default value is determined by <a class="reference internal" href="#brer.run_data.GeneralParams" title="brer.run_data.GeneralParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">GeneralParams</span></code></a>.</p>
+<p><em>source</em> is usually either a <code class="file docutils literal notranslate"><span class="pre">state.json</span></code> file or a</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source</strong> – File or Python objects from which to initialize RunData.</p></li>
+<li><p><strong>ensemble_num</strong> – Member index in the ensemble (if any).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.run_data.RunData.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_data.RunData.get" title="Permalink to this definition">#</a></dt>
+<dd><p>Get either a general or a pair-specific parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – The parameter to get.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>default=None</em>) – If getting a pair-specific parameter, specify the restraint name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the parameter value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.11)"><em>Any</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.run_data.RunData.save_config">
+<span class="sig-name descname"><span class="pre">save_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fnm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'state.json'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_data.RunData.save_config" title="Permalink to this definition">#</a></dt>
+<dd><p>Saves the run parameters to a log file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fnm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>default='state.json'</em>) – Log file for state parameters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="brer.run_data.RunData.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_data.RunData.set" title="Permalink to this definition">#</a></dt>
+<dd><p>Set either general or pair-specific parameters.</p>
+<p>When a <em>name</em> argument is present, sets pair-specific parameters for
+the named restraint.</p>
+<p>When <em>name</em> is not provided, sets general parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a><em>, </em><em>default=None</em>) – Restraint name, as used in the <a class="reference internal" href="#brer.run_config.RunConfig" title="brer.run_config.RunConfig"><code class="xref any py py-class docutils literal notranslate"><span class="pre">brer.run_config.RunConfig</span></code></a>.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.11)"><strong>ValueError</strong></a> – if you provide a name and try to set a general parameter or
+    don’t provide a name and try to set a pair-specific parameter.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.run_data.GeneralParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.run_data.</span></span><span class="sig-name descname"><span class="pre">GeneralParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ensemble_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iteration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'training'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">production_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.25</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_data.GeneralParams" title="Permalink to this definition">#</a></dt>
+<dd><p>Store the parameters shared by all restraints in a single simulation.</p>
+<p>These include some of the “Voth” parameters: <em>tau</em>, <em>A</em>, <em>tolerance</em></p>
+<div class="versionadded">
+<p><span class="versionmodified added">New in version 2.0: </span>The <em>end_time</em> parameter.</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 2.0: </span><em>ensemble_num</em> now defaults to 0 for consistency with <a class="reference internal" href="#brer.run_config.RunConfig" title="brer.run_config.RunConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RunConfig</span></code></a></p>
+</div>
+<p>Update general parameters before a call to
+<a class="reference internal" href="#brer.run_config.RunConfig.run" title="brer.run_config.RunConfig.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">brer.run_config.RunConfig.run()</span></code></a> by calling
+<a class="reference internal" href="#brer.run_data.RunData.set" title="brer.run_data.RunData.set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">brer.run_data.RunData.set()</span></code></a> without a <em>name</em> argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>end_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>ensemble_num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
+<li><p><strong>iteration</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
+<li><p><strong>num_samples</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a>) – </p></li>
+<li><p><strong>phase</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
+<li><p><strong>production_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>sample_period</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>start_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>tau</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>tolerance</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="brer.run_data.PairParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">brer.run_data.</span></span><span class="sig-name descname"><span class="pre">PairParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sites</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#brer.run_data.PairParams" title="Permalink to this definition">#</a></dt>
+<dd><p>Stores the parameters that are unique to a specific restraint.</p>
+<p><em>PairParams</em> is a mutable structure for run time data. Fields such as
+<em>alpha</em> and <em>target</em> may be updated automatically while running <em>brer</em>.</p>
+<p><em>PairParams</em> should not be confused with
+<a class="reference internal" href="#brer.pair_data.PairData" title="brer.pair_data.PairData"><code class="xref py py-class docutils literal notranslate"><span class="pre">PairData</span></code></a> (an input data structure).</p>
+<p>Update pair-specific parameters before a call to
+<a class="reference internal" href="#brer.run_config.RunConfig.run" title="brer.run_config.RunConfig.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">brer.run_config.RunConfig.run()</span></code></a> by calling
+<a class="reference internal" href="#brer.run_data.RunData.set" title="brer.run_data.RunData.set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">brer.run_data.RunData.set()</span></code></a>, providing the pair name with the
+<em>name</em> argument.</p>
+<p><em>logging_filename</em> is derived from the pair <em>name</em> (user-provided;
+usually derived from the residue IDs defining the pair).
+Overriding the default produces a warning.</p>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 2.0: </span><em>sites</em> is required to initialize the object.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
+<li><p><strong>sites</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><em>int</em></a><em>]</em>) – </p></li>
+<li><p><strong>logging_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><em>str</em></a>) – </p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+<li><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.11)"><em>float</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="developer_api.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Developer API</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Home</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Jennifer M. Hays
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">User API</a><ul>
+<li><a class="reference internal" href="#module-brer.run_config">BRER runner</a><ul>
+<li><a class="reference internal" href="#brer.run_config.RunConfig"><code class="docutils literal notranslate"><span class="pre">RunConfig</span></code></a><ul>
+<li><a class="reference internal" href="#brer.run_config.RunConfig.build_plugins"><code class="docutils literal notranslate"><span class="pre">RunConfig.build_plugins()</span></code></a></li>
+<li><a class="reference internal" href="#brer.run_config.RunConfig.run"><code class="docutils literal notranslate"><span class="pre">RunConfig.run()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#brer-parameters">BRER parameters</a><ul>
+<li><a class="reference internal" href="#module-brer.pair_data"><em>pair_data</em> module</a><ul>
+<li><a class="reference internal" href="#brer.pair_data.PairData"><code class="docutils literal notranslate"><span class="pre">PairData</span></code></a><ul>
+<li><a class="reference internal" href="#brer.pair_data.PairData.bins"><code class="docutils literal notranslate"><span class="pre">PairData.bins</span></code></a></li>
+<li><a class="reference internal" href="#brer.pair_data.PairData.distribution"><code class="docutils literal notranslate"><span class="pre">PairData.distribution</span></code></a></li>
+<li><a class="reference internal" href="#brer.pair_data.PairData.name"><code class="docutils literal notranslate"><span class="pre">PairData.name</span></code></a></li>
+<li><a class="reference internal" href="#brer.pair_data.PairData.sites"><code class="docutils literal notranslate"><span class="pre">PairData.sites</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#brer.pair_data.PairDataCollection"><code class="docutils literal notranslate"><span class="pre">PairDataCollection</span></code></a><ul>
+<li><a class="reference internal" href="#brer.pair_data.PairDataCollection.as_dict"><code class="docutils literal notranslate"><span class="pre">PairDataCollection.as_dict()</span></code></a></li>
+<li><a class="reference internal" href="#brer.pair_data.PairDataCollection.create_from"><code class="docutils literal notranslate"><span class="pre">PairDataCollection.create_from()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#brer.pair_data.sample"><code class="docutils literal notranslate"><span class="pre">sample()</span></code></a></li>
+<li><a class="reference internal" href="#brer.pair_data.sample_all"><code class="docutils literal notranslate"><span class="pre">sample_all()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-brer.run_data"><em>run_data</em> module</a><ul>
+<li><a class="reference internal" href="#brer.run_data.RunData"><code class="docutils literal notranslate"><span class="pre">RunData</span></code></a><ul>
+<li><a class="reference internal" href="#brer.run_data.RunData.as_dictionary"><code class="docutils literal notranslate"><span class="pre">RunData.as_dictionary()</span></code></a></li>
+<li><a class="reference internal" href="#brer.run_data.RunData.create_from"><code class="docutils literal notranslate"><span class="pre">RunData.create_from()</span></code></a></li>
+<li><a class="reference internal" href="#brer.run_data.RunData.get"><code class="docutils literal notranslate"><span class="pre">RunData.get()</span></code></a></li>
+<li><a class="reference internal" href="#brer.run_data.RunData.save_config"><code class="docutils literal notranslate"><span class="pre">RunData.save_config()</span></code></a></li>
+<li><a class="reference internal" href="#brer.run_data.RunData.set"><code class="docutils literal notranslate"><span class="pre">RunData.set()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#brer.run_data.GeneralParams"><code class="docutils literal notranslate"><span class="pre">GeneralParams</span></code></a></li>
+<li><a class="reference internal" href="#brer.run_data.PairParams"><code class="docutils literal notranslate"><span class="pre">PairParams</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/scripts/furo.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    </body>
+</html>
