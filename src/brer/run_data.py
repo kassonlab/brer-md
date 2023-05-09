@@ -333,7 +333,9 @@ class RunData:
                     warnings.warn(f'Caller provided ensemble_num={ensemble_num} overrides {_source_id} '
                                   f'from {source}.')
                     general_params.ensemble_num = ensemble_num
-            pair_params = {name: PairParams(name=name, sites=fields['sites']) for name, fields in
+            # Unlike when creating from a PairDataCollection, the state file provides
+            # non-default values for other PairParams fields.
+            pair_params = {name: PairParams(**fields) for name, fields in
                            source['pair parameters'].items()}
             return RunData(general_params=general_params, pair_params=pair_params)
         else:
