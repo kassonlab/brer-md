@@ -188,13 +188,11 @@ jobs:
     - name: Install GROMACS
       run: |
         ccache -s
-        . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
         ccache -s
     - name: Test
       timeout-minutes: 8
       run: |
-        . ./ci_scripts/set_compilers
         env
         pip install -r requirements.txt
         source $HOME/install/gromacs-${GROMACS}/bin/GMXRC && \
@@ -287,13 +285,11 @@ jobs:
     - name: Install GROMACS
       run: |
         ccache -s
-        . ${GITHUB_WORKSPACE}/ci_scripts/set_compilers
         BRANCH="${GROMACS}" bash -x ${GITHUB_WORKSPACE}/ci_scripts/install_gromacs_branch.sh
         ccache -s
     - name: Test
       timeout-minutes: 8
       run: |
-        . ./ci_scripts/set_compilers
         env
         pip install -r requirements.txt
         pip install "cmake>=3.16" "pybind11>=2.6" "setuptools>=42.0" "wheel"
@@ -313,7 +309,9 @@ jobs:
         mv brer-md*/tests ./
         python -m pytest -x -rA -l --log-cli-level=debug --cov=brer --cov-report=xml tests
         # Ref https://github.com/kassonlab/brer-md/issues/5
-        # mpiexec -n 2 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov=brer --cov-report=xml tests
+        mpiexec \
+        -n 1 `which python` -m mpi4py -m pytest -x -rA -l --log-cli-level=info -s --cov-append --cov=brer --cov-report=xml tests : \
+        -n 1 `which python` -m mpi4py -m pytest -x tests 
         echo "github.ref_name: ${{ github.ref_name }}"
     - name: "Upload coverage to Codecov"
       continue-on-error: true

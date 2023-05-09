@@ -24,10 +24,8 @@ pushd $HOME
    which cmake
    cmake --version
    cmake -G Ninja \
-         -DCMAKE_CXX_COMPILER=$CXX \
          -DGMX_ENABLE_CCACHE=ON \
          -DGMX_GIT_VERSION_INFO=OFF \
-         -DCMAKE_C_COMPILER=$CC \
          -DGMX_DOUBLE=$GMX_DOUBLE \
          -DGMX_MPI=$GMX_MPI \
          -DGMX_THREAD_MPI=$GMX_THREAD_MPI \
